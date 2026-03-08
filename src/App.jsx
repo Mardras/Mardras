@@ -1,4 +1,3 @@
-
 import React, { useEffect, useMemo, useState } from "react";
 import {
   Search,
@@ -148,6 +147,49 @@ function parseRoute(cards) {
   if (parts[0] === "downloads") return { page: "downloads", selectedCard: null, archetypeFilter: null };
   if (parts[0] === "database") return { page: "database", selectedCard: null, archetypeFilter: null };
   return { page: "home", selectedCard: null, archetypeFilter: null };
+}
+
+
+function buildTypeLine(card) {
+  const lowerType = String(card.type || "").toLowerCase();
+  const parts = [];
+
+  if (card.race && !["spell", "trap", "monster"].includes(String(card.race).toLowerCase())) {
+    parts.push(card.race);
+  }
+
+  const keywords = [
+    ["normal", "Normal"],
+    ["effect", "Effect"],
+    ["tuner", "Tuner"],
+    ["ritual", "Ritual"],
+    ["fusion", "Fusion"],
+    ["synchro", "Synchro"],
+    ["xyz", "Xyz"],
+    ["link", "Link"],
+    ["pendulum", "Pendulum"],
+    ["token", "Token"],
+    ["spirit", "Spirit"],
+    ["toon", "Toon"],
+    ["union", "Union"],
+    ["gemini", "Gemini"],
+    ["flip", "Flip"]
+  ];
+
+  for (const [needle, label] of keywords) {
+    if (lowerType.includes(needle) && !parts.includes(label)) {
+      parts.push(label);
+    }
+  }
+
+  if (parts.length === 0) {
+    if (card.race && !["spell", "trap", "monster"].includes(String(card.race).toLowerCase())) {
+      return card.race;
+    }
+    return card.type || card.race || "—";
+  }
+
+  return parts.join(" ");
 }
 
 function StatRow({ label, value }) {
@@ -312,6 +354,7 @@ function ImportPanel({ cards, onImport, onReset, settings, onSaveSettings, onLoa
         <div className={`text-sm ${ok ? "text-slate-600" : "text-red-700"}`}>{message}</div>
         <div className="flex flex-wrap gap-2">
           <button onClick={handleSaveSettings} className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+            <Link as={LinkIcon} />
             <LinkIcon className="h-4 w-4" /> Save Settings
           </button>
           <button onClick={() => onLoadFromUrl(dataUrl)} className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
@@ -524,7 +567,7 @@ function CardDetail({ card, cards, onBack, onOpen }) {
               <StatRow label="Card ID" value={card.id} />
               <StatRow label="Card type" value={card.cardType} />
               <StatRow label="Attribute" value={card.attribute} />
-              <StatRow label="Types" value={card.type || card.race} />
+              <StatRow label="Types" value={buildTypeLine(card)} />
               {card.level ? <StatRow label="Level" value={card.level} /> : null}
               {card.scales ? <StatRow label="Pendulum Scale" value={card.scales} /> : null}
               <StatRow label="ATK / DEF" value={`${card.atk ?? "—"} / ${card.def ?? "—"}`} />
