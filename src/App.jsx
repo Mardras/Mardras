@@ -91,6 +91,47 @@ const STORAGE_KEY = "mardras-db-cards-v1";
 const SETTINGS_KEY = "mardras-db-settings-v1";
 const DEFAULT_PAGE_SIZE = 15;
 
+
+
+const ATTRIBUTE_ICON_MAP = {
+  DARK: "/icons/attributes/dark.png",
+  EARTH: "/icons/attributes/earth.png",
+  DIVINE: "/icons/attributes/divine.png",
+  FIRE: "/icons/attributes/fire.png",
+  LIGHT: "/icons/attributes/light.png",
+  WATER: "/icons/attributes/water.png",
+  WIND: "/icons/attributes/wind.png",
+};
+
+const CARD_TYPE_ICON_MAP = {
+  Spell: "/icons/card-types/spell.png",
+  Trap: "/icons/card-types/trap.png",
+};
+
+function getAttributeIcon(attribute) {
+  return ATTRIBUTE_ICON_MAP[String(attribute || "").toUpperCase()] || null;
+}
+
+function getCardTypeIcon(cardType) {
+  return CARD_TYPE_ICON_MAP[String(cardType || "")] || null;
+}
+
+function StatValueWithIcon({ value, iconSrc, iconAlt }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span>{value || "—"}</span>
+      {iconSrc ? (
+        <img
+          src={iconSrc}
+          alt={iconAlt || "icon"}
+          className="h-8 w-8 object-contain"
+          loading="lazy"
+        />
+      ) : null}
+    </div>
+  );
+}
+
 const defaultSettings = {
   imageBaseUrl: "/cards",
   imageExtension: "jpg",
@@ -279,6 +320,22 @@ function StatRow({ label, value }) {
       <div className="bg-slate-100 px-3 py-2 font-semibold text-slate-700">{label}</div>
       <div className="bg-white px-3 py-2 text-slate-800 break-words">{value || "—"}</div>
     </div>
+  );
+}
+
+function getCardTypeDisplay(card) {
+  const iconSrc = ["Spell", "Trap"].includes(card.cardType) ? getCardTypeIcon(card.cardType) : null;
+  return <StatValueWithIcon value={card.cardType} iconSrc={iconSrc} iconAlt={`${card.cardType} icon`} />;
+}
+
+function getAttributeDisplay(card) {
+  if (card.cardType !== "Monster") return card.attribute || "—";
+  return (
+    <StatValueWithIcon
+      value={card.attribute}
+      iconSrc={getAttributeIcon(card.attribute)}
+      iconAlt={`${card.attribute} attribute`}
+    />
   );
 }
 
@@ -646,8 +703,8 @@ function CardDetail({ card, cards, onBack, onOpen }) {
           <div className="space-y-4">
             <div className={`overflow-hidden rounded-xl shadow-sm ${palette.panel}`}>
               <StatRow label="Card ID" value={card.id} />
-              <StatRow label="Card type" value={card.cardType} />
-              <StatRow label="Attribute" value={card.attribute} />
+              <StatRow label="Card type" value={getCardTypeDisplay(card)} />
+              <StatRow label="Attribute" value={getAttributeDisplay(card)} />
               <StatRow label="Types" value={getDisplayTypes(card)} />
               {card.level ? <StatRow label="Level" value={card.level} /> : null}
               {card.scales ? <StatRow label="Pendulum Scale" value={card.scales} /> : null}
