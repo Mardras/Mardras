@@ -312,7 +312,6 @@ function ImportPanel({ cards, onImport, onReset, settings, onSaveSettings, onLoa
         <div className={`text-sm ${ok ? "text-slate-600" : "text-red-700"}`}>{message}</div>
         <div className="flex flex-wrap gap-2">
           <button onClick={handleSaveSettings} className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
-            <Link as={LinkIcon} />
             <LinkIcon className="h-4 w-4" /> Save Settings
           </button>
           <button onClick={() => onLoadFromUrl(dataUrl)} className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
