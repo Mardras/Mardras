@@ -168,6 +168,91 @@ function getDisplayTypes(card) {
   return card.type || card.race || "—";
 }
 
+
+function getCardPalette(card) {
+  const typeText = `${card.cardType || ""} ${card.type || ""}`.toLowerCase();
+
+  if (typeText.includes("token")) {
+    return {
+      shell: "border-[#8f8f8f] bg-[#d9d9d9]",
+      header: "border-[#9d9d9d] bg-[#c7c7c7]",
+      subheader: "border-slate-300 bg-[#ececec]",
+      panel: "border-slate-400 bg-white",
+    };
+  }
+  if (typeText.includes("synchro")) {
+    return {
+      shell: "border-[#9ea0a8] bg-[#dddddf]",
+      header: "border-[#acafb8] bg-[#cbccd1]",
+      subheader: "border-slate-300 bg-[#f2f3f5]",
+      panel: "border-slate-400 bg-white",
+    };
+  }
+  if (typeText.includes("xyz")) {
+    return {
+      shell: "border-[#4b4b52] bg-[#6b6b74]",
+      header: "border-[#5a5a62] bg-[#55555d]",
+      subheader: "border-slate-500 bg-[#7a7a83]",
+      panel: "border-slate-500 bg-white",
+    };
+  }
+  if (typeText.includes("fusion")) {
+    return {
+      shell: "border-[#8576a1] bg-[#c6bed0]",
+      header: "border-[#8b7ca8] bg-[#b7a8cf]",
+      subheader: "border-slate-300 bg-[#efe9f8]",
+      panel: "border-slate-400 bg-white",
+    };
+  }
+  if (typeText.includes("ritual")) {
+    return {
+      shell: "border-[#6a86b0] bg-[#c8d8ec]",
+      header: "border-[#7090bb] bg-[#b6cce8]",
+      subheader: "border-slate-300 bg-[#edf4fb]",
+      panel: "border-slate-400 bg-white",
+    };
+  }
+  if (typeText.includes("spell")) {
+    return {
+      shell: "border-[#4f8b84] bg-[#c6e0db]",
+      header: "border-[#5d9991] bg-[#add2ca]",
+      subheader: "border-slate-300 bg-[#e8f6f3]",
+      panel: "border-slate-400 bg-white",
+    };
+  }
+  if (typeText.includes("trap")) {
+    return {
+      shell: "border-[#8f6689] bg-[#d7c1d4]",
+      header: "border-[#9a7394] bg-[#cfaecb]",
+      subheader: "border-slate-300 bg-[#f4eaf2]",
+      panel: "border-slate-400 bg-white",
+    };
+  }
+  if (typeText.includes("link")) {
+    return {
+      shell: "border-[#517ca8] bg-[#c8d9eb]",
+      header: "border-[#5c8bba] bg-[#b4cde6]",
+      subheader: "border-slate-300 bg-[#edf4fb]",
+      panel: "border-slate-400 bg-white",
+    };
+  }
+  if (typeText.includes("normal")) {
+    return {
+      shell: "border-[#b49268] bg-[#ecd7bd]",
+      header: "border-[#c09b70] bg-[#e4c39a]",
+      subheader: "border-slate-300 bg-[#f9efdf]",
+      panel: "border-slate-400 bg-white",
+    };
+  }
+
+  return {
+    shell: "border-[#b78d62] bg-[#edd2b4]",
+    header: "border-[#c79b6d] bg-[#f58a52]",
+    subheader: "border-slate-300 bg-[#fff3eb]",
+    panel: "border-slate-400 bg-white",
+  };
+}
+
 function parseRoute(cards) {
   const path = window.location.pathname || "/";
   const parts = path.split("/").filter(Boolean);
@@ -518,6 +603,7 @@ function CardDetail({ card, cards, onBack, onOpen }) {
   const prev = index > 0 ? cards[index - 1] : null;
   const next = index < cards.length - 1 ? cards[index + 1] : null;
   const sameArchetype = cards.filter((c) => c.archetype === card.archetype);
+  const palette = getCardPalette(card);
 
   return (
     <div className="space-y-6">
@@ -529,23 +615,23 @@ function CardDetail({ card, cards, onBack, onOpen }) {
         {next && <button onClick={() => onOpen(next)} className="rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Next ▶</button>}
       </div>
 
-      <div className="overflow-hidden rounded-[28px] border border-[#8576a1] bg-[#c6bed0] shadow-sm">
-        <div className="border-b border-[#8b7ca8] bg-[#b7a8cf] px-6 py-4 text-center">
+      <div className={`overflow-hidden rounded-[28px] border shadow-sm ${palette.shell}`}>
+        <div className={`border-b px-6 py-4 text-center ${palette.header}`}>
           <h1 className="text-3xl font-bold text-slate-900">{card.name}</h1>
         </div>
 
         <div className="grid gap-6 p-6 lg:grid-cols-[280px_1fr]">
           <div className="space-y-4">
-            <div className="group overflow-hidden rounded-xl border border-slate-400 bg-white shadow-sm">
+            <div className={`group overflow-hidden rounded-xl shadow-sm ${palette.panel}`}>
               <img src={card.image} alt={card.name} className="w-full object-cover transition duration-300 group-hover:scale-[1.5] origin-top" />
             </div>
 
-            <div className="rounded-xl border border-slate-400 bg-white p-4 text-sm text-slate-700 shadow-sm">
+            <div className={`rounded-xl p-4 text-sm text-slate-700 shadow-sm ${palette.panel}`}>
               <div className="mb-1 font-semibold text-slate-900">Status</div>
               <div className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${card.status === "Banned" ? "bg-red-100 text-red-700" : "bg-emerald-100 text-emerald-700"}`}>{card.status}</div>
             </div>
 
-            <div className="rounded-xl border border-slate-400 bg-white p-4 text-sm text-slate-700 shadow-sm">
+            <div className={`rounded-xl p-4 text-sm text-slate-700 shadow-sm ${palette.panel}`}>
               <div className="mb-2 font-semibold text-slate-900">More from this archetype</div>
               <div className="flex flex-wrap gap-2">
                 {sameArchetype.slice(0, 6).map((c) => (
@@ -558,7 +644,7 @@ function CardDetail({ card, cards, onBack, onOpen }) {
           </div>
 
           <div className="space-y-4">
-            <div className="overflow-hidden rounded-xl border border-slate-400 shadow-sm">
+            <div className={`overflow-hidden rounded-xl shadow-sm ${palette.panel}`}>
               <StatRow label="Card ID" value={card.id} />
               <StatRow label="Card type" value={card.cardType} />
               <StatRow label="Attribute" value={card.attribute} />
@@ -571,8 +657,8 @@ function CardDetail({ card, cards, onBack, onOpen }) {
               <StatRow label="Lore group" value={card.setGroup} />
             </div>
 
-            <div className="overflow-hidden rounded-xl border border-slate-400 shadow-sm">
-              <div className="border-b border-slate-300 bg-[#efe9f8] px-4 py-3 text-lg font-semibold text-slate-900">Effect / Lore</div>
+            <div className={`overflow-hidden rounded-xl shadow-sm ${palette.panel}`}>
+              <div className={`border-b px-4 py-3 text-lg font-semibold text-slate-900 ${palette.subheader}`}>Effect / Lore</div>
               <div className="bg-white px-4 py-4 text-sm leading-7 text-slate-800 whitespace-pre-wrap">{card.lore}</div>
             </div>
           </div>
