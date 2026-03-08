@@ -108,12 +108,132 @@ const CARD_TYPE_ICON_MAP = {
   Trap: "/icons/card-types/trap.png",
 };
 
+const PROPERTY_ICON_MAP = {
+  "Quick-Play": "/icons/properties/quickplay.png",
+  Continuous: "/icons/properties/continuous.png",
+  Ritual: "/icons/properties/ritual.png",
+  Field: "/icons/properties/field.png",
+  Equip: "/icons/properties/equipment.png",
+  Counter: "/icons/properties/counter.png",
+};
+
+const LEVEL_ICON_MAP = {
+  level: "/icons/levels/star.png",
+  rank: "/icons/levels/estar.png",
+};
+
+const PENDULUM_SCALE_ICON = "/icons/pendulum/Pendulum_Scale.png";
+
 function getAttributeIcon(attribute) {
   return ATTRIBUTE_ICON_MAP[String(attribute || "").toUpperCase()] || null;
 }
 
 function getCardTypeIcon(cardType) {
   return CARD_TYPE_ICON_MAP[String(cardType || "")] || null;
+}
+
+function getPropertyIcon(property) {
+  const normalized = String(property || "").trim().toLowerCase();
+  const propertyEntry = Object.entries(PROPERTY_ICON_MAP).find(([label]) =>
+    label.toLowerCase() === normalized || label.toLowerCase().replace(/-/g, "") === normalized.replace(/-/g, "")
+  );
+  return propertyEntry ? propertyEntry[1] : null;
+}
+
+function getLevelIcon(card) {
+  const isXyz = `${card.cardType || ""} ${card.type || ""}`.toLowerCase().includes("xyz");
+  return isXyz ? LEVEL_ICON_MAP.rank : LEVEL_ICON_MAP.level;
+}
+
+function getLevelLabel(card) {
+  const typeText = `${card.cardType || ""} ${card.type || ""}`.toLowerCase();
+  if (typeText.includes("xyz")) return "Rank";
+  if (typeText.includes("link")) return "Link Rating";
+  return "Level";
+}
+
+function getSpellTrapProperties(card) {
+  if (!["Spell", "Trap"].includes(card.cardType)) return [];
+  return String(card.type || "")
+    .split(/\s+/)
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .filter((part) => part !== card.cardType)
+    .map((part) => {
+      if (part.toLowerCase() === "quick-play" || part.toLowerCase() === "quickplay") return "Quick-Play";
+      if (part.toLowerCase() === "equip" || part.toLowerCase() === "equipment") return "Equip";
+      return part;
+    });
+}
+
+function TypeLineWithIcons({ card }) {
+  if (["Spell", "Trap"].includes(card.cardType)) {
+    const properties = getSpellTrapProperties(card);
+    const parts = [card.cardType, ...properties];
+
+    return (
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+        {parts.map((part, index) => {
+          const iconSrc = index === 0 ? getCardTypeIcon(part) : getPropertyIcon(part);
+          return (
+            <React.Fragment key={`${part}-${index}`}>
+              <span>{part}</span>
+              {iconSrc ? (
+                <img
+                  src={iconSrc}
+                  alt={`${part} icon`}
+                  className="h-7 w-7 object-contain"
+                  loading="lazy"
+                />
+              ) : null}
+            </React.Fragment>
+          );
+        })}
+      </div>
+    );
+  }
+
+  return <span>{getDisplayTypes(card)}</span>;
+}
+
+function LevelValue({ card }) {
+  const rawValue = card.level ?? card.link ?? "";
+  const count = Number(rawValue);
+  const iconSrc = getLevelIcon(card);
+  const safeCount = Number.isFinite(count) && count > 0 ? Math.min(count, 13) : 0;
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <span>{rawValue || "—"}</span>
+      {safeCount ? (
+        <div className="flex flex-wrap items-center gap-0.5">
+          {Array.from({ length: safeCount }).map((_, index) => (
+            <img
+              key={index}
+              src={iconSrc}
+              alt={getLevelLabel(card)}
+              className="h-5 w-5 object-contain"
+              loading="lazy"
+            />
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function PendulumScaleValue({ value }) {
+  return (
+    <div className="flex items-center gap-2">
+      <img
+        src={PENDULUM_SCALE_ICON}
+        alt="Pendulum Scale"
+        className="h-5 w-5 object-contain"
+        loading="lazy"
+      />
+      <span>{value || "—"}</span>
+    </div>
+  );
 }
 
 function StatValueWithIcon({ value, iconSrc, iconAlt }) {
@@ -705,9 +825,9 @@ function CardDetail({ card, cards, onBack, onOpen }) {
               <StatRow label="Card ID" value={card.id} />
               <StatRow label="Card type" value={getCardTypeDisplay(card)} />
               <StatRow label="Attribute" value={getAttributeDisplay(card)} />
-              <StatRow label="Types" value={getDisplayTypes(card)} />
-              {card.level ? <StatRow label="Level" value={card.level} /> : null}
-              {card.scales ? <StatRow label="Pendulum Scale" value={card.scales} /> : null}
+              <StatRow label="Types" value={<TypeLineWithIcons card={card} />} />
+              {card.level ? <StatRow label={getLevelLabel(card)} value={<LevelValue card={card} />} /> : null}
+              {card.scales ? <StatRow label="Pendulum Scale" value={<PendulumScaleValue value={card.scales} />} /> : null}
               <StatRow label="ATK / DEF" value={`${card.atk ?? "—"} / ${card.def ?? "—"}`} />
               <StatRow label="Archetype" value={card.archetype} />
               <StatRow label="Author" value={card.author || "Mardras"} />
