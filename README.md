@@ -1,5 +1,4 @@
--- Hi, I’m @Mardras
--- Website Database Project
+-- Website Custom yugioh Database Project
 <!---
 Mardras/Mardras is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
 You can click the Preview link to take a look at your changes.
