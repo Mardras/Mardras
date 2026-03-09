@@ -169,12 +169,15 @@ function getSpellTrapProperties(card) {
 function TypeLineWithIcons({ card }) {
   if (["Spell", "Trap"].includes(card.cardType)) {
     const properties = getSpellTrapProperties(card);
-    const parts = [card.cardType, ...properties];
+
+    if (!properties.length) {
+      return <span>—</span>;
+    }
 
     return (
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-        {parts.map((part, index) => {
-          const iconSrc = index === 0 ? getCardTypeIcon(part) : getPropertyIcon(part);
+        {properties.map((part, index) => {
+          const iconSrc = getPropertyIcon(part);
           return (
             <React.Fragment key={`${part}-${index}`}>
               <span>{part}</span>
@@ -276,10 +279,6 @@ function normalizeCard(card, index, settings = defaultSettings) {
     attribute: card.attribute || "—",
     race: card.race || card.type || "—",
     level: card.level ?? "",
-    rank: card.rank ?? "",
-    linkRating: card.linkRating ?? "",
-    leftScale: card.leftScale ?? "",
-    rightScale: card.rightScale ?? "",
     atk: card.atk ?? "—",
     def: card.def ?? "—",
     scales: card.scales || "",
@@ -940,23 +939,20 @@ function DatabasePage({ cards, onOpen }) {
 }
 
 
-function formatStatValue(value) {
-  if (value === -2 || value === "-2") return "?";
-  if (value === undefined || value === null || value === "") return "—";
-  return String(value);
-}
-
 function getBattleStatDisplay(card) {
   const typeText = `${card.cardType || ""} ${card.type || ""}`.toLowerCase();
+  if (card.cardType !== "Monster") {
+    return null;
+  }
   if (typeText.includes("link")) {
     return {
       label: "ATK / LINK",
-      value: `${formatStatValue(card.atk)} / ${formatStatValue(card.linkRating)}`,
+      value: `${card.atk ?? "—"} / ${card.linkRating ?? "—"}`,
     };
   }
   return {
     label: "ATK / DEF",
-    value: `${formatStatValue(card.atk)} / ${formatStatValue(card.def)}`,
+    value: `${card.atk ?? "—"} / ${card.def ?? "—"}`,
   };
 }
 
@@ -1013,7 +1009,9 @@ function CardDetail({ card, cards, onBack, onOpen }) {
               <StatRow label="Types" value={<TypeLineWithIcons card={card} />} />
               {card.level ? <StatRow label={getLevelLabel(card)} value={<LevelValue card={card} />} /> : null}
               {card.scales ? <StatRow label="Pendulum Scale" value={<PendulumScaleValue value={card.scales} />} /> : null}
-              <StatRow label={getBattleStatDisplay(card).label} value={getBattleStatDisplay(card).value} />
+              {getBattleStatDisplay(card) ? (
+                <StatRow label={getBattleStatDisplay(card).label} value={getBattleStatDisplay(card).value} />
+              ) : null}
               <StatRow label="Archetype" value={card.archetype} />
               <StatRow label="Author" value={card.author || "Mardras"} />
               <StatRow label="Lore group" value={card.setGroup} />
