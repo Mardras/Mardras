@@ -335,6 +335,81 @@ function isPendulumCard(card) {
   return `${card.cardType || ""} ${card.type || ""}`.toLowerCase().includes("pendulum");
 }
 
+
+function isExtraDeckMonster(card) {
+  const typeText = `${card.cardType || ""} ${card.type || ""}`.toLowerCase();
+  return card.cardType === "Monster" && ["fusion", "synchro", "xyz", "link"].some((part) => typeText.includes(part));
+}
+
+function splitExtraDeckLore(lore) {
+  const source = String(lore || "").trim();
+  if (!source) return { materials: "", effect: "" };
+
+  const normalized = source.replace(/\r\n/g, "\n");
+  const lines = normalized.split("\n").map((line) => line.trim()).filter(Boolean);
+  if (lines.length >= 2) {
+    return {
+      materials: lines[0],
+      effect: lines.slice(1).join("\n").trim(),
+    };
+  }
+
+  const starters = [
+    /\bMust be\b/i,
+    /\bCannot be\b/i,
+    /\bIf\b/i,
+    /\bWhen\b/i,
+    /\bOnce per turn\b/i,
+    /\bOnce while\b/i,
+    /\bDuring\b/i,
+    /\bYou can\b/i,
+    /\bYour opponent\b/i,
+    /\bThis card\b/i,
+    /\bMonsters\b/i,
+    /\bAny\b/i,
+    /\bQuick Effect\b/i,
+    /\bGains\b/i,
+    /\bUnaffected\b/i,
+  ];
+
+  const materialLike = /(?:\+|\bLevel\b|\bRank\b|\bTuner\b|\bnon-Tuner\b|\bmaterials?\b|\bmonsters?\b|\bTokens?\b|\bPendulum\b|\bSynchro\b|\bFusion\b|\bLink\b|\bXyz\b|"[^"]+")/i;
+
+  let splitIndex = -1;
+  for (const starter of starters) {
+    const match = starter.exec(normalized);
+    if (!match) continue;
+    const idx = match.index;
+    if (idx < 20) continue;
+    const before = normalized.slice(0, idx).trim();
+    if (!materialLike.test(before)) continue;
+    splitIndex = idx;
+    break;
+  }
+
+  if (splitIndex === -1) {
+    return { materials: "", effect: source };
+  }
+
+  return {
+    materials: normalized.slice(0, splitIndex).trim(),
+    effect: normalized.slice(splitIndex).trim(),
+  };
+}
+
+function ExtraDeckLoreContent({ text }) {
+  const sections = splitExtraDeckLore(text);
+  if (!sections.materials) {
+    return <div className="whitespace-pre-wrap">{text || "No effect text provided."}</div>;
+  }
+
+  return (
+    <div>
+      <div className="whitespace-pre-wrap">{sections.materials}</div>
+      {sections.effect ? <div className="mt-1 whitespace-pre-wrap">{sections.effect}</div> : null}
+    </div>
+  );
+}
+
 function splitPendulumLore(lore) {
   const source = String(lore || "").trim();
   if (!source) return { pendulum: "", monster: "" };
@@ -370,8 +445,12 @@ function splitPendulumLore(lore) {
 function LoreBlock({ card }) {
   if (!isPendulumCard(card)) {
     return (
-      <div className="bg-white px-4 py-4 text-sm leading-7 text-slate-800 whitespace-pre-wrap">
-        {card.lore || "No effect text provided."}
+      <div className="bg-white px-4 py-4 text-sm leading-7 text-slate-800">
+        {isExtraDeckMonster(card) ? (
+          <ExtraDeckLoreContent text={card.lore} />
+        ) : (
+          <div className="whitespace-pre-wrap">{card.lore || "No effect text provided."}</div>
+        )}
       </div>
     );
   }
@@ -404,7 +483,7 @@ function LoreBlock({ card }) {
       {hasMonsterSection ? (
         <div className="whitespace-pre-wrap">
           <div className="mb-1 text-[15px] font-semibold text-slate-900">Monster Effect</div>
-          <div>{sections.monster}</div>
+          {isExtraDeckMonster(card) ? <ExtraDeckLoreContent text={sections.monster} /> : <div>{sections.monster}</div>}
         </div>
       ) : null}
     </div>
