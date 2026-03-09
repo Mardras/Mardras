@@ -278,6 +278,8 @@ function normalizeCard(card, index, settings = defaultSettings) {
     level: card.level ?? "",
     rank: card.rank ?? "",
     linkRating: card.linkRating ?? "",
+    leftScale: card.leftScale ?? "",
+    rightScale: card.rightScale ?? "",
     atk: card.atk ?? "—",
     def: card.def ?? "—",
     scales: card.scales || "",
@@ -938,18 +940,23 @@ function DatabasePage({ cards, onOpen }) {
 }
 
 
+function formatStatValue(value) {
+  if (value === -2 || value === "-2") return "?";
+  if (value === undefined || value === null || value === "") return "—";
+  return String(value);
+}
+
 function getBattleStatDisplay(card) {
   const typeText = `${card.cardType || ""} ${card.type || ""}`.toLowerCase();
   if (typeText.includes("link")) {
-    const rating = card.linkRating ?? card.link ?? card.level ?? "—";
     return {
       label: "ATK / LINK",
-      value: `${card.atk ?? "—"} / ${rating}`,
+      value: `${formatStatValue(card.atk)} / ${formatStatValue(card.linkRating)}`,
     };
   }
   return {
     label: "ATK / DEF",
-    value: `${card.atk ?? "—"} / ${card.def ?? "—"}`,
+    value: `${formatStatValue(card.atk)} / ${formatStatValue(card.def)}`,
   };
 }
 
@@ -1004,7 +1011,7 @@ function CardDetail({ card, cards, onBack, onOpen }) {
               <StatRow label="Card type" value={getCardTypeDisplay(card)} />
               <StatRow label="Attribute" value={getAttributeDisplay(card)} />
               <StatRow label="Types" value={<TypeLineWithIcons card={card} />} />
-              {card.level && !`${card.cardType || ""} ${card.type || ""}`.toLowerCase().includes("link") ? <StatRow label={getLevelLabel(card)} value={<LevelValue card={card} />} /> : null}
+              {card.level ? <StatRow label={getLevelLabel(card)} value={<LevelValue card={card} />} /> : null}
               {card.scales ? <StatRow label="Pendulum Scale" value={<PendulumScaleValue value={card.scales} />} /> : null}
               <StatRow label={getBattleStatDisplay(card).label} value={getBattleStatDisplay(card).value} />
               <StatRow label="Archetype" value={card.archetype} />
