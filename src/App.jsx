@@ -330,6 +330,83 @@ function getDisplayTypes(card) {
 }
 
 
+
+function isPendulumCard(card) {
+  return `${card.cardType || ""} ${card.type || ""}`.toLowerCase().includes("pendulum");
+}
+
+function splitPendulumLore(lore) {
+  const source = String(lore || "").trim();
+  if (!source) return { pendulum: "", monster: "" };
+
+  const normalized = source
+    .replace(/\[\s*Pendulum Effect\s*\]/gi, "\n[PENDULUM_EFFECT]\n")
+    .replace(/\[\s*Monster Effect\s*\]/gi, "\n[MONSTER_EFFECT]\n")
+    .replace(/-{8,}/g, "\n");
+
+  const hasPendulum = normalized.includes("[PENDULUM_EFFECT]");
+  const hasMonster = normalized.includes("[MONSTER_EFFECT]");
+
+  if (!hasPendulum && !hasMonster) {
+    return { pendulum: "", monster: source };
+  }
+
+  const pendulumMatch = normalized.match(/\[PENDULUM_EFFECT\]([\s\S]*?)(?=\[MONSTER_EFFECT\]|$)/);
+  const monsterMatch = normalized.match(/\[MONSTER_EFFECT\]([\s\S]*?)$/);
+
+  const pendulum = pendulumMatch ? pendulumMatch[1].trim().replace(/^\n+|\n+$/g, "") : "";
+  let monster = monsterMatch ? monsterMatch[1].trim().replace(/^\n+|\n+$/g, "") : "";
+
+  if (!monster) {
+    monster = normalized
+      .replace(/\[PENDULUM_EFFECT\]/g, "")
+      .replace(/\[MONSTER_EFFECT\]/g, "")
+      .trim();
+  }
+
+  return { pendulum, monster };
+}
+
+function LoreBlock({ card }) {
+  if (!isPendulumCard(card)) {
+    return (
+      <LoreBlock card={card} />
+    );
+  }
+
+  const sections = splitPendulumLore(card.lore);
+  const hasPendulumSection = Boolean(sections.pendulum);
+  const hasMonsterSection = Boolean(sections.monster);
+
+  if (!hasPendulumSection && !hasMonsterSection) {
+    return (
+      <LoreBlock card={card} />
+    );
+  }
+
+  return (
+    <div className="bg-white px-4 py-4 text-sm leading-7 text-slate-800">
+      {hasPendulumSection ? (
+        <div className="whitespace-pre-wrap">
+          <div className="mb-1 text-[15px] font-semibold text-slate-900">Pendulum Effect</div>
+          <div>{sections.pendulum}</div>
+        </div>
+      ) : null}
+
+      {hasPendulumSection && hasMonsterSection ? (
+        <div className="my-3 border-t border-slate-200" />
+      ) : null}
+
+      {hasMonsterSection ? (
+        <div className="whitespace-pre-wrap">
+          <div className="mb-1 text-[15px] font-semibold text-slate-900">Monster Effect</div>
+          <div>{sections.monster}</div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function getCardPalette(card) {
   const typeText = `${card.cardType || ""} ${card.type || ""}`.toLowerCase();
 
@@ -836,7 +913,7 @@ function CardDetail({ card, cards, onBack, onOpen }) {
 
             <div className={`overflow-hidden rounded-xl shadow-sm ${palette.panel}`}>
               <div className={`border-b px-4 py-3 text-lg font-semibold text-slate-900 ${palette.subheader}`}>Effect / Lore</div>
-              <div className="bg-white px-4 py-4 text-sm leading-7 text-slate-800 whitespace-pre-wrap">{card.lore}</div>
+              <LoreBlock card={card} />
             </div>
           </div>
         </div>
