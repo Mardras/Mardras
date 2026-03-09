@@ -276,6 +276,8 @@ function normalizeCard(card, index, settings = defaultSettings) {
     attribute: card.attribute || "—",
     race: card.race || card.type || "—",
     level: card.level ?? "",
+    rank: card.rank ?? "",
+    linkRating: card.linkRating ?? "",
     atk: card.atk ?? "—",
     def: card.def ?? "—",
     scales: card.scales || "",
@@ -939,9 +941,10 @@ function DatabasePage({ cards, onOpen }) {
 function getBattleStatDisplay(card) {
   const typeText = `${card.cardType || ""} ${card.type || ""}`.toLowerCase();
   if (typeText.includes("link")) {
+    const rating = card.linkRating ?? card.link ?? card.level ?? "—";
     return {
       label: "ATK / LINK",
-      value: `${card.atk ?? "—"} / Link - ${card.level ?? "—"}`,
+      value: `${card.atk ?? "—"} / ${rating}`,
     };
   }
   return {
@@ -1001,7 +1004,7 @@ function CardDetail({ card, cards, onBack, onOpen }) {
               <StatRow label="Card type" value={getCardTypeDisplay(card)} />
               <StatRow label="Attribute" value={getAttributeDisplay(card)} />
               <StatRow label="Types" value={<TypeLineWithIcons card={card} />} />
-              {card.level ? <StatRow label={getLevelLabel(card)} value={<LevelValue card={card} />} /> : null}
+              {card.level && !`${card.cardType || ""} ${card.type || ""}`.toLowerCase().includes("link") ? <StatRow label={getLevelLabel(card)} value={<LevelValue card={card} />} /> : null}
               {card.scales ? <StatRow label="Pendulum Scale" value={<PendulumScaleValue value={card.scales} />} /> : null}
               <StatRow label={getBattleStatDisplay(card).label} value={getBattleStatDisplay(card).value} />
               <StatRow label="Archetype" value={card.archetype} />
