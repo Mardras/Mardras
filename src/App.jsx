@@ -370,7 +370,9 @@ function splitPendulumLore(lore) {
 function LoreBlock({ card }) {
   if (!isPendulumCard(card)) {
     return (
-      <LoreBlock card={card} />
+      <div className="bg-white px-4 py-4 text-sm leading-7 text-slate-800 whitespace-pre-wrap">
+        {card.lore || "No effect text provided."}
+      </div>
     );
   }
 
@@ -380,7 +382,9 @@ function LoreBlock({ card }) {
 
   if (!hasPendulumSection && !hasMonsterSection) {
     return (
-      <LoreBlock card={card} />
+      <div className="bg-white px-4 py-4 text-sm leading-7 text-slate-800 whitespace-pre-wrap">
+        {card.lore || "No effect text provided."}
+      </div>
     );
   }
 
