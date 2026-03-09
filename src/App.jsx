@@ -935,6 +935,21 @@ function DatabasePage({ cards, onOpen }) {
   );
 }
 
+
+function getBattleStatDisplay(card) {
+  const typeText = `${card.cardType || ""} ${card.type || ""}`.toLowerCase();
+  if (typeText.includes("link")) {
+    return {
+      label: "ATK / LINK",
+      value: `${card.atk ?? "—"} / Link - ${card.level ?? "—"}`,
+    };
+  }
+  return {
+    label: "ATK / DEF",
+    value: `${card.atk ?? "—"} / ${card.def ?? "—"}`,
+  };
+}
+
 function CardDetail({ card, cards, onBack, onOpen }) {
   const index = cards.findIndex((c) => String(c.id) === String(card.id));
   const prev = index > 0 ? cards[index - 1] : null;
@@ -988,7 +1003,7 @@ function CardDetail({ card, cards, onBack, onOpen }) {
               <StatRow label="Types" value={<TypeLineWithIcons card={card} />} />
               {card.level ? <StatRow label={getLevelLabel(card)} value={<LevelValue card={card} />} /> : null}
               {card.scales ? <StatRow label="Pendulum Scale" value={<PendulumScaleValue value={card.scales} />} /> : null}
-              <StatRow label="ATK / DEF" value={`${card.atk ?? "—"} / ${card.def ?? "—"}`} />
+              <StatRow label={getBattleStatDisplay(card).label} value={getBattleStatDisplay(card).value} />
               <StatRow label="Archetype" value={card.archetype} />
               <StatRow label="Author" value={card.author || "Mardras"} />
               <StatRow label="Lore group" value={card.setGroup} />
