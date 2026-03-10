@@ -109,7 +109,6 @@ const CARD_TYPE_ICON_MAP = {
 };
 
 const PROPERTY_ICON_MAP = {
-  Normal: "/icons/properties/normal.png",
   "Quick-Play": "/icons/properties/quickplay.png",
   Continuous: "/icons/properties/continuous.png",
   Ritual: "/icons/properties/ritual.png",
@@ -154,79 +153,45 @@ function getLevelLabel(card) {
 }
 
 function getSpellTrapProperties(card) {
-  const typeText = `${card.cardType || ""} ${card.type || ""}`.toLowerCase();
-  const isSpell = typeText.includes("spell");
-  const isTrap = typeText.includes("trap");
-
-  if (!isSpell && !isTrap) return [];
-
-  const hasDualSpellTrap = isSpell && isTrap;
-  const baseLabel = hasDualSpellTrap ? "Spell / Trap" : isSpell ? "Spell" : "Trap";
-
-  const normalized = String(card.type || "")
-    .replace(/[\\/]/g, " ")
-    .trim();
-
-  if (!normalized) {
-    return [{ label: "Normal", icon: getPropertyIcon("Normal") }];
-  }
-
-  const parts = normalized
+  if (!["Spell", "Trap"].includes(card.cardType)) return [];
+  return String(card.type || "")
     .split(/\s+/)
     .map((part) => part.trim())
-    .filter(Boolean);
-
-  const filtered = parts.filter((part) => {
-    const lower = part.toLowerCase();
-    return lower !== "spell" && lower !== "trap" && lower !== "card";
-  });
-
-  const joined = filtered.join(" ").toLowerCase();
-  let property = "";
-
-  if (joined.includes("quick") && joined.includes("play")) property = "Quick-Play";
-  else if (joined.includes("continuous")) property = "Continuous";
-  else if (joined.includes("field")) property = "Field";
-  else if (joined.includes("equip") || joined.includes("equipment")) property = "Equip";
-  else if (joined.includes("ritual")) property = "Ritual";
-  else if (joined.includes("counter")) property = "Counter";
-  else if (joined.includes("normal")) property = "Normal";
-  else if (filtered.length) property = filtered.join(" ");
-  else property = "Normal";
-
-  const items = [{ label: baseLabel, icon: getCardTypeIcon(isSpell ? "Spell" : isTrap ? "Trap" : "") }];
-
-  if (hasDualSpellTrap) {
-    items.push({ label: "Trap", icon: getCardTypeIcon("Trap") });
-  }
-
-  items.push({ label: property, icon: getPropertyIcon(property) });
-
-  return items;
+    .filter(Boolean)
+    .filter((part) => part !== card.cardType)
+    .map((part) => {
+      if (part.toLowerCase() === "quick-play" || part.toLowerCase() === "quickplay") return "Quick-Play";
+      if (part.toLowerCase() === "equip" || part.toLowerCase() === "equipment") return "Equip";
+      return part;
+    });
 }
 
 function TypeLineWithIcons({ card }) {
-  const typeText = `${card.cardType || ""} ${card.type || ""}`.toLowerCase();
-  const isSpellTrapLike = typeText.includes("spell") || typeText.includes("trap");
+  if (["Spell", "Trap"].includes(card.cardType)) {
+    const properties = getSpellTrapProperties(card);
 
-  if (isSpellTrapLike && card.cardType !== "Monster") {
-    const items = getSpellTrapProperties(card);
+    if (!properties.length) {
+      return <span>—</span>;
+    }
 
     return (
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-        {items.map((item, index) => (
-          <React.Fragment key={`${item.label}-${index}`}>
-            <span>{item.label}</span>
-            {item.icon ? (
-              <img
-                src={item.icon}
-                alt={`${item.label} icon`}
-                className="h-7 w-7 object-contain"
-                loading="lazy"
-              />
-            ) : null}
-          </React.Fragment>
-        ))}
+        {properties.map((part, index) => {
+          const iconSrc = getPropertyIcon(part);
+          return (
+            <React.Fragment key={`${part}-${index}`}>
+              <span>{part}</span>
+              {iconSrc ? (
+                <img
+                  src={iconSrc}
+                  alt={`${part} icon`}
+                  className="h-7 w-7 object-contain"
+                  loading="lazy"
+                />
+              ) : null}
+            </React.Fragment>
+          );
+        })}
       </div>
     );
   }
@@ -314,6 +279,10 @@ function normalizeCard(card, index, settings = defaultSettings) {
     attribute: card.attribute || "—",
     race: card.race || card.type || "—",
     level: card.level ?? "",
+    rank: card.rank ?? "",
+    linkRating: card.linkRating ?? "",
+    leftScale: card.leftScale ?? "",
+    rightScale: card.rightScale ?? "",
     atk: card.atk ?? "—",
     def: card.def ?? "—",
     scales: card.scales || "",
@@ -647,7 +616,6 @@ function getCardTypeDisplay(card) {
 }
 
 function getAttributeDisplay(card) {
-  if (card.cardType !== "Monster") return card.attribute || "—";
   return (
     <StatValueWithIcon
       value={card.attribute}
@@ -974,17 +942,26 @@ function DatabasePage({ cards, onOpen }) {
 }
 
 
+function formatStatValue(value) {
+  if (value === -2 || value === "-2") return "?";
+  if (value === undefined || value === null || value === "") return "—";
+  return String(value);
+}
+
 function getBattleStatDisplay(card) {
   const typeText = `${card.cardType || ""} ${card.type || ""}`.toLowerCase();
+  if (card.cardType !== "Monster") {
+    return null;
+  }
   if (typeText.includes("link")) {
     return {
       label: "ATK / LINK",
-      value: `${card.atk ?? "—"} / Link - ${card.level ?? "—"}`,
+      value: `${formatStatValue(card.atk)} / ${formatStatValue(card.linkRating)}`,
     };
   }
   return {
     label: "ATK / DEF",
-    value: `${card.atk ?? "—"} / ${card.def ?? "—"}`,
+    value: `${formatStatValue(card.atk)} / ${formatStatValue(card.def)}`,
   };
 }
 
@@ -1037,11 +1014,13 @@ function CardDetail({ card, cards, onBack, onOpen }) {
             <div className={`overflow-hidden rounded-xl shadow-sm ${palette.panel}`}>
               <StatRow label="Card ID" value={card.id} />
               <StatRow label="Card type" value={getCardTypeDisplay(card)} />
-              <StatRow label="Attribute" value={getAttributeDisplay(card)} />
+              {card.cardType === "Monster" ? <StatRow label="Attribute" value={getAttributeDisplay(card)} /> : null}
               <StatRow label="Types" value={<TypeLineWithIcons card={card} />} />
               {card.level ? <StatRow label={getLevelLabel(card)} value={<LevelValue card={card} />} /> : null}
               {card.scales ? <StatRow label="Pendulum Scale" value={<PendulumScaleValue value={card.scales} />} /> : null}
-              <StatRow label={getBattleStatDisplay(card).label} value={getBattleStatDisplay(card).value} />
+              {getBattleStatDisplay(card) ? (
+                <StatRow label={getBattleStatDisplay(card).label} value={getBattleStatDisplay(card).value} />
+              ) : null}
               <StatRow label="Archetype" value={card.archetype} />
               <StatRow label="Author" value={card.author || "Mardras"} />
               <StatRow label="Lore group" value={card.setGroup} />
