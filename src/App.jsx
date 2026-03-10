@@ -109,6 +109,7 @@ const CARD_TYPE_ICON_MAP = {
 };
 
 const PROPERTY_ICON_MAP = {
+  Normal: "/icons/properties/normal.png",
   "Quick-Play": "/icons/properties/quickplay.png",
   Continuous: "/icons/properties/continuous.png",
   Ritual: "/icons/properties/ritual.png",
@@ -153,26 +154,61 @@ function getLevelLabel(card) {
 }
 
 function getSpellTrapProperties(card) {
-  if (!["Spell", "Trap"].includes(card.cardType)) return [];
-  return String(card.type || "")
+  const cardTypeText = String(card.cardType || "").trim();
+  const normalizedCardType = cardTypeText.toLowerCase();
+
+  if (
+    normalizedCardType !== "spell" &&
+    normalizedCardType !== "trap" &&
+    normalizedCardType !== "spell / trap" &&
+    normalizedCardType !== "spell/trap"
+  ) {
+    return [];
+  }
+
+  const rawType = String(card.type || "").trim();
+  if (!rawType) return ["Normal"];
+
+  const parts = rawType
     .split(/\s+/)
     .map((part) => part.trim())
-    .filter(Boolean)
-    .filter((part) => part !== card.cardType)
+    .filter(Boolean);
+
+  const filtered = parts
+    .filter((part) => {
+      const p = part.toLowerCase();
+      return p !== "spell" && p !== "trap" && p !== "spell/trap";
+    })
     .map((part) => {
-      if (part.toLowerCase() === "quick-play" || part.toLowerCase() === "quickplay") return "Quick-Play";
-      if (part.toLowerCase() === "equip" || part.toLowerCase() === "equipment") return "Equip";
+      const p = part.toLowerCase();
+      if (p === "quick-play" || p === "quickplay") return "Quick-Play";
+      if (p === "equip" || p === "equipment") return "Equip";
+      if (p === "continuous") return "Continuous";
+      if (p === "ritual") return "Ritual";
+      if (p === "field") return "Field";
+      if (p === "counter") return "Counter";
+      if (p === "normal") return "Normal";
       return part;
     });
+
+  const unique = [];
+  const seen = new Set();
+  filtered.forEach((part) => {
+    const key = String(part).toLowerCase();
+    if (!seen.has(key)) {
+      seen.add(key);
+      unique.push(part);
+    }
+  });
+
+  return unique.length ? unique : ["Normal"];
 }
 
 function TypeLineWithIcons({ card }) {
-  if (["Spell", "Trap"].includes(card.cardType)) {
-    const properties = getSpellTrapProperties(card);
+  const normalizedCardType = String(card.cardType || "").toLowerCase();
 
-    if (!properties.length) {
-      return <span>—</span>;
-    }
+  if (["spell", "trap", "spell / trap", "spell/trap"].includes(normalizedCardType)) {
+    const properties = getSpellTrapProperties(card);
 
     return (
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -323,14 +359,24 @@ function getDisplayTypes(card) {
     return uniqueParts.join(" ") || card.race || card.type || "—";
   }
 
-  if (card.cardType === "Spell" || card.cardType === "Trap") {
+  if (
+    card.cardType === "Spell" ||
+    card.cardType === "Trap" ||
+    card.cardType === "Spell / Trap" ||
+    card.cardType === "Spell/Trap"
+  ) {
+    const label = card.cardType === "Spell/Trap" ? "Spell / Trap" : card.cardType;
     const typeParts = String(card.type || "")
       .split(/\s+/)
       .map((part) => part.trim())
       .filter(Boolean);
 
-    const filteredParts = typeParts.filter((part) => part !== card.cardType);
-    return [card.cardType, ...filteredParts].join(" ") || card.cardType;
+    const filteredParts = typeParts.filter((part) => {
+      const p = part.toLowerCase();
+      return p !== "spell" && p !== "trap" && p !== "spell/trap";
+    });
+
+    return [label, ...filteredParts].join(" ") || label;
   }
 
   return card.type || card.race || "—";
@@ -611,6 +657,18 @@ function StatRow({ label, value }) {
 }
 
 function getCardTypeDisplay(card) {
+  const normalizedCardType = String(card.cardType || "").toLowerCase();
+
+  if (normalizedCardType === "spell / trap" || normalizedCardType === "spell/trap") {
+    return (
+      <div className="flex items-center gap-2">
+        <span>Spell / Trap</span>
+        <img src={CARD_TYPE_ICON_MAP.Spell} alt="Spell icon" className="h-8 w-8 object-contain" loading="lazy" />
+        <img src={CARD_TYPE_ICON_MAP.Trap} alt="Trap icon" className="h-8 w-8 object-contain" loading="lazy" />
+      </div>
+    );
+  }
+
   const iconSrc = ["Spell", "Trap"].includes(card.cardType) ? getCardTypeIcon(card.cardType) : null;
   return <StatValueWithIcon value={card.cardType} iconSrc={iconSrc} iconAlt={`${card.cardType} icon`} />;
 }
