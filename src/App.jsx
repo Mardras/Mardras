@@ -279,6 +279,10 @@ function normalizeCard(card, index, settings = defaultSettings) {
     attribute: card.attribute || "—",
     race: card.race || card.type || "—",
     level: card.level ?? "",
+    rank: card.rank ?? "",
+    linkRating: card.linkRating ?? "",
+    leftScale: card.leftScale ?? "",
+    rightScale: card.rightScale ?? "",
     atk: card.atk ?? "—",
     def: card.def ?? "—",
     scales: card.scales || "",
@@ -612,7 +616,6 @@ function getCardTypeDisplay(card) {
 }
 
 function getAttributeDisplay(card) {
-  if (card.cardType !== "Monster") return card.attribute || "—";
   return (
     <StatValueWithIcon
       value={card.attribute}
@@ -939,6 +942,12 @@ function DatabasePage({ cards, onOpen }) {
 }
 
 
+function formatStatValue(value) {
+  if (value === -2 || value === "-2") return "?";
+  if (value === undefined || value === null || value === "") return "—";
+  return String(value);
+}
+
 function getBattleStatDisplay(card) {
   const typeText = `${card.cardType || ""} ${card.type || ""}`.toLowerCase();
   if (card.cardType !== "Monster") {
@@ -947,12 +956,12 @@ function getBattleStatDisplay(card) {
   if (typeText.includes("link")) {
     return {
       label: "ATK / LINK",
-      value: `${card.atk ?? "—"} / ${card.linkRating ?? "—"}`,
+      value: `${formatStatValue(card.atk)} / ${formatStatValue(card.linkRating)}`,
     };
   }
   return {
     label: "ATK / DEF",
-    value: `${card.atk ?? "—"} / ${card.def ?? "—"}`,
+    value: `${formatStatValue(card.atk)} / ${formatStatValue(card.def)}`,
   };
 }
 
@@ -1005,7 +1014,7 @@ function CardDetail({ card, cards, onBack, onOpen }) {
             <div className={`overflow-hidden rounded-xl shadow-sm ${palette.panel}`}>
               <StatRow label="Card ID" value={card.id} />
               <StatRow label="Card type" value={getCardTypeDisplay(card)} />
-              <StatRow label="Attribute" value={getAttributeDisplay(card)} />
+              {card.cardType === "Monster" ? <StatRow label="Attribute" value={getAttributeDisplay(card)} /> : null}
               <StatRow label="Types" value={<TypeLineWithIcons card={card} />} />
               {card.level ? <StatRow label={getLevelLabel(card)} value={<LevelValue card={card} />} /> : null}
               {card.scales ? <StatRow label="Pendulum Scale" value={<PendulumScaleValue value={card.scales} />} /> : null}
