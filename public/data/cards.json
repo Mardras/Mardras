@@ -3,7 +3,7 @@
     "id": "60060001",
     "name": "L.S. Xeilon's Awakening",
     "archetype": "L.S.",
-    "cardType": "Spell",
+    "cardType": "Spell / Trap",
     "attribute": "0",
     "race": "0",
     "level": "",
@@ -22,7 +22,7 @@
     "category": 270354,
     "leftScale": "",
     "rightScale": "",
-    "type": "Spell & Trap",
+    "type": "Spell / Trap",
     "property": "Field"
   },
   {
