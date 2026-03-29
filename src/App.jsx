@@ -333,7 +333,7 @@ const defaultSettings = {
       id: "ls-pack-main",
       title: "L.S. Pack for EDOPro",
       description: "Main custom pack download for the L.S. cards.",
-      url: "https://mega.nz/your-pack-link-here",
+      url: "https://mega.nz/file/GpJSgKpC#_mbTXl1_4vnHXWp8jxRPnpka99O6N-bHmNN11bdKypg",
     },
   ],
 };
