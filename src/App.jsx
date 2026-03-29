@@ -153,17 +153,51 @@ function getLevelLabel(card) {
   return "Level";
 }
 
-function getSpellTrapProperties(card) {
-  const cardTypeText = String(card.cardType || "").trim();
-  const normalizedCardType = cardTypeText.toLowerCase();
+function isHybridSpellTrap(card) {
+  const cardType = String(card.cardType || "").trim().toLowerCase();
+  const rawType = String(card.type || "").trim().toLowerCase();
 
-  if (
-    normalizedCardType !== "spell" &&
-    normalizedCardType !== "trap" &&
-    normalizedCardType !== "spell / trap" &&
-    normalizedCardType !== "spell/trap"
-  ) {
+  return (
+    cardType === "spell / trap" ||
+    cardType === "spell/trap" ||
+    rawType === "spell & trap" ||
+    rawType === "spell and trap" ||
+    rawType === "spell / trap" ||
+    rawType === "spell/trap"
+  );
+}
+
+function getSpellTrapBaseTypes(card) {
+  if (isHybridSpellTrap(card)) return ["Spell", "Trap"];
+
+  const cardType = String(card.cardType || "").trim().toLowerCase();
+  if (cardType === "spell") return ["Spell"];
+  if (cardType === "trap") return ["Trap"];
+  return [];
+}
+
+function normalizeSpellTrapProperty(part) {
+  const p = String(part || "").trim().toLowerCase();
+  if (!p) return "";
+  if (p === "quick-play" || p === "quickplay") return "Quick-Play";
+  if (p === "equip" || p === "equipment") return "Equip";
+  if (p === "continuous") return "Continuous";
+  if (p === "ritual") return "Ritual";
+  if (p === "field") return "Field";
+  if (p === "counter") return "Counter";
+  if (p === "normal") return "Normal";
+  return String(part).trim();
+}
+
+function getSpellTrapProperties(card) {
+  const baseTypes = getSpellTrapBaseTypes(card);
+  if (!baseTypes.length) {
     return [];
+  }
+
+  const rawProperty = String(card.property || "").trim();
+  if (rawProperty) {
+    return [normalizeSpellTrapProperty(rawProperty) || "Normal"];
   }
 
   const rawType = String(card.type || "").trim();
@@ -177,19 +211,18 @@ function getSpellTrapProperties(card) {
   const filtered = parts
     .filter((part) => {
       const p = part.toLowerCase();
-      return p !== "spell" && p !== "trap" && p !== "spell/trap";
+      return (
+        p !== "spell" &&
+        p !== "trap" &&
+        p !== "spell/trap" &&
+        p !== "spell" &&
+        p !== "&" &&
+        p !== "/" &&
+        p !== "and"
+      );
     })
-    .map((part) => {
-      const p = part.toLowerCase();
-      if (p === "quick-play" || p === "quickplay") return "Quick-Play";
-      if (p === "equip" || p === "equipment") return "Equip";
-      if (p === "continuous") return "Continuous";
-      if (p === "ritual") return "Ritual";
-      if (p === "field") return "Field";
-      if (p === "counter") return "Counter";
-      if (p === "normal") return "Normal";
-      return part;
-    });
+    .map((part) => normalizeSpellTrapProperty(part))
+    .filter(Boolean);
 
   const unique = [];
   const seen = new Set();
@@ -205,9 +238,9 @@ function getSpellTrapProperties(card) {
 }
 
 function TypeLineWithIcons({ card }) {
-  const normalizedCardType = String(card.cardType || "").toLowerCase();
+  const baseTypes = getSpellTrapBaseTypes(card);
 
-  if (["spell", "trap", "spell / trap", "spell/trap"].includes(normalizedCardType)) {
+  if (baseTypes.length) {
     const properties = getSpellTrapProperties(card);
 
     return (
@@ -215,7 +248,7 @@ function TypeLineWithIcons({ card }) {
         {properties.map((part, index) => {
           const iconSrc = getPropertyIcon(part);
           return (
-            <React.Fragment key={`${part}-${index}`}>
+            <span key={`${part}-${index}`} className="inline-flex items-center gap-1">
               <span>{part}</span>
               {iconSrc ? (
                 <img
@@ -225,7 +258,7 @@ function TypeLineWithIcons({ card }) {
                   loading="lazy"
                 />
               ) : null}
-            </React.Fragment>
+            </span>
           );
         })}
       </div>
@@ -322,6 +355,7 @@ function normalizeCard(card, index, settings = defaultSettings) {
     atk: card.atk ?? "—",
     def: card.def ?? "—",
     scales: card.scales || "",
+    property: card.property || "",
     cardType: card.cardType || "Monster",
     image:
       card.image ||
@@ -359,24 +393,11 @@ function getDisplayTypes(card) {
     return uniqueParts.join(" ") || card.race || card.type || "—";
   }
 
-  if (
-    card.cardType === "Spell" ||
-    card.cardType === "Trap" ||
-    card.cardType === "Spell / Trap" ||
-    card.cardType === "Spell/Trap"
-  ) {
-    const label = card.cardType === "Spell/Trap" ? "Spell / Trap" : card.cardType;
-    const typeParts = String(card.type || "")
-      .split(/\s+/)
-      .map((part) => part.trim())
-      .filter(Boolean);
-
-    const filteredParts = typeParts.filter((part) => {
-      const p = part.toLowerCase();
-      return p !== "spell" && p !== "trap" && p !== "spell/trap";
-    });
-
-    return [label, ...filteredParts].join(" ") || label;
+  if (getSpellTrapBaseTypes(card).length) {
+    const baseTypes = getSpellTrapBaseTypes(card);
+    const label = baseTypes.join(" / ");
+    const properties = getSpellTrapProperties(card);
+    return properties.length ? [label, ...properties].join(" ") : label;
   }
 
   return card.type || card.race || "—";
@@ -657,16 +678,28 @@ function StatRow({ label, value }) {
 }
 
 function getCardTypeDisplay(card) {
-  const normalizedCardType = String(card.cardType || "").toLowerCase();
+  const baseTypes = getSpellTrapBaseTypes(card);
 
-  if (normalizedCardType === "spell / trap" || normalizedCardType === "spell/trap") {
+  if (baseTypes.length === 2) {
     return (
-      <div className="flex items-center gap-2">
-        <span>Spell / Trap</span>
-        <img src={CARD_TYPE_ICON_MAP.Spell} alt="Spell icon" className="h-8 w-8 object-contain" loading="lazy" />
-        <img src={CARD_TYPE_ICON_MAP.Trap} alt="Trap icon" className="h-8 w-8 object-contain" loading="lazy" />
+      <div className="flex flex-wrap items-center gap-2">
+        {baseTypes.map((part, index) => (
+          <React.Fragment key={`${part}-${index}`}>
+            {index > 0 ? <span>/</span> : null}
+            <span className="inline-flex items-center gap-2">
+              <span>{part}</span>
+              <img src={getCardTypeIcon(part)} alt={`${part} icon`} className="h-8 w-8 object-contain" loading="lazy" />
+            </span>
+          </React.Fragment>
+        ))}
       </div>
     );
+  }
+
+  if (baseTypes.length === 1) {
+    const label = baseTypes[0];
+    const iconSrc = getCardTypeIcon(label);
+    return <StatValueWithIcon value={label} iconSrc={iconSrc} iconAlt={`${label} icon`} />;
   }
 
   const iconSrc = ["Spell", "Trap"].includes(card.cardType) ? getCardTypeIcon(card.cardType) : null;
