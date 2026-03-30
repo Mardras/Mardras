@@ -1,0 +1,62 @@
+[
+  {
+    "id": "mardras-absalus",
+    "name": "Mardras Absalus",
+    "title": "",
+    "image": "/characters/mardras-absalus.png",
+    "summary": "Primary story character associated with many L.S. cards.",
+    "biography": "Add the full biography/story for Mardras Absalus here.",
+    "affiliation": "L.S.",
+    "aliases": [
+      "Mardras"
+    ],
+    "firstAppearance": "",
+    "tags": [
+      "protagonist",
+      "L.S."
+    ],
+    "signatureCards": [
+      "60060001",
+      "60060024",
+      "60060041"
+    ],
+    "decks": [
+      {
+        "id": "mardras-absalus-ls-main",
+        "name": "L.S. Main Deck",
+        "era": "Main Story",
+        "description": "Main L.S. deck used by Mardras Absalus.",
+        "main": [],
+        "extra": [],
+        "side": []
+      }
+    ]
+  },
+  {
+    "id": "commander-damhir-veles",
+    "name": "Commander Damhir Veles",
+    "title": "Commander",
+    "image": "/characters/commander-damhir-veles.png",
+    "summary": "Story character who used a custom DARK Beast Deck and a few L.S. monsters.",
+    "biography": "Add the full biography/story for Commander Damhir Veles here.",
+    "affiliation": "",
+    "aliases": [],
+    "firstAppearance": "",
+    "tags": [
+      "commander",
+      "dark beast"
+    ],
+    "signatureCards": [],
+    "decks": [
+      {
+        "id": "commander-damhir-veles-dark-beast",
+        "name": "DARK Beast Deck",
+        "era": "",
+        "description": "Primary DARK Beast deck used by Commander Damhir Veles.",
+        "main": [],
+        "extra": [],
+        "side": []
+      }
+    ]
+  }
+]
