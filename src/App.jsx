@@ -995,12 +995,12 @@ function DatabasePage({ cards, onOpen }) {
         </div>
 
         <div className="space-y-2">
-          <div className="text-sm font-semibold text-slate-700">Archetype &gt;</div>
+          <div className="text-sm font-semibold text-slate-700">Archetype</div>
           <select value={archetype} onChange={(e) => setArchetype(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none">{archetypes.map((item) => <option key={item}>{item}</option>)}</select>
         </div>
 
         <div className="space-y-2">
-          <div className="text-sm font-semibold text-slate-700">Card Type &gt;</div>
+          <div className="text-sm font-semibold text-slate-700">Card Type</div>
           <select value={cardType} onChange={(e) => setCardType(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none">{cardTypes.map((item) => <option key={item}>{item}</option>)}</select>
         </div>
 
@@ -1010,17 +1010,17 @@ function DatabasePage({ cards, onOpen }) {
         </div>
 
         <div className="space-y-2">
-          <div className="text-sm font-semibold text-slate-700">Author &gt;</div>
+          <div className="text-sm font-semibold text-slate-700">Author</div>
           <select value={authorFilter} onChange={(e) => setAuthorFilter(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none">{authors.map((item) => <option key={item}>{item}</option>)}</select>
         </div>
 
         <div className="space-y-2">
-          <div className="text-sm font-semibold text-slate-700">Banlist Status &gt;</div>
+          <div className="text-sm font-semibold text-slate-700">Banlist Status</div>
           <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none">{statuses.map((item) => <option key={item}>{item}</option>)}</select>
         </div>
 
         <div className="space-y-2">
-          <div className="text-sm font-semibold text-slate-700">Search by ID</div>
+          <div className="text-sm font-semibold text-slate-700">Search by ID or Name</div>
           <select value={sortMode} onChange={(e) => setSortMode(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none">
             <option value="id-asc">ID ↑</option>
             <option value="id-desc">ID ↓</option>
@@ -1099,6 +1099,33 @@ function CardDetail({ card, cards, onBack, onOpen }) {
   const next = index < cards.length - 1 ? cards[index + 1] : null;
   const sameArchetype = cards.filter((c) => c.archetype === card.archetype);
   const palette = getCardPalette(card);
+
+  useEffect(() => {
+    function handleKeyDown(event) {
+      const target = event.target;
+      const tagName = target?.tagName?.toLowerCase?.() || "";
+      const isTypingTarget =
+        tagName === "input" ||
+        tagName === "textarea" ||
+        tagName === "select" ||
+        target?.isContentEditable;
+
+      if (isTypingTarget) return;
+
+      if (event.key === "ArrowLeft" && prev) {
+        event.preventDefault();
+        onOpen(prev);
+      }
+
+      if (event.key === "ArrowRight" && next) {
+        event.preventDefault();
+        onOpen(next);
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [prev, next, onOpen]);
 
   return (
     <div className="space-y-6">
