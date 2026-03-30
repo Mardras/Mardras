@@ -167,6 +167,11 @@ function isHybridSpellTrap(card) {
   );
 }
 
+function getFilterCardType(card) {
+  if (isHybridSpellTrap(card)) return "Spell / Trap";
+  return String(card.cardType || "").trim() || "—";
+}
+
 function getSpellTrapBaseTypes(card) {
   if (isHybridSpellTrap(card)) return ["Spell", "Trap"];
 
@@ -942,7 +947,7 @@ function DatabasePage({ cards, onOpen }) {
   const [statusFilter, setStatusFilter] = useState("All");
 
   const archetypes = ["All", ...new Set(cards.map((c) => c.archetype).filter(Boolean))];
-  const cardTypes = ["All", ...new Set(cards.map((c) => c.cardType).filter(Boolean))];
+  const cardTypes = ["All", ...new Set(cards.map((c) => getFilterCardType(c)).filter(Boolean))];
   const attributes = ["All", ...new Set(cards.map((c) => c.attribute).filter(Boolean))];
   const authors = ["All", ...new Set(cards.map((c) => c.author).filter(Boolean))];
   const statuses = ["All", ...new Set(cards.map((c) => c.status).filter(Boolean))];
@@ -959,7 +964,7 @@ function DatabasePage({ cards, onOpen }) {
       return (
         matchQuery &&
         (archetype === "All" || card.archetype === archetype) &&
-        (cardType === "All" || card.cardType === cardType) &&
+        (cardType === "All" || getFilterCardType(card) === cardType) &&
         (attributeFilter === "All" || card.attribute === attributeFilter) &&
         (authorFilter === "All" || card.author === authorFilter) &&
         (statusFilter === "All" || card.status === statusFilter)
