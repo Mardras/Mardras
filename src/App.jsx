@@ -172,6 +172,61 @@ function getFilterCardType(card) {
   return String(card.cardType || "").trim() || "—";
 }
 
+function getFilterTypes(card) {
+  const cardType = String(card?.cardType || "").trim().toLowerCase();
+  const rawType = String(card?.type || "").trim();
+  if (!rawType) return "All Types";
+
+  if (cardType === "monster") {
+    const normalized = rawType
+      .replace(/^Monster\s*/i, "")
+      .replace(/Special\s+Summon/gi, "Special Summon")
+      .trim();
+    return normalized || "Effect";
+  }
+
+  const properties = getSpellTrapProperties(card);
+  return properties.length ? properties.join(" | ") : "Normal";
+}
+
+function buildYdkText(deck) {
+  const main = Array.isArray(deck?.main) ? deck.main.map(String) : [];
+  const extra = Array.isArray(deck?.extra) ? deck.extra.map(String) : [];
+  const side = Array.isArray(deck?.side) ? deck.side.map(String) : [];
+
+  return [
+    "#created by Mardras-db.com",
+    "#main",
+    ...main,
+    "#extra",
+    ...extra,
+    "!side",
+    ...side,
+    "",
+  ].join("\n");
+}
+
+function downloadYdk(deck, characterName = "") {
+  const safeDeckName = String(deck?.name || "deck")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "deck";
+  const safeCharacterName = String(characterName || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  const filename = `${safeCharacterName ? `${safeCharacterName}-` : ""}${safeDeckName}.ydk`;
+  const blob = new Blob([buildYdkText(deck)], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 function getSpellTrapBaseTypes(card) {
   if (isHybridSpellTrap(card)) return ["Spell", "Trap"];
 
@@ -1006,9 +1061,11 @@ function DatabasePage({ cards, onOpen }) {
   const [attributeFilter, setAttributeFilter] = useState("All");
   const [authorFilter, setAuthorFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [typesFilter, setTypesFilter] = useState("All");
 
   const archetypes = ["All", ...new Set(cards.map((c) => c.archetype).filter(Boolean))];
   const cardTypes = ["All", ...new Set(cards.map((c) => getFilterCardType(c)).filter(Boolean))];
+  const types = ["All", ...new Set(cards.map((c) => getFilterTypes(c)).filter(Boolean))];
   const attributes = ["All", ...new Set(cards.map((c) => c.attribute).filter(Boolean))];
   const authors = ["All", ...new Set(cards.map((c) => c.author).filter(Boolean))];
   const statuses = ["All", ...new Set(cards.map((c) => c.status).filter(Boolean))];
@@ -1026,6 +1083,7 @@ function DatabasePage({ cards, onOpen }) {
         matchQuery &&
         (archetype === "All" || card.archetype === archetype) &&
         (cardType === "All" || getFilterCardType(card) === cardType) &&
+        (typesFilter === "All" || getFilterTypes(card) === typesFilter) &&
         (attributeFilter === "All" || card.attribute === attributeFilter) &&
         (authorFilter === "All" || card.author === authorFilter) &&
         (statusFilter === "All" || card.status === statusFilter)
@@ -1038,11 +1096,11 @@ function DatabasePage({ cards, onOpen }) {
       if (sortMode === "id-desc") return Number(b.id) - Number(a.id);
       return Number(a.id) - Number(b.id);
     });
-  }, [cards, query, archetype, cardType, attributeFilter, authorFilter, statusFilter, sortMode]);
+  }, [cards, query, archetype, cardType, typesFilter, attributeFilter, authorFilter, statusFilter, sortMode]);
 
   useEffect(() => {
     setPageIndex(1);
-  }, [query, archetype, cardType, attributeFilter, authorFilter, statusFilter, sortMode, pageSize]);
+  }, [query, archetype, cardType, typesFilter, attributeFilter, authorFilter, statusFilter, sortMode, pageSize]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const visible = filtered.slice((pageIndex - 1) * pageSize, pageIndex * pageSize);
@@ -1063,6 +1121,11 @@ function DatabasePage({ cards, onOpen }) {
         <div className="space-y-2">
           <div className="text-sm font-semibold text-slate-700">Card Type</div>
           <select value={cardType} onChange={(e) => setCardType(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none">{cardTypes.map((item) => <option key={item}>{item}</option>)}</select>
+        </div>
+
+        <div className="space-y-2">
+          <div className="text-sm font-semibold text-slate-700">Types</div>
+          <select value={typesFilter} onChange={(e) => setTypesFilter(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none">{types.map((item) => <option key={item}>{item}</option>)}</select>
         </div>
 
         <div className="space-y-2">
@@ -1466,6 +1529,15 @@ function CharacterDetailPage({ character, cards, onOpenCard, onOpenCharacterList
                 <CharacterDeckSection title="Main Deck" ids={activeDeck.main} allCards={cards} onOpen={onOpenCard} onHover={setHoveredCard} onLeave={() => setHoveredCard(null)} />
                 <CharacterDeckSection title="Extra Deck" ids={activeDeck.extra} allCards={cards} onOpen={onOpenCard} onHover={setHoveredCard} onLeave={() => setHoveredCard(null)} />
                 <CharacterDeckSection title="Side Deck" ids={activeDeck.side} allCards={cards} onOpen={onOpenCard} onHover={setHoveredCard} onLeave={() => setHoveredCard(null)} />
+
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => downloadYdk(activeDeck, character?.name)}
+                    className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+                  >
+                    <Download className="h-4 w-4" /> Download .ydk
+                  </button>
+                </div>
               </div>
             ) : (
               <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-sm text-slate-500">This character does not have any decks yet.</div>
