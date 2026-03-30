@@ -373,6 +373,32 @@ function normalizeCard(card, index, settings = defaultSettings) {
   };
 }
 
+function normalizeCharacter(character, index) {
+  const decks = Array.isArray(character?.decks) ? character.decks : [];
+  return {
+    id: String(character?.id || `character-${index + 1}`),
+    name: character?.name || `Untitled Character ${index + 1}`,
+    title: character?.title || "",
+    image: character?.image || "https://placehold.co/600x800/e5e7eb/475569?text=Character",
+    summary: character?.summary || "",
+    biography: character?.biography || "",
+    affiliation: character?.affiliation || "",
+    aliases: Array.isArray(character?.aliases) ? character.aliases : [],
+    firstAppearance: character?.firstAppearance || "",
+    tags: Array.isArray(character?.tags) ? character.tags : [],
+    signatureCards: Array.isArray(character?.signatureCards) ? character.signatureCards.map(String) : [],
+    decks: decks.map((deck, deckIndex) => ({
+      id: String(deck?.id || `${character?.id || `character-${index + 1}`}-deck-${deckIndex + 1}`),
+      name: deck?.name || `Deck ${deckIndex + 1}`,
+      era: deck?.era || "",
+      description: deck?.description || "",
+      main: Array.isArray(deck?.main) ? deck.main.map(String) : [],
+      extra: Array.isArray(deck?.extra) ? deck.extra.map(String) : [],
+      side: Array.isArray(deck?.side) ? deck.side.map(String) : [],
+    })),
+  };
+}
+
 
 function getDisplayTypes(card) {
   if (card.cardType === "Monster") {
@@ -653,24 +679,30 @@ function getCardPalette(card) {
   };
 }
 
-function parseRoute(cards) {
+function parseRoute(cards, characters = []) {
   const path = window.location.pathname || "/";
   const parts = path.split("/").filter(Boolean);
 
   if (parts[0] === "card" && parts[1]) {
     const found = cards.find((card) => String(card.id) === String(parts[1]));
-    if (found) return { page: "card", selectedCard: found, archetypeFilter: null };
+    if (found) return { page: "card", selectedCard: found, archetypeFilter: null, selectedCharacter: null };
   }
+  if (parts[0] === "character" && parts[1]) {
+    const found = characters.find((character) => String(character.id) === decodeURIComponent(parts[1]));
+    if (found) return { page: "character", selectedCard: null, archetypeFilter: null, selectedCharacter: found };
+  }
+  if (parts[0] === "characters") return { page: "characters", selectedCard: null, archetypeFilter: null, selectedCharacter: null };
   if (parts[0] === "archetype" && parts[1]) {
     return {
       page: "archetype",
       selectedCard: null,
       archetypeFilter: decodeURIComponent(parts[1]),
+      selectedCharacter: null,
     };
   }
-  if (parts[0] === "downloads") return { page: "downloads", selectedCard: null, archetypeFilter: null };
-  if (parts[0] === "database") return { page: "database", selectedCard: null, archetypeFilter: null };
-  return { page: "home", selectedCard: null, archetypeFilter: null };
+  if (parts[0] === "downloads") return { page: "downloads", selectedCard: null, archetypeFilter: null, selectedCharacter: null };
+  if (parts[0] === "database") return { page: "database", selectedCard: null, archetypeFilter: null, selectedCharacter: null };
+  return { page: "home", selectedCard: null, archetypeFilter: null, selectedCharacter: null };
 }
 
 function StatRow({ label, value }) {
@@ -772,7 +804,7 @@ function ImportPanel({ cards, onImport, onReset, settings, onSaveSettings, onLoa
 
   useEffect(() => {
     setText(JSON.stringify(cards, null, 2));
-  }, [cards]);
+  }, [cards, characters]);
 
   useEffect(() => {
     setImageBaseUrl(settings.imageBaseUrl || "");
@@ -1192,6 +1224,230 @@ function CardDetail({ card, cards, onBack, onOpen }) {
   );
 }
 
+function CharacterDeckCard({ card, onOpen, onHover, onLeave }) {
+  return (
+    <button
+      onClick={() => onOpen(card)}
+      onMouseEnter={() => onHover(card)}
+      onFocus={() => onHover(card)}
+      onMouseLeave={onLeave}
+      onBlur={onLeave}
+      className="group relative overflow-hidden rounded-lg border border-slate-400/70 bg-slate-950/5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+      title={card.name}
+    >
+      <img src={card.image} alt={card.name} loading="lazy" className="aspect-[2/3] w-full object-cover" />
+      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent px-1.5 py-1 text-[10px] font-medium text-white opacity-0 transition group-hover:opacity-100">
+        {card.name}
+      </div>
+    </button>
+  );
+}
+
+function CharacterDeckSection({ title, ids, allCards, onOpen, onHover, onLeave }) {
+  const deckCards = ids.map((id) => allCards.find((card) => String(card.id) === String(id))).filter(Boolean);
+  if (!ids.length) return null;
+
+  return (
+    <section className="space-y-3 rounded-[24px] border border-slate-300 bg-white p-4 shadow-sm">
+      <div className="flex items-center justify-between gap-3 border-b border-slate-200 pb-2">
+        <h3 className="text-xl font-bold text-slate-900">{title}</h3>
+        <div className="text-sm font-medium text-slate-500">{deckCards.length}</div>
+      </div>
+      {deckCards.length ? (
+        <div className="grid grid-cols-4 gap-2 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10">
+          {deckCards.map((card) => (
+            <CharacterDeckCard
+              key={`${title}-${card.id}`}
+              card={card}
+              onOpen={onOpen}
+              onHover={onHover}
+              onLeave={onLeave}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-sm text-slate-500">
+          These card IDs are not present in the current cards.json yet.
+        </div>
+      )}
+    </section>
+  );
+}
+
+function CharacterHoverPreview({ card }) {
+  if (!card) {
+    return (
+      <div className="rounded-[24px] border border-slate-300 bg-white p-4 shadow-sm">
+        <div className="aspect-[2/3] overflow-hidden rounded-2xl border border-slate-200 bg-slate-50" />
+        <div className="mt-4 space-y-2">
+          <div className="text-base font-semibold text-slate-900">Hover a card</div>
+          <div className="text-sm leading-6 text-slate-600">Move your cursor over a decklist card to preview it here.</div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-[24px] border border-slate-300 bg-white p-4 shadow-sm">
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
+        <img src={card.image} alt={card.name} loading="lazy" className="w-full object-cover" />
+      </div>
+      <div className="mt-4 space-y-2">
+        <div className="text-xl font-bold text-slate-900">{card.name}</div>
+        <div className="flex flex-wrap gap-2 text-xs">
+          <span className="rounded-full bg-slate-100 px-2.5 py-1 font-medium text-slate-600">{card.archetype || "—"}</span>
+          <span className="rounded-full bg-slate-100 px-2.5 py-1 font-medium text-slate-600">{getFilterCardType(card)}</span>
+          <span className="rounded-full bg-slate-100 px-2.5 py-1 font-medium text-slate-600">ID: {card.id}</span>
+        </div>
+        <div className="text-sm leading-6 text-slate-700 line-clamp-10">{card.lore || "No effect text provided."}</div>
+      </div>
+    </div>
+  );
+}
+
+function CharactersPage({ characters, onOpen }) {
+  return (
+    <div className="space-y-6">
+      <section className="rounded-[24px] border border-slate-300 bg-white p-5 shadow-sm">
+        <div className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Story Archive</div>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">Characters</h1>
+        <p className="mt-2 text-base leading-7 text-slate-700">Browse the characters from your books and manga, read their story summaries, and open the decks they used throughout the plot.</p>
+      </section>
+
+      {!characters.length ? (
+        <section className="rounded-[24px] border border-dashed border-slate-300 bg-white p-8 text-center shadow-sm">
+          <div className="text-lg font-semibold text-slate-900">No characters found</div>
+          <div className="mt-2 text-sm text-slate-600">Add <code>/public/data/characters.json</code> to your project to populate this page.</div>
+        </section>
+      ) : (
+        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {characters.map((character) => (
+            <button
+              key={character.id}
+              onClick={() => onOpen(character)}
+              className="overflow-hidden rounded-[24px] border border-slate-300 bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
+            >
+              <div className="aspect-[16/9] overflow-hidden bg-slate-100">
+                <img src={character.image} alt={character.name} loading="lazy" className="h-full w-full object-cover" />
+              </div>
+              <div className="space-y-3 p-5">
+                <div>
+                  <div className="text-2xl font-bold text-slate-900">{character.name}</div>
+                  {character.title ? <div className="text-sm font-medium text-slate-500">{character.title}</div> : null}
+                </div>
+                <div className="text-sm leading-6 text-slate-700">{character.summary || "No summary yet."}</div>
+                <div className="flex flex-wrap gap-2 text-xs">
+                  {character.affiliation ? <span className="rounded-full bg-slate-100 px-2.5 py-1 font-medium text-slate-600">{character.affiliation}</span> : null}
+                  <span className="rounded-full bg-slate-100 px-2.5 py-1 font-medium text-slate-600">{character.decks.length} deck{character.decks.length === 1 ? "" : "s"}</span>
+                </div>
+              </div>
+            </button>
+          ))}
+        </section>
+      )}
+    </div>
+  );
+}
+
+function CharacterDetailPage({ character, cards, onOpenCard, onOpenCharacterList }) {
+  const [activeDeckId, setActiveDeckId] = useState(character?.decks?.[0]?.id || "");
+  const [hoveredCard, setHoveredCard] = useState(null);
+
+  useEffect(() => {
+    setActiveDeckId(character?.decks?.[0]?.id || "");
+    setHoveredCard(null);
+  }, [character?.id]);
+
+  const activeDeck = character?.decks?.find((deck) => deck.id === activeDeckId) || character?.decks?.[0] || null;
+  const signatureCards = (character?.signatureCards || []).map((id) => cards.find((card) => String(card.id) === String(id))).filter(Boolean);
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-wrap gap-2">
+        <button onClick={onOpenCharacterList} className="rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50">
+          Back to characters
+        </button>
+      </div>
+
+      <section className="grid gap-6 xl:grid-cols-[320px_1fr]">
+        <div className="space-y-6">
+          <div className="overflow-hidden rounded-[24px] border border-slate-300 bg-white shadow-sm">
+            <div className="aspect-[3/4] bg-slate-100">
+              <img src={character.image} alt={character.name} loading="lazy" className="h-full w-full object-cover" />
+            </div>
+            <div className="space-y-3 p-5">
+              <div>
+                <div className="text-3xl font-bold tracking-tight text-slate-900">{character.name}</div>
+                {character.title ? <div className="text-sm font-medium text-slate-500">{character.title}</div> : null}
+              </div>
+              {character.summary ? <div className="text-sm leading-6 text-slate-700">{character.summary}</div> : null}
+              <div className="flex flex-wrap gap-2 text-xs">
+                {character.affiliation ? <span className="rounded-full bg-slate-100 px-2.5 py-1 font-medium text-slate-600">{character.affiliation}</span> : null}
+                {character.firstAppearance ? <span className="rounded-full bg-slate-100 px-2.5 py-1 font-medium text-slate-600">{character.firstAppearance}</span> : null}
+                {(character.tags || []).map((tag) => <span key={tag} className="rounded-full bg-slate-100 px-2.5 py-1 font-medium text-slate-600">{tag}</span>)}
+              </div>
+            </div>
+          </div>
+
+          <CharacterHoverPreview card={hoveredCard} />
+        </div>
+
+        <div className="space-y-6">
+          <section className="rounded-[24px] border border-slate-300 bg-white p-5 shadow-sm">
+            <h2 className="text-2xl font-bold text-slate-900">Biography / Story</h2>
+            <div className="mt-4 whitespace-pre-wrap text-sm leading-7 text-slate-700">{character.biography || "Add the biography/story for this character in characters.json."}</div>
+          </section>
+
+          {signatureCards.length ? (
+            <section className="rounded-[24px] border border-slate-300 bg-white p-5 shadow-sm">
+              <h2 className="text-2xl font-bold text-slate-900">Signature Cards</h2>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                {signatureCards.map((card) => <FeaturedCard key={`signature-${card.id}`} card={card} onOpen={onOpenCard} />)}
+              </div>
+            </section>
+          ) : null}
+
+          <section className="space-y-4 rounded-[24px] border border-slate-300 bg-white p-5 shadow-sm">
+            <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-slate-900">Decklists</h2>
+                <div className="text-sm text-slate-600">Open any deck used by this character during the story.</div>
+              </div>
+              {character.decks.length ? (
+                <select
+                  value={activeDeck?.id || ""}
+                  onChange={(e) => setActiveDeckId(e.target.value)}
+                  className="rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm outline-none"
+                >
+                  {character.decks.map((deck) => (
+                    <option key={deck.id} value={deck.id}>{deck.name}{deck.era ? ` — ${deck.era}` : ""}</option>
+                  ))}
+                </select>
+              ) : null}
+            </div>
+
+            {activeDeck ? (
+              <div className="space-y-4">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="text-xl font-semibold text-slate-900">{activeDeck.name}</div>
+                  {activeDeck.era ? <div className="mt-1 text-sm font-medium text-slate-500">{activeDeck.era}</div> : null}
+                  {activeDeck.description ? <div className="mt-2 text-sm leading-6 text-slate-700">{activeDeck.description}</div> : null}
+                </div>
+
+                <CharacterDeckSection title="Main Deck" ids={activeDeck.main} allCards={cards} onOpen={onOpenCard} onHover={setHoveredCard} onLeave={() => setHoveredCard(null)} />
+                <CharacterDeckSection title="Extra Deck" ids={activeDeck.extra} allCards={cards} onOpen={onOpenCard} onHover={setHoveredCard} onLeave={() => setHoveredCard(null)} />
+                <CharacterDeckSection title="Side Deck" ids={activeDeck.side} allCards={cards} onOpen={onOpenCard} onHover={setHoveredCard} onLeave={() => setHoveredCard(null)} />
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-sm text-slate-500">This character does not have any decks yet.</div>
+            )}
+          </section>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 function DownloadsPage({ settings }) {
   return (
     <div className="space-y-6">
@@ -1272,10 +1528,13 @@ export default function App() {
     }
   });
 
-  const initialRoute = useMemo(() => parseRoute(cards), [cards]);
+  const [characters, setCharacters] = useState([]);
+
+  const initialRoute = useMemo(() => parseRoute(cards, characters), [cards, characters]);
   const [page, setPage] = useState(initialRoute.page);
   const [selectedCard, setSelectedCard] = useState(initialRoute.selectedCard);
   const [archetypeFilter, setArchetypeFilter] = useState(initialRoute.archetypeFilter);
+  const [selectedCharacter, setSelectedCharacter] = useState(initialRoute.selectedCharacter);
 
   useEffect(() => {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
@@ -1287,10 +1546,11 @@ export default function App() {
 
   useEffect(() => {
     const syncFromHistory = () => {
-      const route = parseRoute(cards);
+      const route = parseRoute(cards, characters);
       setPage(route.page);
       setSelectedCard(route.selectedCard);
       setArchetypeFilter(route.archetypeFilter);
+      setSelectedCharacter(route.selectedCharacter);
     };
     window.addEventListener("popstate", syncFromHistory);
     syncFromHistory();
@@ -1299,11 +1559,33 @@ export default function App() {
 
   function navigate(path) {
     window.history.pushState({}, "", path);
-    const route = parseRoute(cards);
+    const route = parseRoute(cards, characters);
     setPage(route.page);
     setSelectedCard(route.selectedCard);
     setArchetypeFilter(route.archetypeFilter);
+    setSelectedCharacter(route.selectedCharacter);
   }
+
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadCharacters() {
+      try {
+        const response = await fetch("/data/characters.json");
+        if (!response.ok) throw new Error(`Failed to load characters JSON: ${response.status}`);
+        const parsed = await response.json();
+        if (!Array.isArray(parsed)) throw new Error("Characters file is not a JSON array.");
+        if (!cancelled) setCharacters(parsed.map((character, index) => normalizeCharacter(character, index)));
+      } catch (error) {
+        console.warn(error);
+        if (!cancelled) setCharacters([]);
+      }
+    }
+    loadCharacters();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   function goHome() {
     navigate("/");
@@ -1311,6 +1593,10 @@ export default function App() {
 
   function goDatabase() {
     navigate("/database");
+  }
+
+  function goCharacters() {
+    navigate("/characters");
   }
 
   function goDownloads() {
@@ -1323,6 +1609,10 @@ export default function App() {
 
   function openArchetype(archetype) {
     navigate(`/archetype/${encodeURIComponent(archetype)}`);
+  }
+
+  function openCharacter(character) {
+    navigate(`/character/${encodeURIComponent(character.id)}`);
   }
 
   function handleImport(newCards) {
@@ -1376,6 +1666,9 @@ export default function App() {
               <button onClick={goDatabase} className={`inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-medium transition ${page === "database" || page === "archetype" || page === "card" ? "bg-slate-900 text-white" : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50"}`}>
                 <Database className="h-4 w-4" /> Database
               </button>
+              <button onClick={goCharacters} className={`inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-medium transition ${page === "characters" || page === "character" ? "bg-slate-900 text-white" : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50"}`}>
+                <Sparkles className="h-4 w-4" /> Characters
+              </button>
               <button onClick={goDownloads} className={`inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-medium transition ${page === "downloads" ? "bg-slate-900 text-white" : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50"}`}>
                 <Download className="h-4 w-4" /> Downloads
               </button>
@@ -1397,6 +1690,8 @@ export default function App() {
         )}
 
         {page === "database" && <DatabasePage cards={cards} onOpen={openCard} />}
+        {page === "characters" && <CharactersPage characters={characters} onOpen={openCharacter} />}
+        {page === "character" && selectedCharacter && <CharacterDetailPage character={selectedCharacter} cards={cards} onOpenCard={openCard} onOpenCharacterList={goCharacters} />}
         {page === "archetype" && archetypeFilter && <ArchetypePage cards={cards} archetype={archetypeFilter} onOpen={openCard} onBrowseAll={goDatabase} />}
         {page === "downloads" && <DownloadsPage settings={settings} />}
         {page === "card" && selectedCard && (
