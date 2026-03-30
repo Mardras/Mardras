@@ -373,6 +373,27 @@ function normalizeCard(card, index, settings = defaultSettings) {
   };
 }
 
+
+
+function normalizeOfficialCard(card, index) {
+  const normalized = normalizeCard(
+    {
+      ...card,
+      author: card?.author || "Konami",
+      source: "official",
+      image: card?.image || (card?.id ? `/official-cards/${card.id}.jpg` : ""),
+    },
+    index,
+    defaultSettings
+  );
+  return {
+    ...normalized,
+    source: "official",
+    image: normalized.image || (normalized.id ? `/official-cards/${normalized.id}.jpg` : ""),
+    author: normalized.author || "Konami",
+  };
+}
+
 function normalizeCharacter(character, index) {
   const decks = Array.isArray(character?.decks) ? character.decks : [];
   return {
@@ -679,31 +700,39 @@ function getCardPalette(card) {
   };
 }
 
-function parseRoute(cards, characters = []) {
+
+function parseRoute(cards, characters = [], officialCards = []) {
   const path = window.location.pathname || "/";
   const parts = path.split("/").filter(Boolean);
 
   if (parts[0] === "card" && parts[1]) {
     const found = cards.find((card) => String(card.id) === String(parts[1]));
-    if (found) return { page: "card", selectedCard: found, archetypeFilter: null, selectedCharacter: null };
+    if (found) return { page: "card", selectedCard: found, selectedOfficialCard: null, archetypeFilter: null, selectedCharacter: null };
+  }
+  if (parts[0] === "official-card" && parts[1]) {
+    const found = officialCards.find((card) => String(card.id) === String(parts[1]));
+    if (found) return { page: "official-card", selectedCard: null, selectedOfficialCard: found, archetypeFilter: null, selectedCharacter: null };
   }
   if (parts[0] === "character" && parts[1]) {
     const found = characters.find((character) => String(character.id) === decodeURIComponent(parts[1]));
-    if (found) return { page: "character", selectedCard: null, archetypeFilter: null, selectedCharacter: found };
+    if (found) return { page: "character", selectedCard: null, selectedOfficialCard: null, archetypeFilter: null, selectedCharacter: found };
   }
-  if (parts[0] === "characters") return { page: "characters", selectedCard: null, archetypeFilter: null, selectedCharacter: null };
+  if (parts[0] === "characters") return { page: "characters", selectedCard: null, selectedOfficialCard: null, archetypeFilter: null, selectedCharacter: null };
+  if (parts[0] === "official-database") return { page: "official-database", selectedCard: null, selectedOfficialCard: null, archetypeFilter: null, selectedCharacter: null };
   if (parts[0] === "archetype" && parts[1]) {
     return {
       page: "archetype",
       selectedCard: null,
+      selectedOfficialCard: null,
       archetypeFilter: decodeURIComponent(parts[1]),
       selectedCharacter: null,
     };
   }
-  if (parts[0] === "downloads") return { page: "downloads", selectedCard: null, archetypeFilter: null, selectedCharacter: null };
-  if (parts[0] === "database") return { page: "database", selectedCard: null, archetypeFilter: null, selectedCharacter: null };
-  return { page: "home", selectedCard: null, archetypeFilter: null, selectedCharacter: null };
+  if (parts[0] === "downloads") return { page: "downloads", selectedCard: null, selectedOfficialCard: null, archetypeFilter: null, selectedCharacter: null };
+  if (parts[0] === "database") return { page: "database", selectedCard: null, selectedOfficialCard: null, archetypeFilter: null, selectedCharacter: null };
+  return { page: "home", selectedCard: null, selectedOfficialCard: null, archetypeFilter: null, selectedCharacter: null };
 }
+
 
 function StatRow({ label, value }) {
   return (
@@ -1529,10 +1558,12 @@ export default function App() {
   });
 
   const [characters, setCharacters] = useState([]);
+  const [officialCards, setOfficialCards] = useState([]);
 
-  const initialRoute = useMemo(() => parseRoute(cards, characters), [cards, characters]);
+  const initialRoute = useMemo(() => parseRoute(cards, characters, officialCards), [cards, characters, officialCards]);
   const [page, setPage] = useState(initialRoute.page);
   const [selectedCard, setSelectedCard] = useState(initialRoute.selectedCard);
+  const [selectedOfficialCard, setSelectedOfficialCard] = useState(initialRoute.selectedOfficialCard);
   const [archetypeFilter, setArchetypeFilter] = useState(initialRoute.archetypeFilter);
   const [selectedCharacter, setSelectedCharacter] = useState(initialRoute.selectedCharacter);
 
@@ -1546,22 +1577,24 @@ export default function App() {
 
   useEffect(() => {
     const syncFromHistory = () => {
-      const route = parseRoute(cards, characters);
+      const route = parseRoute(cards, characters, officialCards);
       setPage(route.page);
       setSelectedCard(route.selectedCard);
+      setSelectedOfficialCard(route.selectedOfficialCard);
       setArchetypeFilter(route.archetypeFilter);
       setSelectedCharacter(route.selectedCharacter);
     };
     window.addEventListener("popstate", syncFromHistory);
     syncFromHistory();
     return () => window.removeEventListener("popstate", syncFromHistory);
-  }, [cards]);
+  }, [cards, characters, officialCards]);
 
   function navigate(path) {
     window.history.pushState({}, "", path);
-    const route = parseRoute(cards, characters);
+    const route = parseRoute(cards, characters, officialCards);
     setPage(route.page);
     setSelectedCard(route.selectedCard);
+    setSelectedOfficialCard(route.selectedOfficialCard);
     setArchetypeFilter(route.archetypeFilter);
     setSelectedCharacter(route.selectedCharacter);
   }
@@ -1587,12 +1620,38 @@ export default function App() {
     };
   }, []);
 
+
+
+useEffect(() => {
+  let cancelled = false;
+  async function loadOfficialCards() {
+    try {
+      const response = await fetch("/data/official-cards.json");
+      if (!response.ok) throw new Error(`Failed to load official cards JSON: ${response.status}`);
+      const parsed = await response.json();
+      if (!Array.isArray(parsed)) throw new Error("Official cards file is not a JSON array.");
+      if (!cancelled) setOfficialCards(parsed.map((card, index) => normalizeOfficialCard(card, index)));
+    } catch (error) {
+      console.warn(error);
+      if (!cancelled) setOfficialCards([]);
+    }
+  }
+  loadOfficialCards();
+  return () => {
+    cancelled = true;
+  };
+}, []);
+
   function goHome() {
     navigate("/");
   }
 
   function goDatabase() {
     navigate("/database");
+  }
+
+  function goOfficialDatabase() {
+    navigate("/official-database");
   }
 
   function goCharacters() {
@@ -1605,6 +1664,18 @@ export default function App() {
 
   function openCard(card) {
     navigate(`/card/${card.id}`);
+  }
+
+  function openOfficialCard(card) {
+    navigate(`/official-card/${card.id}`);
+  }
+
+  function openAnyCard(card) {
+    if (card?.source === "official") {
+      openOfficialCard(card);
+      return;
+    }
+    openCard(card);
   }
 
   function openArchetype(archetype) {
@@ -1650,6 +1721,8 @@ export default function App() {
     }
   }
 
+  const allCards = useMemo(() => [...cards, ...officialCards], [cards, officialCards]);
+
   return (
     <div className="min-h-screen bg-[#dce5c6] text-slate-900">
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
@@ -1657,14 +1730,17 @@ export default function App() {
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
               <div className="text-2xl font-bold tracking-tight">Mardras-db.com</div>
-              <div className="text-sm text-slate-500">Custom card database for L.S. and other original cards</div>
+              <div className="text-sm text-slate-500">Custom and official card database for L.S., story characters, and OCG/TCG cards</div>
             </div>
             <nav className="flex flex-wrap gap-2">
               <button onClick={goHome} className={`inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-medium transition ${page === "home" ? "bg-slate-900 text-white" : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50"}`}>
                 <Home className="h-4 w-4" /> Home
               </button>
               <button onClick={goDatabase} className={`inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-medium transition ${page === "database" || page === "archetype" || page === "card" ? "bg-slate-900 text-white" : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50"}`}>
-                <Database className="h-4 w-4" /> Database
+                <Database className="h-4 w-4" /> Custom Database
+              </button>
+              <button onClick={goOfficialDatabase} className={`inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-medium transition ${page === "official-database" || page === "official-card" ? "bg-slate-900 text-white" : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50"}`}>
+                <Database className="h-4 w-4" /> Official Database
               </button>
               <button onClick={goCharacters} className={`inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-medium transition ${page === "characters" || page === "character" ? "bg-slate-900 text-white" : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50"}`}>
                 <Sparkles className="h-4 w-4" /> Characters
@@ -1690,8 +1766,9 @@ export default function App() {
         )}
 
         {page === "database" && <DatabasePage cards={cards} onOpen={openCard} />}
+        {page === "official-database" && <DatabasePage cards={officialCards} onOpen={openOfficialCard} />}
         {page === "characters" && <CharactersPage characters={characters} onOpen={openCharacter} />}
-        {page === "character" && selectedCharacter && <CharacterDetailPage character={selectedCharacter} cards={cards} onOpenCard={openCard} onOpenCharacterList={goCharacters} />}
+        {page === "character" && selectedCharacter && <CharacterDetailPage character={selectedCharacter} cards={allCards} onOpenCard={openAnyCard} onOpenCharacterList={goCharacters} />}
         {page === "archetype" && archetypeFilter && <ArchetypePage cards={cards} archetype={archetypeFilter} onOpen={openCard} onBrowseAll={goDatabase} />}
         {page === "downloads" && <DownloadsPage settings={settings} />}
         {page === "card" && selectedCard && (
@@ -1705,6 +1782,16 @@ export default function App() {
               </button>
             </div>
             <CardDetail card={selectedCard} cards={cards} onBack={goDatabase} onOpen={openCard} />
+          </div>
+        )}
+        {page === "official-card" && selectedOfficialCard && (
+          <div className="space-y-4">
+            <div className="flex flex-wrap gap-2">
+              <button onClick={goOfficialDatabase} className="rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50">
+                Back to official database
+              </button>
+            </div>
+            <CardDetail card={selectedOfficialCard} cards={officialCards} onBack={goOfficialDatabase} onOpen={openOfficialCard} />
           </div>
         )}
       </div>
