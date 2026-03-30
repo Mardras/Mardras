@@ -339,6 +339,17 @@ const defaultSettings = {
 };
 
 function normalizeCard(card, index, settings = defaultSettings) {
+  const rawStatus = String(card.status || "").trim();
+  const normalizedStatusMap = {
+    legal: "Unlimited",
+    unlimited: "Unlimited",
+    "semi-limited": "Semi-Limited",
+    semilimited: "Semi-Limited",
+    limited: "Limited",
+    banned: "Banned",
+    forbidden: "Banned",
+  };
+
   return {
     id: String(card.id || `card-${index + 1}`),
     name: card.name || `Untitled Card ${index + 1}`,
@@ -363,7 +374,7 @@ function normalizeCard(card, index, settings = defaultSettings) {
         ? `${settings.imageBaseUrl.replace(/\/$/, "")}/${card.id}.${settings.imageExtension || "jpg"}`
         : "https://placehold.co/280x410/e5e7eb/475569?text=No+Image"),
     lore: card.lore || "No effect text provided.",
-    status: card.status || "Legal",
+    status: normalizedStatusMap[rawStatus.toLowerCase()] || "Unlimited",
     setGroup: card.setGroup || "Unsorted",
   };
 }
@@ -714,6 +725,21 @@ function getAttributeDisplay(card) {
       iconAlt={`${card.attribute} attribute`}
     />
   );
+}
+
+function getStatusBadgeClass(status) {
+  switch (String(status || "").trim().toLowerCase()) {
+    case "unlimited":
+      return "bg-emerald-100 text-emerald-700";
+    case "semi-limited":
+      return "bg-yellow-100 text-yellow-700";
+    case "limited":
+      return "bg-orange-100 text-orange-700";
+    case "banned":
+      return "bg-red-100 text-red-700";
+    default:
+      return "bg-slate-100 text-slate-700";
+  }
 }
 
 function CardThumb({ card, onOpen }) {
@@ -1086,7 +1112,7 @@ function CardDetail({ card, cards, onBack, onOpen }) {
 
             <div className={`rounded-xl p-4 text-sm text-slate-700 shadow-sm ${palette.panel}`}>
               <div className="mb-1 font-semibold text-slate-900">Status</div>
-              <div className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${card.status === "Banned" ? "bg-red-100 text-red-700" : "bg-emerald-100 text-emerald-700"}`}>{card.status}</div>
+              <div className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getStatusBadgeClass(card.status)}`}>{card.status}</div>
             </div>
 
             <div className={`rounded-xl p-4 text-sm text-slate-700 shadow-sm ${palette.panel}`}>
