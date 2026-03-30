@@ -804,7 +804,7 @@ function ImportPanel({ cards, onImport, onReset, settings, onSaveSettings, onLoa
 
   useEffect(() => {
     setText(JSON.stringify(cards, null, 2));
-  }, [cards, characters]);
+  }, [cards]);
 
   useEffect(() => {
     setImageBaseUrl(settings.imageBaseUrl || "");
