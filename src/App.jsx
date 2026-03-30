@@ -339,17 +339,6 @@ const defaultSettings = {
 };
 
 function normalizeCard(card, index, settings = defaultSettings) {
-  const rawStatus = String(card.status || "").trim();
-  const normalizedStatusMap = {
-    legal: "Unlimited",
-    unlimited: "Unlimited",
-    "semi-limited": "Semi-Limited",
-    semilimited: "Semi-Limited",
-    limited: "Limited",
-    banned: "Banned",
-    forbidden: "Banned",
-  };
-
   return {
     id: String(card.id || `card-${index + 1}`),
     name: card.name || `Untitled Card ${index + 1}`,
@@ -374,7 +363,7 @@ function normalizeCard(card, index, settings = defaultSettings) {
         ? `${settings.imageBaseUrl.replace(/\/$/, "")}/${card.id}.${settings.imageExtension || "jpg"}`
         : "https://placehold.co/280x410/e5e7eb/475569?text=No+Image"),
     lore: card.lore || "No effect text provided.",
-    status: normalizedStatusMap[rawStatus.toLowerCase()] || "Unlimited",
+    status: card.status || "Legal",
     setGroup: card.setGroup || "Unsorted",
   };
 }
@@ -727,21 +716,6 @@ function getAttributeDisplay(card) {
   );
 }
 
-function getStatusBadgeClass(status) {
-  switch (String(status || "").trim().toLowerCase()) {
-    case "unlimited":
-      return "bg-emerald-100 text-emerald-700";
-    case "semi-limited":
-      return "bg-yellow-100 text-yellow-700";
-    case "limited":
-      return "bg-orange-100 text-orange-700";
-    case "banned":
-      return "bg-red-100 text-red-700";
-    default:
-      return "bg-slate-100 text-slate-700";
-  }
-}
-
 function CardThumb({ card, onOpen }) {
   return (
     <button
@@ -965,17 +939,19 @@ function DatabasePage({ cards, onOpen }) {
   const [pageIndex, setPageIndex] = useState(1);
   const [attributeFilter, setAttributeFilter] = useState("All");
   const [authorFilter, setAuthorFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState("All");
 
   const archetypes = ["All", ...new Set(cards.map((c) => c.archetype).filter(Boolean))];
   const cardTypes = ["All", ...new Set(cards.map((c) => c.cardType).filter(Boolean))];
   const attributes = ["All", ...new Set(cards.map((c) => c.attribute).filter(Boolean))];
   const authors = ["All", ...new Set(cards.map((c) => c.author).filter(Boolean))];
+  const statuses = ["All", ...new Set(cards.map((c) => c.status).filter(Boolean))];
 
   const filtered = useMemo(() => {
     const base = cards.filter((card) => {
       const matchQuery =
         !query ||
-        [card.id, card.name, card.author, card.type, card.attribute, card.race, card.archetype, card.setGroup, card.lore]
+        [card.id, card.name, card.author, card.type, card.attribute, card.race, card.archetype, card.setGroup, card.status, card.lore]
           .filter(Boolean)
           .join(" ")
           .toLowerCase()
@@ -985,7 +961,8 @@ function DatabasePage({ cards, onOpen }) {
         (archetype === "All" || card.archetype === archetype) &&
         (cardType === "All" || card.cardType === cardType) &&
         (attributeFilter === "All" || card.attribute === attributeFilter) &&
-        (authorFilter === "All" || card.author === authorFilter)
+        (authorFilter === "All" || card.author === authorFilter) &&
+        (statusFilter === "All" || card.status === statusFilter)
       );
     });
 
@@ -995,11 +972,11 @@ function DatabasePage({ cards, onOpen }) {
       if (sortMode === "id-desc") return Number(b.id) - Number(a.id);
       return Number(a.id) - Number(b.id);
     });
-  }, [cards, query, archetype, cardType, attributeFilter, authorFilter, sortMode]);
+  }, [cards, query, archetype, cardType, attributeFilter, authorFilter, statusFilter, sortMode]);
 
   useEffect(() => {
     setPageIndex(1);
-  }, [query, archetype, cardType, attributeFilter, authorFilter, sortMode, pageSize]);
+  }, [query, archetype, cardType, attributeFilter, authorFilter, statusFilter, sortMode, pageSize]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const visible = filtered.slice((pageIndex - 1) * pageSize, pageIndex * pageSize);
@@ -1011,21 +988,50 @@ function DatabasePage({ cards, onOpen }) {
           <h3 className="text-lg font-bold text-slate-900">Filters</h3>
           <p className="text-sm text-slate-600">Refine the database like a proper wiki directory.</p>
         </div>
-        <select value={archetype} onChange={(e) => setArchetype(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none">{archetypes.map((item) => <option key={item}>{item}</option>)}</select>
-        <select value={cardType} onChange={(e) => setCardType(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none">{cardTypes.map((item) => <option key={item}>{item}</option>)}</select>
-        <select value={attributeFilter} onChange={(e) => setAttributeFilter(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none">{attributes.map((item) => <option key={item}>{item}</option>)}</select>
-        <select value={authorFilter} onChange={(e) => setAuthorFilter(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none">{authors.map((item) => <option key={item}>{item}</option>)}</select>
-        <select value={sortMode} onChange={(e) => setSortMode(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none">
-          <option value="id-asc">ID ↑</option>
-          <option value="id-desc">ID ↓</option>
-          <option value="name-asc">Name A→Z</option>
-          <option value="name-desc">Name Z→A</option>
-        </select>
-        <select value={pageSize} onChange={(e) => setPageSize(Number(e.target.value))} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none">
-          <option value={15}>15 / page</option>
-          <option value={30}>30 / page</option>
-          <option value={50}>50 / page</option>
-        </select>
+
+        <div className="space-y-2">
+          <div className="text-sm font-semibold text-slate-700">Archetype &gt;</div>
+          <select value={archetype} onChange={(e) => setArchetype(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none">{archetypes.map((item) => <option key={item}>{item}</option>)}</select>
+        </div>
+
+        <div className="space-y-2">
+          <div className="text-sm font-semibold text-slate-700">Card Type &gt;</div>
+          <select value={cardType} onChange={(e) => setCardType(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none">{cardTypes.map((item) => <option key={item}>{item}</option>)}</select>
+        </div>
+
+        <div className="space-y-2">
+          <div className="text-sm font-semibold text-slate-700">Attribute</div>
+          <select value={attributeFilter} onChange={(e) => setAttributeFilter(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none">{attributes.map((item) => <option key={item}>{item}</option>)}</select>
+        </div>
+
+        <div className="space-y-2">
+          <div className="text-sm font-semibold text-slate-700">Author &gt;</div>
+          <select value={authorFilter} onChange={(e) => setAuthorFilter(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none">{authors.map((item) => <option key={item}>{item}</option>)}</select>
+        </div>
+
+        <div className="space-y-2">
+          <div className="text-sm font-semibold text-slate-700">Banlist Status &gt;</div>
+          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none">{statuses.map((item) => <option key={item}>{item}</option>)}</select>
+        </div>
+
+        <div className="space-y-2">
+          <div className="text-sm font-semibold text-slate-700">Search by ID</div>
+          <select value={sortMode} onChange={(e) => setSortMode(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none">
+            <option value="id-asc">ID ↑</option>
+            <option value="id-desc">ID ↓</option>
+            <option value="name-asc">Name A→Z</option>
+            <option value="name-desc">Name Z→A</option>
+          </select>
+        </div>
+
+        <div className="space-y-2">
+          <div className="text-sm font-semibold text-slate-700">Cards per page</div>
+          <select value={pageSize} onChange={(e) => setPageSize(Number(e.target.value))} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none">
+            <option value={15}>15 / page</option>
+            <option value={30}>30 / page</option>
+            <option value={50}>50 / page</option>
+          </select>
+        </div>
       </aside>
 
       <div className="space-y-6">
@@ -1038,7 +1044,7 @@ function DatabasePage({ cards, onOpen }) {
           </div>
           <label className="flex items-center gap-3 rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3">
             <Search className="h-4 w-4 text-slate-500" />
-            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search ID, name, type, archetype, author, or text..." className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400" />
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search ID, name, type, archetype, author, status, or text..." className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400" />
           </label>
         </div>
 
@@ -1112,7 +1118,7 @@ function CardDetail({ card, cards, onBack, onOpen }) {
 
             <div className={`rounded-xl p-4 text-sm text-slate-700 shadow-sm ${palette.panel}`}>
               <div className="mb-1 font-semibold text-slate-900">Status</div>
-              <div className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getStatusBadgeClass(card.status)}`}>{card.status}</div>
+              <div className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${card.status === "Banned" ? "bg-red-100 text-red-700" : "bg-emerald-100 text-emerald-700"}`}>{card.status}</div>
             </div>
 
             <div className={`rounded-xl p-4 text-sm text-slate-700 shadow-sm ${palette.panel}`}>
