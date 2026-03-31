@@ -44,7 +44,7 @@
     "aliases": [],
     "firstAppearance": "Arc I: Grim Repertoire",
     "tags": ["commander", "dark beast"],
-    "signatureCards": [],
+    "signatureCards": ["60102033", "60060049", "60102036"],
     "decks": [
       {
         "id": "commander-damhir-veles-dark-beast",
