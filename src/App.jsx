@@ -1476,19 +1476,6 @@ function DatabasePage({ cards, onOpen }) {
           ) : null}
         </div>
 
-        {!isOfficial ? (
-          <div className="space-y-2">
-            <div className="text-sm font-semibold text-slate-700">Author</div>
-            <select
-              value={authorFilter}
-              onChange={(e) => setAuthorFilter(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none"
-            >
-              {authors.map((item) => <option key={item}>{item}</option>)}
-            </select>
-          </div>
-        ) : null}
-
         <div className="space-y-2">
           <div className="text-sm font-semibold text-slate-700">Banlist Status</div>
           <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none">{statuses.map((item) => <option key={item}>{item}</option>)}</select>
