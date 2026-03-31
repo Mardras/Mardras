@@ -373,13 +373,19 @@ const defaultSettings = {
   imageExtension: "jpg",
   dataUrl: "/data/cards.json",
   downloads: [
-    {
-      id: "ls-pack-main",
-      title: "L.S. Pack for EDOPro",
-      description: "Main custom pack download for the L.S. cards.",
-      url: "https://mega.nz/file/GpJSgKpC#_mbTXl1_4vnHXWp8jxRPnpka99O6N-bHmNN11bdKypg",
-    },
-  ],
+  {
+    id: "ls-pack-main",
+    title: "L.S. Pack for EDOPro",
+    description: "Full Collection of L.S. cards",
+    url: "https://www.mediafire.com/file/g2m9dptch1sdd20/LS-2026FullbyMardras.zip/file",
+  },
+  {
+    id: "fran-pack",
+    title: "Fran Deck Pack for EDOPro",
+    description: "Fran's Warrior Xyz custom deck and related cards.",
+    url: "https://www.mediafire.com/file/pu6l1awbblnegrw/Fran_Customs_Basic_Deck_Weather_Warrior_2026.zip/file",
+  },
+ ],
 };
 
 function normalizeCard(card, index, settings = defaultSettings) {
