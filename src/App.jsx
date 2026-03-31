@@ -1334,7 +1334,8 @@ function DatabasePage({ cards, onOpen }) {
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const visible = filtered.slice((pageIndex - 1) * pageSize, pageIndex * pageSize);
-  const databaseTitle = cards.some((card) => card?.source === "official") ? "Official Database" : "Custom Database";
+  const isOfficial = cards.some((card) => card?.source === "official");
+  const databaseTitle = isOfficial ? "Official Database" : "Custom Database";
 
   function addFilterTag(option) {
     if (!option || selectedFilterIds.has(option.id)) return;
@@ -1475,6 +1476,19 @@ function DatabasePage({ cards, onOpen }) {
             </div>
           ) : null}
         </div>
+
+        {!isOfficial ? (
+          <div className="space-y-2">
+            <div className="text-sm font-semibold text-slate-700">Author</div>
+            <select
+              value={authorFilter}
+              onChange={(e) => setAuthorFilter(e.target.value)}
+              className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none"
+            >
+              {authors.map((item) => <option key={item}>{item}</option>)}
+            </select>
+          </div>
+        ) : null}
 
         <div className="space-y-2">
           <div className="text-sm font-semibold text-slate-700">Banlist Status</div>
