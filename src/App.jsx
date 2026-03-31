@@ -368,11 +368,7 @@ function StatValueWithIcon({ value, iconSrc, iconAlt }) {
   );
 }
 
-const defaultSettings = {
-  imageBaseUrl: "/cards",
-  imageExtension: "jpg",
-  dataUrl: "/data/cards.json",
-  downloads: [
+const CODE_DOWNLOADS = [
   {
     id: "ls-pack-main",
     title: "L.S. Pack for EDOPro",
@@ -385,7 +381,13 @@ const defaultSettings = {
     description: "Fran's Warrior Xyz custom deck and related cards.",
     url: "https://www.mediafire.com/file/pu6l1awbblnegrw/Fran_Customs_Basic_Deck_Weather_Warrior_2026.zip/file",
   },
- ],
+];
+
+const defaultSettings = {
+  imageBaseUrl: "/cards",
+  imageExtension: "jpg",
+  dataUrl: "/data/cards.json",
+  downloads: CODE_DOWNLOADS,
 };
 
 function normalizeCard(card, index, settings = defaultSettings) {
@@ -908,7 +910,6 @@ function ImportPanel({ cards, onImport, onReset, settings, onSaveSettings, onLoa
   const [text, setText] = useState(JSON.stringify(cards, null, 2));
   const [imageBaseUrl, setImageBaseUrl] = useState(settings.imageBaseUrl || "");
   const [imageExtension, setImageExtension] = useState(settings.imageExtension || "jpg");
-  const [downloadsText, setDownloadsText] = useState(JSON.stringify(settings.downloads || [], null, 2));
   const [dataUrl, setDataUrl] = useState(settings.dataUrl || "");
   const [message, setMessage] = useState("Paste your full card JSON here, then click Import.");
   const [ok, setOk] = useState(true);
@@ -921,7 +922,6 @@ function ImportPanel({ cards, onImport, onReset, settings, onSaveSettings, onLoa
     setImageBaseUrl(settings.imageBaseUrl || "");
     setImageExtension(settings.imageExtension || "jpg");
     setDataUrl(settings.dataUrl || "");
-    setDownloadsText(JSON.stringify(settings.downloads || [], null, 2));
   }, [settings]);
 
   function handleImport() {
@@ -949,13 +949,10 @@ function ImportPanel({ cards, onImport, onReset, settings, onSaveSettings, onLoa
 
   function handleSaveSettings() {
     try {
-      const parsedDownloads = JSON.parse(downloadsText);
-      if (!Array.isArray(parsedDownloads)) throw new Error("Downloads must be a JSON array.");
       onSaveSettings({
         imageBaseUrl,
         imageExtension,
         dataUrl,
-        downloads: parsedDownloads,
       });
       setOk(true);
       setMessage("Settings saved successfully.");
@@ -1027,13 +1024,10 @@ function ImportPanel({ cards, onImport, onReset, settings, onSaveSettings, onLoa
           />
         </div>
         <div className="space-y-3">
-          <div className="text-sm font-semibold text-slate-900">Download links JSON</div>
-          <textarea
-            value={downloadsText}
-            onChange={(e) => setDownloadsText(e.target.value)}
-            spellCheck={false}
-            className="min-h-[150px] w-full rounded-2xl border border-slate-300 bg-slate-950 p-4 font-mono text-xs leading-6 text-slate-100 outline-none"
-          />
+          <div className="text-sm font-semibold text-slate-900">Download links</div>
+          <div className="min-h-[150px] w-full rounded-2xl border border-slate-300 bg-slate-100 p-4 text-sm leading-6 text-slate-600">
+            Download links are now controlled directly in App.jsx and are no longer loaded from saved browser settings.
+          </div>
         </div>
       </div>
 
@@ -2053,15 +2047,25 @@ export default function App() {
   const [settings, setSettings] = useState(() => {
     try {
       const raw = window.localStorage.getItem(SETTINGS_KEY);
-      if (!raw) return defaultSettings;
+      if (!raw) {
+        return {
+          ...defaultSettings,
+          downloads: CODE_DOWNLOADS,
+        };
+      }
+
       const parsed = JSON.parse(raw);
+
       return {
         ...defaultSettings,
         ...parsed,
-        downloads: Array.isArray(parsed?.downloads) ? parsed.downloads : defaultSettings.downloads,
+        downloads: CODE_DOWNLOADS,
       };
     } catch {
-      return defaultSettings;
+      return {
+        ...defaultSettings,
+        downloads: CODE_DOWNLOADS,
+      };
     }
   });
 
@@ -2098,7 +2102,12 @@ export default function App() {
   }, [cards]);
 
   useEffect(() => {
-    window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    const settingsToPersist = {
+      ...settings,
+    };
+    delete settingsToPersist.downloads;
+
+    window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(settingsToPersist));
   }, [settings]);
 
   useEffect(() => {
@@ -2252,7 +2261,12 @@ export default function App() {
   }
 
   function handleSaveSettings(newSettings) {
-    const merged = { ...settings, ...newSettings };
+    const merged = {
+      ...settings,
+      ...newSettings,
+      downloads: CODE_DOWNLOADS,
+    };
+
     setSettings(merged);
     setCards((prev) => prev.map((card, index) => normalizeCard(card, index, merged)));
   }
