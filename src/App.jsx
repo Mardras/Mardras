@@ -756,6 +756,47 @@ function getCardPalette(card) {
 }
 
 
+
+function getLevelRankLinkSortValue(card) {
+  const rawRank = String(card?.rank ?? "").trim();
+  const rawLink = String(card?.linkRating ?? card?.link ?? "").trim();
+  const rawLevel = String(card?.level ?? "").trim();
+
+  if (rawRank !== "" && !Number.isNaN(Number(rawRank))) return Number(rawRank);
+  if (rawLink !== "" && !Number.isNaN(Number(rawLink))) return Number(rawLink);
+  if (rawLevel !== "" && !Number.isNaN(Number(rawLevel))) return Number(rawLevel);
+  return -1;
+}
+
+function getPendulumScaleSortValue(card) {
+  const candidates = [
+    card?.leftScale,
+    card?.rightScale,
+    card?.scales,
+  ].map((value) => String(value ?? "").trim()).filter((value) => value !== "" && !Number.isNaN(Number(value)));
+
+  if (!candidates.length) return -1;
+  return Number(candidates[0]);
+}
+
+function getGenesysPointsSortValue(card) {
+  const candidates = [
+    card?.genesysPoints,
+    card?.genesisPoints,
+    card?.points,
+    card?.genesys,
+  ].map((value) => String(value ?? "").trim()).filter((value) => value !== "" && !Number.isNaN(Number(value)));
+
+  if (!candidates.length) return 0;
+  return Number(candidates[0]);
+}
+
+function getBattleSortValue(value) {
+  const raw = String(value ?? "").trim();
+  if (raw === "" || Number.isNaN(Number(raw))) return -999999;
+  return Number(raw);
+}
+
 function parseRoute(cards, characters = [], officialCards = []) {
   const path = window.location.pathname || "/";
   const parts = path.split("/").filter(Boolean);
@@ -1192,7 +1233,8 @@ function DatabasePage({ cards, onOpen }) {
   const [selectedArchetype, setSelectedArchetype] = useState("");
   const [filterQuery, setFilterQuery] = useState("");
   const [selectedFilterTags, setSelectedFilterTags] = useState([]);
-  const [sortMode, setSortMode] = useState("id-asc");
+  const [sortField, setSortField] = useState("id");
+  const [sortDirection, setSortDirection] = useState("asc");
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [pageIndex, setPageIndex] = useState(1);
   const [authorFilter, setAuthorFilter] = useState("All");
@@ -1249,16 +1291,46 @@ function DatabasePage({ cards, onOpen }) {
     });
 
     return [...base].sort((a, b) => {
-      if (sortMode === "name-asc") return a.name.localeCompare(b.name);
-      if (sortMode === "name-desc") return b.name.localeCompare(a.name);
-      if (sortMode === "id-desc") return Number(b.id) - Number(a.id);
-      return Number(a.id) - Number(b.id);
+      const direction = sortDirection === "desc" ? -1 : 1;
+
+      if (sortField === "name") {
+        return a.name.localeCompare(b.name) * direction;
+      }
+
+      let aValue = 0;
+      let bValue = 0;
+
+      if (sortField === "id") {
+        aValue = Number(a.id);
+        bValue = Number(b.id);
+      } else if (sortField === "genesys") {
+        aValue = getGenesysPointsSortValue(a);
+        bValue = getGenesysPointsSortValue(b);
+      } else if (sortField === "level-rank-link") {
+        aValue = getLevelRankLinkSortValue(a);
+        bValue = getLevelRankLinkSortValue(b);
+      } else if (sortField === "pendulum-scale") {
+        aValue = getPendulumScaleSortValue(a);
+        bValue = getPendulumScaleSortValue(b);
+      } else if (sortField === "atk") {
+        aValue = getBattleSortValue(a.atk);
+        bValue = getBattleSortValue(b.atk);
+      } else if (sortField === "def") {
+        aValue = getBattleSortValue(a.def);
+        bValue = getBattleSortValue(b.def);
+      }
+
+      if (aValue === bValue) {
+        return a.name.localeCompare(b.name) * direction;
+      }
+
+      return (aValue - bValue) * direction;
     });
-  }, [cards, query, selectedFilterTags, hasHybridCardType, selectedArchetype, authorFilter, statusFilter, sortMode]);
+  }, [cards, query, selectedFilterTags, hasHybridCardType, selectedArchetype, authorFilter, statusFilter, sortField, sortDirection]);
 
   useEffect(() => {
     setPageIndex(1);
-  }, [query, selectedFilterTags, selectedArchetype, authorFilter, statusFilter, sortMode, pageSize]);
+  }, [query, selectedFilterTags, selectedArchetype, authorFilter, statusFilter, sortField, sortDirection, pageSize]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const visible = filtered.slice((pageIndex - 1) * pageSize, pageIndex * pageSize);
@@ -1388,13 +1460,31 @@ function DatabasePage({ cards, onOpen }) {
         </div>
 
         <div className="space-y-2">
-          <div className="text-sm font-semibold text-slate-700">Search by ID or Name</div>
-          <select value={sortMode} onChange={(e) => setSortMode(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none">
-            <option value="id-asc">ID ↑</option>
-            <option value="id-desc">ID ↓</option>
-            <option value="name-asc">Name A→Z</option>
-            <option value="name-desc">Name Z→A</option>
-          </select>
+          <div className="text-sm font-semibold text-slate-700">Sort by</div>
+          <div className="grid grid-cols-[1fr_112px] gap-2">
+            <select value={sortField} onChange={(e) => setSortField(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none">
+              <option value="id">ID</option>
+              <option value="name">Name</option>
+              <option value="genesys">Genesys Points</option>
+              <option value="level-rank-link">Level/Rank/Link</option>
+              <option value="pendulum-scale">Pendulum Scale</option>
+              <option value="atk">ATK</option>
+              <option value="def">DEF</option>
+            </select>
+            <select value={sortDirection} onChange={(e) => setSortDirection(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none">
+              {sortField === "name" ? (
+                <>
+                  <option value="asc">A to Z</option>
+                  <option value="desc">Z to A</option>
+                </>
+              ) : (
+                <>
+                  <option value="asc">Ascending</option>
+                  <option value="desc">Descending</option>
+                </>
+              )}
+            </select>
+          </div>
         </div>
 
         <div className="space-y-2">
