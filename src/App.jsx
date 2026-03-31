@@ -1098,12 +1098,23 @@ function getMonsterRaceTags(card) {
 function getLevelRankLinkTags(card) {
   if (String(card?.cardType || "").trim().toLowerCase() !== "monster") return [];
   const tags = [];
-  const rank = Number(card?.rank);
-  const link = Number(card?.linkRating);
-  const level = Number(card?.level);
-  if (Number.isFinite(rank)) tags.push(`Rank ${rank}`);
-  else if (Number.isFinite(link)) tags.push(`Link ${link}`);
-  else if (Number.isFinite(level)) tags.push(`Level ${level}`);
+
+  const rawRank = String(card?.rank ?? "").trim();
+  const rawLink = String(card?.linkRating ?? card?.link ?? "").trim();
+  const rawLevel = String(card?.level ?? "").trim();
+
+  const hasRank = rawRank !== "" && !Number.isNaN(Number(rawRank));
+  const hasLink = rawLink !== "" && !Number.isNaN(Number(rawLink));
+  const hasLevel = rawLevel !== "" && !Number.isNaN(Number(rawLevel));
+
+  if (hasRank) {
+    tags.push(`Rank ${Number(rawRank)}`);
+  } else if (hasLink) {
+    tags.push(`Link ${Number(rawLink)}`);
+  } else if (hasLevel) {
+    tags.push(`Level ${Number(rawLevel)}`);
+  }
+
   return tags;
 }
 
