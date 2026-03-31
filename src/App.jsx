@@ -1197,7 +1197,7 @@ function DatabasePage({ cards, onOpen }) {
   const matchingFilterOptions = useMemo(() => {
     const term = filterQuery.trim().toLowerCase();
     const base = filterOptions.filter((option) => !selectedFilterIds.has(option.id));
-    if (!term) return base.slice(0, 30);
+    if (!term) return base;
     return base
       .filter((option) => `${option.label} ${option.category}`.toLowerCase().includes(term))
       .sort((a, b) => {
@@ -1206,14 +1206,14 @@ function DatabasePage({ cards, onOpen }) {
         if (aStarts !== bStarts) return aStarts - bStarts;
         return a.label.localeCompare(b.label);
       })
-      .slice(0, 30);
+      ;
   }, [filterQuery, filterOptions, selectedFilterIds]);
 
   const matchingArchetypes = useMemo(() => {
     const term = archetypeQuery.trim().toLowerCase();
     const base = archetypes.filter((item) => item !== selectedArchetype);
-    if (!term) return base.slice(0, 20);
-    return base.filter((item) => item.toLowerCase().includes(term)).slice(0, 20);
+    if (!term) return base;
+    return base.filter((item) => item.toLowerCase().includes(term));
   }, [archetypeQuery, archetypes, selectedArchetype]);
 
   const filtered = useMemo(() => {
@@ -1263,6 +1263,11 @@ function DatabasePage({ cards, onOpen }) {
     setSelectedFilterTags((prev) => prev.filter((tag) => tag.id !== id));
   }
 
+  function clearAllFilterTags() {
+    setSelectedFilterTags([]);
+    setFilterQuery("");
+  }
+
   return (
     <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
       <aside className="h-fit rounded-[24px] border border-slate-300 bg-white p-5 shadow-sm space-y-5">
@@ -1283,21 +1288,29 @@ function DatabasePage({ cards, onOpen }) {
             />
           </label>
           {selectedFilterTags.length > 0 ? (
-            <div className="flex flex-wrap gap-2 pt-1">
-              {selectedFilterTags.map((tag) => (
-                <button
-                  key={tag.id}
-                  onClick={() => removeFilterTag(tag.id)}
-                  className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-200"
-                >
-                  <span>{tag.label}</span>
-                  <span>✕</span>
-                </button>
-              ))}
+            <div className="space-y-2 pt-1">
+              <div className="flex flex-wrap gap-2">
+                {selectedFilterTags.map((tag) => (
+                  <button
+                    key={tag.id}
+                    onClick={() => removeFilterTag(tag.id)}
+                    className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-200"
+                  >
+                    <span>{tag.label}</span>
+                    <span>✕</span>
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={clearAllFilterTags}
+                className="text-xs font-medium text-slate-500 underline underline-offset-2 hover:text-slate-700"
+              >
+                Clear all tags
+              </button>
             </div>
           ) : null}
           {matchingFilterOptions.length > 0 ? (
-            <div className="max-h-72 overflow-y-auto rounded-xl border border-slate-300 bg-slate-50">
+            <div className="max-h-[28rem] overflow-y-auto rounded-xl border border-slate-300 bg-slate-50">
               {matchingFilterOptions.map((option) => (
                 <button
                   key={option.id}
@@ -1335,7 +1348,7 @@ function DatabasePage({ cards, onOpen }) {
             </div>
           ) : null}
           {!selectedArchetype && matchingArchetypes.length > 0 ? (
-            <div className="max-h-60 overflow-y-auto rounded-xl border border-slate-300 bg-slate-50">
+            <div className="max-h-[28rem] overflow-y-auto rounded-xl border border-slate-300 bg-slate-50">
               {matchingArchetypes.map((item) => (
                 <button
                   key={item}
