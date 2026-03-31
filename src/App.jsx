@@ -1356,7 +1356,34 @@ function DatabasePage({ cards, onOpen }) {
       <aside className="h-fit rounded-[24px] border border-slate-300 bg-white p-5 shadow-sm space-y-5">
         <div>
           <h3 className="text-lg font-bold text-slate-900">Filters</h3>
-          <p className="text-sm text-slate-600">Refine the database like a proper wiki directory.</p>
+        </div>
+
+        <div className="space-y-2">
+          <div className="text-sm font-semibold text-slate-700">Sort by</div>
+          <div className="grid grid-cols-[1fr_112px] gap-2">
+            <select value={sortField} onChange={(e) => setSortField(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none">
+              <option value="id">ID</option>
+              <option value="name">Name</option>
+              <option value="genesys">Genesys Points</option>
+              <option value="level-rank-link">Level/Rank/Link</option>
+              <option value="pendulum-scale">Pendulum Scale</option>
+              <option value="atk">ATK</option>
+              <option value="def">DEF</option>
+            </select>
+            <select value={sortDirection} onChange={(e) => setSortDirection(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none">
+              {sortField === "name" ? (
+                <>
+                  <option value="asc">A to Z</option>
+                  <option value="desc">Z to A</option>
+                </>
+              ) : (
+                <>
+                  <option value="asc">Ascending</option>
+                  <option value="desc">Descending</option>
+                </>
+              )}
+            </select>
+          </div>
         </div>
 
         <div className="space-y-2">
@@ -1449,42 +1476,22 @@ function DatabasePage({ cards, onOpen }) {
           ) : null}
         </div>
 
-        <div className="space-y-2">
-          <div className="text-sm font-semibold text-slate-700">Author</div>
-          <select value={authorFilter} onChange={(e) => setAuthorFilter(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none">{authors.map((item) => <option key={item}>{item}</option>)}</select>
-        </div>
+        {!isOfficial ? (
+          <div className="space-y-2">
+            <div className="text-sm font-semibold text-slate-700">Author</div>
+            <select
+              value={authorFilter}
+              onChange={(e) => setAuthorFilter(e.target.value)}
+              className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none"
+            >
+              {authors.map((item) => <option key={item}>{item}</option>)}
+            </select>
+          </div>
+        ) : null}
 
         <div className="space-y-2">
           <div className="text-sm font-semibold text-slate-700">Banlist Status</div>
           <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none">{statuses.map((item) => <option key={item}>{item}</option>)}</select>
-        </div>
-
-        <div className="space-y-2">
-          <div className="text-sm font-semibold text-slate-700">Sort by</div>
-          <div className="grid grid-cols-[1fr_112px] gap-2">
-            <select value={sortField} onChange={(e) => setSortField(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none">
-              <option value="id">ID</option>
-              <option value="name">Name</option>
-              <option value="genesys">Genesys Points</option>
-              <option value="level-rank-link">Level/Rank/Link</option>
-              <option value="pendulum-scale">Pendulum Scale</option>
-              <option value="atk">ATK</option>
-              <option value="def">DEF</option>
-            </select>
-            <select value={sortDirection} onChange={(e) => setSortDirection(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none">
-              {sortField === "name" ? (
-                <>
-                  <option value="asc">A to Z</option>
-                  <option value="desc">Z to A</option>
-                </>
-              ) : (
-                <>
-                  <option value="asc">Ascending</option>
-                  <option value="desc">Descending</option>
-                </>
-              )}
-            </select>
-          </div>
         </div>
 
         <div className="space-y-2">
