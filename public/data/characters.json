@@ -64,5 +64,37 @@
         "side": []
       }
     ]
-  }
+  },
+  {
+  "id": "fran-basic",
+  "name": "Fran (Base)",
+  "title": "Honest-Eyes",
+  "image": "/characters/fran.png",
+  "summary": "A warrior duelist who tries to find balance.",
+  "biography": "Add the full biography/story for Fran (Base).",
+  "affiliation": "Queen's Lancers",
+  "aliases": ["Honest-Eyes"],
+  "firstAppearance": "Pandora's Numbers",
+  "tags": ["warrior", "xyz"],
+  "signatureCards": ["3002", "222", "6163"],
+  "decks": [
+    {
+      "id": "fran-base",
+      "name": "Warrior Xyz Deck",
+      "era": "",
+      "description": "Level/Rank 4 Warriors and Beasts.",
+      "main": [
+        8,2,219,221,6160,5048,5048,5048,5052,6646,
+        6646,6646,5047,5035,5035,5035,215,215,215,3009,
+        216,216,216,7790,8813,7789,3002,3002,3002,6159,
+        227,214,214,214,2021,3003,3003,3003,5036,5108,
+        217,220,220,220,218,228,603,6163
+      ],
+      "extra": [
+        5037,5037,5037,8504,222,222,222,5050,5050,5050
+      ],
+      "side": []
+    }
+  ]
+}
 ]
