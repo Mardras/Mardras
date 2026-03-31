@@ -1051,24 +1051,170 @@ function HomePage({ onBrowse, cards, onOpen, onImport, onReset, settings, onSave
   );
 }
 
+
+function normalizeAttributeFilterValue(value) {
+  const raw = String(value ?? "").trim();
+  if (!raw || raw === "—" || raw === "0") return "0";
+  return raw.toUpperCase();
+}
+
+function normalizeRaceFilterValue(value) {
+  const raw = String(value ?? "").trim();
+  if (!raw || raw === "—" || raw === "0") return "0";
+  return raw;
+}
+
+function getMonsterSubtypeTags(card) {
+  if (String(card?.cardType || "").trim().toLowerCase() !== "monster") return [];
+  const typeText = String(card?.type || "").toLowerCase();
+  const tags = [];
+  const checks = [
+    ["Normal", /\bnormal\b/],
+    ["Effect", /\beffect\b/],
+    ["Ritual", /\britual\b/],
+    ["Pendulum", /\bpendulum\b/],
+    ["Fusion", /\bfusion\b/],
+    ["Synchro", /\bsynchro\b/],
+    ["Xyz", /\bxyz\b/],
+    ["Link", /\blink\b/],
+    ["Union", /\bunion\b/],
+    ["Flip", /\bflip\b/],
+    ["Spirit", /\bspirit\b/],
+    ["Gemini", /\bgemini\b/],
+    ["Toon", /\btoon\b/],
+    ["Tuner", /\btuner\b/],
+  ];
+  checks.forEach(([label, pattern]) => {
+    if (pattern.test(typeText)) tags.push(label);
+  });
+  return tags;
+}
+
+function getMonsterRaceTags(card) {
+  if (String(card?.cardType || "").trim().toLowerCase() !== "monster") return [];
+  return [normalizeRaceFilterValue(card?.race)];
+}
+
+function getLevelRankLinkTags(card) {
+  if (String(card?.cardType || "").trim().toLowerCase() !== "monster") return [];
+  const tags = [];
+  const rank = Number(card?.rank);
+  const link = Number(card?.linkRating);
+  const level = Number(card?.level);
+  if (Number.isFinite(rank)) tags.push(`Rank ${rank}`);
+  else if (Number.isFinite(link)) tags.push(`Link ${link}`);
+  else if (Number.isFinite(level)) tags.push(`Level ${level}`);
+  return tags;
+}
+
+function getPendulumScaleTags(card) {
+  const values = [];
+  const candidates = [card?.leftScale, card?.rightScale, card?.scales];
+  candidates.forEach((value) => {
+    if (value === "" || value === null || value === undefined) return;
+    const num = Number(value);
+    if (Number.isFinite(num)) values.push(`Scale ${num}`);
+  });
+  return [...new Set(values)];
+}
+
+function getSpellTrapTypeTags(card) {
+  if (String(card?.cardType || "").trim().toLowerCase() === "monster") return [];
+  return getSpellTrapProperties(card);
+}
+
+function getResolvedCardTypeTag(card, hasHybridCardType) {
+  const raw = String(getFilterCardType(card) || "").trim();
+  if (!raw) return "Unknown";
+  if (!hasHybridCardType && raw === "Spell / Trap") return "Unknown";
+  return raw;
+}
+
+function buildFilterOptions(cards) {
+  const hasHybridCardType = cards.some((card) => getFilterCardType(card) === "Spell / Trap");
+  const attributeValues = ["WATER", "FIRE", "EARTH", "WIND", "LIGHT", "DARK", "DIVINE", "0"];
+  const subtypeValues = ["Normal", "Effect", "Ritual", "Pendulum", "Fusion", "Synchro", "Xyz", "Link", "Union", "Flip", "Spirit", "Gemini", "Toon", "Tuner"];
+  const cardTypeValues = hasHybridCardType ? ["Monster", "Spell", "Trap", "Spell / Trap"] : ["Monster", "Spell", "Trap", "Unknown"];
+  const spellTrapTypeValues = ["Normal", "Quick-Play", "Continuous", "Ritual", "Equip", "Field", "Counter"];
+  const raceValues = [...new Set(cards.flatMap((card) => getMonsterRaceTags(card)).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+  const numberValues = Array.from({ length: 14 }, (_, index) => index);
+
+  const options = [];
+  subtypeValues.forEach((value) => options.push({ id: `monster-subtype:${value}`, kind: "monster-subtype", label: value, category: "Monster Card Type", value }));
+  attributeValues.forEach((value) => options.push({ id: `attribute:${value}`, kind: "attribute", label: value, category: "Attribute", value }));
+  raceValues.forEach((value) => options.push({ id: `race:${value}`, kind: "race", label: value, category: "Monster Race", value }));
+  numberValues.forEach((value) => options.push({ id: `level:${value}`, kind: "level", label: `Level ${value}`, category: "Level/Rank/Link", value: `Level ${value}` }));
+  numberValues.forEach((value) => options.push({ id: `rank:${value}`, kind: "level", label: `Rank ${value}`, category: "Level/Rank/Link", value: `Rank ${value}` }));
+  numberValues.forEach((value) => options.push({ id: `link:${value}`, kind: "level", label: `Link ${value}`, category: "Level/Rank/Link", value: `Link ${value}` }));
+  cardTypeValues.forEach((value) => options.push({ id: `card-type:${value}`, kind: "card-type", label: value, category: "Card Type", value }));
+  numberValues.forEach((value) => options.push({ id: `scale:${value}`, kind: "scale", label: `Scale ${value}`, category: "Pendulum Scale", value: `Scale ${value}` }));
+  spellTrapTypeValues.forEach((value) => options.push({ id: `spell-trap-type:${value}`, kind: "spell-trap-type", label: value, category: "Spell/Trap Type", value }));
+
+  return { options, hasHybridCardType };
+}
+
+function cardMatchesFilterTag(card, tag, hasHybridCardType) {
+  if (!tag) return true;
+  switch (tag.kind) {
+    case "monster-subtype":
+      return getMonsterSubtypeTags(card).includes(tag.value);
+    case "attribute":
+      return normalizeAttributeFilterValue(card?.attribute) === tag.value;
+    case "race":
+      return getMonsterRaceTags(card).includes(tag.value);
+    case "level":
+      return getLevelRankLinkTags(card).includes(tag.value);
+    case "card-type":
+      return getResolvedCardTypeTag(card, hasHybridCardType) === tag.value;
+    case "scale":
+      return getPendulumScaleTags(card).includes(tag.value);
+    case "spell-trap-type":
+      return getSpellTrapTypeTags(card).includes(tag.value);
+    default:
+      return true;
+  }
+}
+
 function DatabasePage({ cards, onOpen }) {
   const [query, setQuery] = useState("");
-  const [archetype, setArchetype] = useState("All");
-  const [cardType, setCardType] = useState("All");
+  const [archetypeQuery, setArchetypeQuery] = useState("");
+  const [selectedArchetype, setSelectedArchetype] = useState("");
+  const [filterQuery, setFilterQuery] = useState("");
+  const [selectedFilterTags, setSelectedFilterTags] = useState([]);
   const [sortMode, setSortMode] = useState("id-asc");
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [pageIndex, setPageIndex] = useState(1);
-  const [attributeFilter, setAttributeFilter] = useState("All");
   const [authorFilter, setAuthorFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
-  const [typesFilter, setTypesFilter] = useState("All");
 
-  const archetypes = ["All", ...new Set(cards.map((c) => c.archetype).filter(Boolean))];
-  const cardTypes = ["All", ...new Set(cards.map((c) => getFilterCardType(c)).filter(Boolean))];
-  const types = ["All", ...new Set(cards.map((c) => getFilterTypes(c)).filter(Boolean))];
-  const attributes = ["All", ...new Set(cards.map((c) => c.attribute).filter(Boolean))];
+  const { options: filterOptions, hasHybridCardType } = useMemo(() => buildFilterOptions(cards), [cards]);
+  const archetypes = useMemo(() => [...new Set(cards.map((c) => c.archetype).filter(Boolean))].sort((a, b) => a.localeCompare(b)), [cards]);
   const authors = ["All", ...new Set(cards.map((c) => c.author).filter(Boolean))];
   const statuses = ["All", ...new Set(cards.map((c) => c.status).filter(Boolean))];
+
+  const selectedFilterIds = useMemo(() => new Set(selectedFilterTags.map((tag) => tag.id)), [selectedFilterTags]);
+
+  const matchingFilterOptions = useMemo(() => {
+    const term = filterQuery.trim().toLowerCase();
+    const base = filterOptions.filter((option) => !selectedFilterIds.has(option.id));
+    if (!term) return base.slice(0, 30);
+    return base
+      .filter((option) => `${option.label} ${option.category}`.toLowerCase().includes(term))
+      .sort((a, b) => {
+        const aStarts = a.label.toLowerCase().startsWith(term) ? 0 : 1;
+        const bStarts = b.label.toLowerCase().startsWith(term) ? 0 : 1;
+        if (aStarts !== bStarts) return aStarts - bStarts;
+        return a.label.localeCompare(b.label);
+      })
+      .slice(0, 30);
+  }, [filterQuery, filterOptions, selectedFilterIds]);
+
+  const matchingArchetypes = useMemo(() => {
+    const term = archetypeQuery.trim().toLowerCase();
+    const base = archetypes.filter((item) => item !== selectedArchetype);
+    if (!term) return base.slice(0, 20);
+    return base.filter((item) => item.toLowerCase().includes(term)).slice(0, 20);
+  }, [archetypeQuery, archetypes, selectedArchetype]);
 
   const filtered = useMemo(() => {
     const base = cards.filter((card) => {
@@ -1079,12 +1225,13 @@ function DatabasePage({ cards, onOpen }) {
           .join(" ")
           .toLowerCase()
           .includes(query.toLowerCase());
+
+      const matchesTags = selectedFilterTags.every((tag) => cardMatchesFilterTag(card, tag, hasHybridCardType));
+
       return (
         matchQuery &&
-        (archetype === "All" || card.archetype === archetype) &&
-        (cardType === "All" || getFilterCardType(card) === cardType) &&
-        (typesFilter === "All" || getFilterTypes(card) === typesFilter) &&
-        (attributeFilter === "All" || card.attribute === attributeFilter) &&
+        matchesTags &&
+        (!selectedArchetype || card.archetype === selectedArchetype) &&
         (authorFilter === "All" || card.author === authorFilter) &&
         (statusFilter === "All" || card.status === statusFilter)
       );
@@ -1096,17 +1243,28 @@ function DatabasePage({ cards, onOpen }) {
       if (sortMode === "id-desc") return Number(b.id) - Number(a.id);
       return Number(a.id) - Number(b.id);
     });
-  }, [cards, query, archetype, cardType, typesFilter, attributeFilter, authorFilter, statusFilter, sortMode]);
+  }, [cards, query, selectedFilterTags, hasHybridCardType, selectedArchetype, authorFilter, statusFilter, sortMode]);
 
   useEffect(() => {
     setPageIndex(1);
-  }, [query, archetype, cardType, typesFilter, attributeFilter, authorFilter, statusFilter, sortMode, pageSize]);
+  }, [query, selectedFilterTags, selectedArchetype, authorFilter, statusFilter, sortMode, pageSize]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const visible = filtered.slice((pageIndex - 1) * pageSize, pageIndex * pageSize);
+  const databaseTitle = cards.some((card) => card?.source === "official") ? "Official Database" : "Custom Database";
+
+  function addFilterTag(option) {
+    if (!option || selectedFilterIds.has(option.id)) return;
+    setSelectedFilterTags((prev) => [...prev, option]);
+    setFilterQuery("");
+  }
+
+  function removeFilterTag(id) {
+    setSelectedFilterTags((prev) => prev.filter((tag) => tag.id !== id));
+  }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[260px_1fr]">
+    <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
       <aside className="h-fit rounded-[24px] border border-slate-300 bg-white p-5 shadow-sm space-y-5">
         <div>
           <h3 className="text-lg font-bold text-slate-900">Filters</h3>
@@ -1114,23 +1272,85 @@ function DatabasePage({ cards, onOpen }) {
         </div>
 
         <div className="space-y-2">
+          <div className="text-sm font-semibold text-slate-700">Filter by</div>
+          <label className="flex items-center gap-3 rounded-xl border border-slate-300 bg-slate-50 px-4 py-3">
+            <Search className="h-4 w-4 text-slate-500" />
+            <input
+              value={filterQuery}
+              onChange={(e) => setFilterQuery(e.target.value)}
+              placeholder="Search filters like DARK, Dragon, Effect, Level 4..."
+              className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400"
+            />
+          </label>
+          {selectedFilterTags.length > 0 ? (
+            <div className="flex flex-wrap gap-2 pt-1">
+              {selectedFilterTags.map((tag) => (
+                <button
+                  key={tag.id}
+                  onClick={() => removeFilterTag(tag.id)}
+                  className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-200"
+                >
+                  <span>{tag.label}</span>
+                  <span>✕</span>
+                </button>
+              ))}
+            </div>
+          ) : null}
+          {matchingFilterOptions.length > 0 ? (
+            <div className="max-h-72 overflow-y-auto rounded-xl border border-slate-300 bg-slate-50">
+              {matchingFilterOptions.map((option) => (
+                <button
+                  key={option.id}
+                  onClick={() => addFilterTag(option)}
+                  className="flex w-full items-center justify-between gap-3 border-b border-slate-200 px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-100 last:border-b-0"
+                >
+                  <span>{option.label}</span>
+                  <span className="text-[11px] text-slate-400">{option.category}</span>
+                </button>
+              ))}
+            </div>
+          ) : null}
+        </div>
+
+        <div className="space-y-2">
           <div className="text-sm font-semibold text-slate-700">Archetype</div>
-          <select value={archetype} onChange={(e) => setArchetype(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none">{archetypes.map((item) => <option key={item}>{item}</option>)}</select>
-        </div>
-
-        <div className="space-y-2">
-          <div className="text-sm font-semibold text-slate-700">Card Type</div>
-          <select value={cardType} onChange={(e) => setCardType(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none">{cardTypes.map((item) => <option key={item}>{item}</option>)}</select>
-        </div>
-
-        <div className="space-y-2">
-          <div className="text-sm font-semibold text-slate-700">Types</div>
-          <select value={typesFilter} onChange={(e) => setTypesFilter(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none">{types.map((item) => <option key={item}>{item}</option>)}</select>
-        </div>
-
-        <div className="space-y-2">
-          <div className="text-sm font-semibold text-slate-700">Attribute</div>
-          <select value={attributeFilter} onChange={(e) => setAttributeFilter(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none">{attributes.map((item) => <option key={item}>{item}</option>)}</select>
+          <label className="flex items-center gap-3 rounded-xl border border-slate-300 bg-slate-50 px-4 py-3">
+            <Search className="h-4 w-4 text-slate-500" />
+            <input
+              value={archetypeQuery}
+              onChange={(e) => setArchetypeQuery(e.target.value)}
+              placeholder="Search archetype names..."
+              className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400"
+            />
+          </label>
+          {selectedArchetype ? (
+            <div className="flex flex-wrap gap-2 pt-1">
+              <button
+                onClick={() => setSelectedArchetype("")}
+                className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-200"
+              >
+                <span>{selectedArchetype}</span>
+                <span>✕</span>
+              </button>
+            </div>
+          ) : null}
+          {!selectedArchetype && matchingArchetypes.length > 0 ? (
+            <div className="max-h-60 overflow-y-auto rounded-xl border border-slate-300 bg-slate-50">
+              {matchingArchetypes.map((item) => (
+                <button
+                  key={item}
+                  onClick={() => {
+                    setSelectedArchetype(item);
+                    setArchetypeQuery("");
+                  }}
+                  className="flex w-full items-center justify-between gap-3 border-b border-slate-200 px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-100 last:border-b-0"
+                >
+                  <span>{item}</span>
+                  <span className="text-[11px] text-slate-400">Archetype</span>
+                </button>
+              ))}
+            </div>
+          ) : null}
         </div>
 
         <div className="space-y-2">
@@ -1167,7 +1387,7 @@ function DatabasePage({ cards, onOpen }) {
         <div className="rounded-[24px] border border-slate-300 bg-white p-5 shadow-sm">
           <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <h2 className="text-2xl font-bold text-slate-900">Custom Database</h2>
+              <h2 className="text-2xl font-bold text-slate-900">{databaseTitle}</h2>
               <p className="text-sm text-slate-600">Showing {filtered.length} cards</p>
             </div>
           </div>
