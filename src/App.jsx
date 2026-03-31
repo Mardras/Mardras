@@ -1,4 +1,3 @@
-
 import React, { useEffect, useMemo, useState } from "react";
 import {
   Search,
@@ -60,7 +59,7 @@ const defaultCards = [
     atk: "—",
     def: "—",
     image: "https://placehold.co/280x410/2d3f1e/f0ffe5?text=Zero+Hour",
-    lore: 'The activation/effect of its activation/effects cannot be negated.',
+    lore: "The activation/effect of its activation/effects cannot be negated.",
     status: "Legal",
     setGroup: "Imported from CDB",
   },
@@ -90,8 +89,7 @@ const emptyTemplate = [
 const STORAGE_KEY = "mardras-db-cards-v1";
 const SETTINGS_KEY = "mardras-db-settings-v1";
 const DEFAULT_PAGE_SIZE = 15;
-
-
+const ADMIN_QUERY_KEY = "admin";
 
 const ATTRIBUTE_ICON_MAP = {
   DARK: "/icons/attributes/dark.png",
@@ -135,8 +133,10 @@ function getCardTypeIcon(cardType) {
 
 function getPropertyIcon(property) {
   const normalized = String(property || "").trim().toLowerCase();
-  const propertyEntry = Object.entries(PROPERTY_ICON_MAP).find(([label]) =>
-    label.toLowerCase() === normalized || label.toLowerCase().replace(/-/g, "") === normalized.replace(/-/g, "")
+  const propertyEntry = Object.entries(PROPERTY_ICON_MAP).find(
+    ([label]) =>
+      label.toLowerCase() === normalized ||
+      label.toLowerCase().replace(/-/g, "") === normalized.replace(/-/g, "")
   );
   return propertyEntry ? propertyEntry[1] : null;
 }
@@ -194,23 +194,15 @@ function buildYdkText(deck) {
   const extra = Array.isArray(deck?.extra) ? deck.extra.map(String) : [];
   const side = Array.isArray(deck?.side) ? deck.side.map(String) : [];
 
-  return [
-    "#created by Mardras-db.com",
-    "#main",
-    ...main,
-    "#extra",
-    ...extra,
-    "!side",
-    ...side,
-    "",
-  ].join("\n");
+  return ["#created by Mardras-db.com", "#main", ...main, "#extra", ...extra, "!side", ...side, ""].join("\n");
 }
 
 function downloadYdk(deck, characterName = "") {
-  const safeDeckName = String(deck?.name || "deck")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "") || "deck";
+  const safeDeckName =
+    String(deck?.name || "deck")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "deck";
   const safeCharacterName = String(characterName || "")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
@@ -271,15 +263,7 @@ function getSpellTrapProperties(card) {
   const filtered = parts
     .filter((part) => {
       const p = part.toLowerCase();
-      return (
-        p !== "spell" &&
-        p !== "trap" &&
-        p !== "spell/trap" &&
-        p !== "spell" &&
-        p !== "&" &&
-        p !== "/" &&
-        p !== "and"
-      );
+      return p !== "spell" && p !== "trap" && p !== "spell/trap" && p !== "&" && p !== "/" && p !== "and";
     })
     .map((part) => normalizeSpellTrapProperty(part))
     .filter(Boolean);
@@ -329,7 +313,7 @@ function TypeLineWithIcons({ card }) {
 }
 
 function LevelValue({ card }) {
-  const rawValue = card.level ?? card.link ?? "";
+  const rawValue = card.level ?? card.link ?? card.linkRating ?? card.rank ?? "";
   const count = Number(rawValue);
   const iconSrc = getLevelIcon(card);
   const safeCount = Number.isFinite(count) && count > 0 ? Math.min(count, 13) : 0;
@@ -409,7 +393,7 @@ function normalizeCard(card, index, settings = defaultSettings) {
     race: card.race || card.type || "—",
     level: card.level ?? "",
     rank: card.rank ?? "",
-    linkRating: card.linkRating ?? "",
+    linkRating: card.linkRating ?? card.link ?? "",
     leftScale: card.leftScale ?? "",
     rightScale: card.rightScale ?? "",
     atk: card.atk ?? "—",
@@ -427,8 +411,6 @@ function normalizeCard(card, index, settings = defaultSettings) {
     setGroup: card.setGroup || "Unsorted",
   };
 }
-
-
 
 function normalizeOfficialCard(card, index) {
   const normalized = normalizeCard(
@@ -475,7 +457,6 @@ function normalizeCharacter(character, index) {
   };
 }
 
-
 function getDisplayTypes(card) {
   if (card.cardType === "Monster") {
     const typeParts = String(card.type || "")
@@ -483,9 +464,7 @@ function getDisplayTypes(card) {
       .map((part) => part.trim())
       .filter(Boolean);
 
-    const filteredParts = typeParts.filter(
-      (part) => !["Monster", "Normal", "Spell", "Trap"].includes(part)
-    );
+    const filteredParts = typeParts.filter((part) => !["Monster", "Normal", "Spell", "Trap"].includes(part));
 
     const uniqueParts = [];
     const seen = new Set();
@@ -510,12 +489,9 @@ function getDisplayTypes(card) {
   return card.type || card.race || "—";
 }
 
-
-
 function isPendulumCard(card) {
   return `${card.cardType || ""} ${card.type || ""}`.toLowerCase().includes("pendulum");
 }
-
 
 function isExtraDeckMonster(card) {
   const typeText = `${card.cardType || ""} ${card.type || ""}`.toLowerCase();
@@ -527,7 +503,11 @@ function splitExtraDeckLore(lore) {
   if (!source) return { materials: "", effect: "" };
 
   const normalized = source.replace(/\r\n/g, "\n");
-  const lines = normalized.split("\n").map((line) => line.trim()).filter(Boolean);
+  const lines = normalized
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+
   if (lines.length >= 2) {
     return {
       materials: lines[0],
@@ -553,7 +533,8 @@ function splitExtraDeckLore(lore) {
     /\bUnaffected\b/i,
   ];
 
-  const materialLike = /(?:\+|\bLevel\b|\bRank\b|\bTuner\b|\bnon-Tuner\b|\bmaterials?\b|\bmonsters?\b|\bTokens?\b|\bPendulum\b|\bSynchro\b|\bFusion\b|\bLink\b|\bXyz\b|"[^"]+")/i;
+  const materialLike =
+    /(?:\+|\bLevel\b|\bRank\b|\bTuner\b|\bnon-Tuner\b|\bmaterials?\b|\bmonsters?\b|\bTokens?\b|\bPendulum\b|\bSynchro\b|\bFusion\b|\bLink\b|\bXyz\b|"[^"]+")/i;
 
   let splitIndex = -1;
   for (const starter of starters) {
@@ -614,10 +595,7 @@ function splitPendulumLore(lore) {
   let monster = monsterMatch ? monsterMatch[1].trim().replace(/^\n+|\n+$/g, "") : "";
 
   if (!monster) {
-    monster = normalized
-      .replace(/\[PENDULUM_EFFECT\]/g, "")
-      .replace(/\[MONSTER_EFFECT\]/g, "")
-      .trim();
+    monster = normalized.replace(/\[PENDULUM_EFFECT\]/g, "").replace(/\[MONSTER_EFFECT\]/g, "").trim();
   }
 
   return { pendulum, monster };
@@ -657,14 +635,16 @@ function LoreBlock({ card }) {
         </div>
       ) : null}
 
-      {hasPendulumSection && hasMonsterSection ? (
-        <div className="my-3 border-t border-slate-200" />
-      ) : null}
+      {hasPendulumSection && hasMonsterSection ? <div className="my-3 border-t border-slate-200" /> : null}
 
       {hasMonsterSection ? (
         <div className="whitespace-pre-wrap">
           <div className="mb-1 text-[15px] font-semibold text-slate-900">Monster Effect</div>
-          {isExtraDeckMonster(card) ? <ExtraDeckLoreContent text={sections.monster} /> : <div>{sections.monster}</div>}
+          {isExtraDeckMonster(card) ? (
+            <ExtraDeckLoreContent text={sections.monster} />
+          ) : (
+            <div>{sections.monster}</div>
+          )}
         </div>
       ) : null}
     </div>
@@ -755,6 +735,40 @@ function getCardPalette(card) {
   };
 }
 
+function getLevelRankLinkSortValue(card) {
+  const rawRank = String(card?.rank ?? "").trim();
+  const rawLink = String(card?.linkRating ?? card?.link ?? "").trim();
+  const rawLevel = String(card?.level ?? "").trim();
+
+  if (rawRank !== "" && !Number.isNaN(Number(rawRank))) return Number(rawRank);
+  if (rawLink !== "" && !Number.isNaN(Number(rawLink))) return Number(rawLink);
+  if (rawLevel !== "" && !Number.isNaN(Number(rawLevel))) return Number(rawLevel);
+  return -1;
+}
+
+function getPendulumScaleSortValue(card) {
+  const candidates = [card?.leftScale, card?.rightScale, card?.scales]
+    .map((value) => String(value ?? "").trim())
+    .filter((value) => value !== "" && !Number.isNaN(Number(value)));
+
+  if (!candidates.length) return -1;
+  return Number(candidates[0]);
+}
+
+function getGenesysPointsSortValue(card) {
+  const candidates = [card?.genesysPoints, card?.genesisPoints, card?.points, card?.genesys]
+    .map((value) => String(value ?? "").trim())
+    .filter((value) => value !== "" && !Number.isNaN(Number(value)));
+
+  if (!candidates.length) return 0;
+  return Number(candidates[0]);
+}
+
+function getBattleSortValue(value) {
+  const raw = String(value ?? "").trim();
+  if (raw === "" || Number.isNaN(Number(raw))) return -999999;
+  return Number(raw);
+}
 
 function parseRoute(cards, characters = [], officialCards = []) {
   const path = window.location.pathname || "/";
@@ -762,18 +776,23 @@ function parseRoute(cards, characters = [], officialCards = []) {
 
   if (parts[0] === "card" && parts[1]) {
     const found = cards.find((card) => String(card.id) === String(parts[1]));
-    if (found) return { page: "card", selectedCard: found, selectedOfficialCard: null, archetypeFilter: null, selectedCharacter: null };
+    if (found)
+      return { page: "card", selectedCard: found, selectedOfficialCard: null, archetypeFilter: null, selectedCharacter: null };
   }
   if (parts[0] === "official-card" && parts[1]) {
     const found = officialCards.find((card) => String(card.id) === String(parts[1]));
-    if (found) return { page: "official-card", selectedCard: null, selectedOfficialCard: found, archetypeFilter: null, selectedCharacter: null };
+    if (found)
+      return { page: "official-card", selectedCard: null, selectedOfficialCard: found, archetypeFilter: null, selectedCharacter: null };
   }
   if (parts[0] === "character" && parts[1]) {
     const found = characters.find((character) => String(character.id) === decodeURIComponent(parts[1]));
-    if (found) return { page: "character", selectedCard: null, selectedOfficialCard: null, archetypeFilter: null, selectedCharacter: found };
+    if (found)
+      return { page: "character", selectedCard: null, selectedOfficialCard: null, archetypeFilter: null, selectedCharacter: found };
   }
-  if (parts[0] === "characters") return { page: "characters", selectedCard: null, selectedOfficialCard: null, archetypeFilter: null, selectedCharacter: null };
-  if (parts[0] === "official-database") return { page: "official-database", selectedCard: null, selectedOfficialCard: null, archetypeFilter: null, selectedCharacter: null };
+  if (parts[0] === "characters")
+    return { page: "characters", selectedCard: null, selectedOfficialCard: null, archetypeFilter: null, selectedCharacter: null };
+  if (parts[0] === "official-database")
+    return { page: "official-database", selectedCard: null, selectedOfficialCard: null, archetypeFilter: null, selectedCharacter: null };
   if (parts[0] === "archetype" && parts[1]) {
     return {
       page: "archetype",
@@ -783,11 +802,12 @@ function parseRoute(cards, characters = [], officialCards = []) {
       selectedCharacter: null,
     };
   }
-  if (parts[0] === "downloads") return { page: "downloads", selectedCard: null, selectedOfficialCard: null, archetypeFilter: null, selectedCharacter: null };
-  if (parts[0] === "database") return { page: "database", selectedCard: null, selectedOfficialCard: null, archetypeFilter: null, selectedCharacter: null };
+  if (parts[0] === "downloads")
+    return { page: "downloads", selectedCard: null, selectedOfficialCard: null, archetypeFilter: null, selectedCharacter: null };
+  if (parts[0] === "database")
+    return { page: "database", selectedCard: null, selectedOfficialCard: null, archetypeFilter: null, selectedCharacter: null };
   return { page: "home", selectedCard: null, selectedOfficialCard: null, archetypeFilter: null, selectedCharacter: null };
 }
-
 
 function StatRow({ label, value }) {
   return (
@@ -828,13 +848,7 @@ function getCardTypeDisplay(card) {
 }
 
 function getAttributeDisplay(card) {
-  return (
-    <StatValueWithIcon
-      value={card.attribute}
-      iconSrc={getAttributeIcon(card.attribute)}
-      iconAlt={`${card.attribute} attribute`}
-    />
-  );
+  return <StatValueWithIcon value={card.attribute} iconSrc={getAttributeIcon(card.attribute)} iconAlt={`${card.attribute} attribute`} />;
 }
 
 function CardThumb({ card, onOpen }) {
@@ -844,11 +858,18 @@ function CardThumb({ card, onOpen }) {
       className="group overflow-hidden rounded-2xl border border-slate-300 bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
     >
       <div className="aspect-[2/3] w-full overflow-hidden bg-slate-100">
-        <img src={card.image} alt={card.name} loading="lazy" className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]" />
+        <img
+          src={card.image}
+          alt={card.name}
+          loading="lazy"
+          className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]"
+        />
       </div>
       <div className="space-y-1 p-3">
         <div className="line-clamp-2 text-sm font-semibold text-slate-900">{card.name}</div>
-        <div className="text-xs text-slate-500">{card.archetype} • {card.cardType}</div>
+        <div className="text-xs text-slate-500">
+          {card.archetype} • {card.cardType}
+        </div>
         <div className="text-xs text-slate-400">By {card.author || "Mardras"}</div>
         <div className="text-[11px] text-slate-400">ID: {card.id}</div>
       </div>
@@ -946,13 +967,22 @@ function ImportPanel({ cards, onImport, onReset, settings, onSaveSettings, onLoa
           <p className="text-sm text-slate-600">This is the easiest way to scale the site to all your custom cards.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button onClick={() => downloadJson("mardras-db-template.json", emptyTemplate)} className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100">
+          <button
+            onClick={() => downloadJson("mardras-db-template.json", emptyTemplate)}
+            className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+          >
             <FileJson className="h-4 w-4" /> Template
           </button>
-          <button onClick={() => downloadJson("mardras-db-cards.json", cards)} className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100">
+          <button
+            onClick={() => downloadJson("mardras-db-cards.json", cards)}
+            className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+          >
             <Download className="h-4 w-4" /> Export current JSON
           </button>
-          <button onClick={onReset} className="inline-flex items-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 transition hover:bg-red-100">
+          <button
+            onClick={onReset}
+            className="inline-flex items-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 transition hover:bg-red-100"
+          >
             Reset sample data
           </button>
         </div>
@@ -971,9 +1001,24 @@ function ImportPanel({ cards, onImport, onReset, settings, onSaveSettings, onLoa
       <div className="grid gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 lg:grid-cols-2">
         <div className="space-y-3">
           <div className="text-sm font-semibold text-slate-900">Image auto-link settings</div>
-          <input value={imageBaseUrl} onChange={(e) => setImageBaseUrl(e.target.value)} placeholder="/cards" className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none" />
-          <input value={imageExtension} onChange={(e) => setImageExtension(e.target.value)} placeholder="jpg" className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none" />
-          <input value={dataUrl} onChange={(e) => setDataUrl(e.target.value)} placeholder="/data/cards.json or full URL" className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none" />
+          <input
+            value={imageBaseUrl}
+            onChange={(e) => setImageBaseUrl(e.target.value)}
+            placeholder="/cards"
+            className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none"
+          />
+          <input
+            value={imageExtension}
+            onChange={(e) => setImageExtension(e.target.value)}
+            placeholder="jpg"
+            className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none"
+          />
+          <input
+            value={dataUrl}
+            onChange={(e) => setDataUrl(e.target.value)}
+            placeholder="/data/cards.json or full URL"
+            className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none"
+          />
         </div>
         <div className="space-y-3">
           <div className="text-sm font-semibold text-slate-900">Download links JSON</div>
@@ -989,13 +1034,22 @@ function ImportPanel({ cards, onImport, onReset, settings, onSaveSettings, onLoa
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className={`text-sm ${ok ? "text-slate-600" : "text-red-700"}`}>{message}</div>
         <div className="flex flex-wrap gap-2">
-          <button onClick={handleSaveSettings} className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+          <button
+            onClick={handleSaveSettings}
+            className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+          >
             <LinkIcon className="h-4 w-4" /> Save Settings
           </button>
-          <button onClick={() => onLoadFromUrl(dataUrl)} className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+          <button
+            onClick={() => onLoadFromUrl(dataUrl, { navigateAfterLoad: true })}
+            className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+          >
             <Download className="h-4 w-4" /> Load from URL
           </button>
-          <button onClick={handleImport} className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800">
+          <button
+            onClick={handleImport}
+            className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+          >
             <Upload className="h-4 w-4" /> Import JSON
           </button>
         </div>
@@ -1004,7 +1058,17 @@ function ImportPanel({ cards, onImport, onReset, settings, onSaveSettings, onLoa
   );
 }
 
-function HomePage({ onBrowse, cards, onOpen, onImport, onReset, settings, onSaveSettings, onLoadFromUrl }) {
+function HomePage({
+  onBrowse,
+  cards,
+  onOpen,
+  onImport,
+  onReset,
+  settings,
+  onSaveSettings,
+  onLoadFromUrl,
+  isAdmin,
+}) {
   const featured = cards.slice(0, 3);
   return (
     <div className="space-y-8">
@@ -1017,7 +1081,10 @@ function HomePage({ onBrowse, cards, onOpen, onImport, onReset, settings, onSave
           <h1 className="text-4xl font-bold tracking-tight text-slate-900">Mardras-db.com</h1>
           <p className="text-base leading-7 text-slate-700">A custom card database for L.S. cards and the rest of your original projects.</p>
           <div className="flex flex-wrap gap-3 pt-2">
-            <button onClick={onBrowse} className="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800">
+            <button
+              onClick={onBrowse}
+              className="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
+            >
               Open Database
             </button>
           </div>
@@ -1025,7 +1092,9 @@ function HomePage({ onBrowse, cards, onOpen, onImport, onReset, settings, onSave
       </section>
 
       <section className="grid gap-4 md:grid-cols-3">
-        {featured.map((card) => <FeaturedCard key={card.id} card={card} onOpen={onOpen} />)}
+        {featured.map((card) => (
+          <FeaturedCard key={card.id} card={card} onOpen={onOpen} />
+        ))}
       </section>
 
       <section className="space-y-4 rounded-[24px] border border-slate-300 bg-white p-5 shadow-sm">
@@ -1035,7 +1104,13 @@ function HomePage({ onBrowse, cards, onOpen, onImport, onReset, settings, onSave
         </div>
         <div className="grid gap-4 md:grid-cols-2">
           {(settings.downloads || []).map((item) => (
-            <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="rounded-2xl border border-slate-300 bg-slate-50 p-4 transition hover:bg-slate-100">
+            <a
+              key={item.id}
+              href={item.url}
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-2xl border border-slate-300 bg-slate-50 p-4 transition hover:bg-slate-100"
+            >
               <div className="mb-1 text-base font-semibold text-slate-900">{item.title}</div>
               <div className="mb-3 text-sm text-slate-600">{item.description}</div>
               <div className="inline-flex items-center gap-2 text-sm font-medium text-slate-800">
@@ -1046,11 +1121,19 @@ function HomePage({ onBrowse, cards, onOpen, onImport, onReset, settings, onSave
         </div>
       </section>
 
-      <ImportPanel cards={cards} onImport={onImport} onReset={onReset} settings={settings} onSaveSettings={onSaveSettings} onLoadFromUrl={onLoadFromUrl} />
+      {isAdmin ? (
+        <ImportPanel
+          cards={cards}
+          onImport={onImport}
+          onReset={onReset}
+          settings={settings}
+          onSaveSettings={onSaveSettings}
+          onLoadFromUrl={onLoadFromUrl}
+        />
+      ) : null}
     </div>
   );
 }
-
 
 function normalizeAttributeFilterValue(value) {
   const raw = String(value ?? "").trim();
@@ -1192,7 +1275,8 @@ function DatabasePage({ cards, onOpen }) {
   const [selectedArchetype, setSelectedArchetype] = useState("");
   const [filterQuery, setFilterQuery] = useState("");
   const [selectedFilterTags, setSelectedFilterTags] = useState([]);
-  const [sortMode, setSortMode] = useState("id-asc");
+  const [sortField, setSortField] = useState("id");
+  const [sortDirection, setSortDirection] = useState("asc");
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [pageIndex, setPageIndex] = useState(1);
   const [authorFilter, setAuthorFilter] = useState("All");
@@ -1216,8 +1300,7 @@ function DatabasePage({ cards, onOpen }) {
         const bStarts = b.label.toLowerCase().startsWith(term) ? 0 : 1;
         if (aStarts !== bStarts) return aStarts - bStarts;
         return a.label.localeCompare(b.label);
-      })
-      ;
+      });
   }, [filterQuery, filterOptions, selectedFilterIds]);
 
   const matchingArchetypes = useMemo(() => {
@@ -1249,20 +1332,51 @@ function DatabasePage({ cards, onOpen }) {
     });
 
     return [...base].sort((a, b) => {
-      if (sortMode === "name-asc") return a.name.localeCompare(b.name);
-      if (sortMode === "name-desc") return b.name.localeCompare(a.name);
-      if (sortMode === "id-desc") return Number(b.id) - Number(a.id);
-      return Number(a.id) - Number(b.id);
+      const direction = sortDirection === "desc" ? -1 : 1;
+
+      if (sortField === "name") {
+        return a.name.localeCompare(b.name) * direction;
+      }
+
+      let aValue = 0;
+      let bValue = 0;
+
+      if (sortField === "id") {
+        aValue = Number(a.id);
+        bValue = Number(b.id);
+      } else if (sortField === "genesys") {
+        aValue = getGenesysPointsSortValue(a);
+        bValue = getGenesysPointsSortValue(b);
+      } else if (sortField === "level-rank-link") {
+        aValue = getLevelRankLinkSortValue(a);
+        bValue = getLevelRankLinkSortValue(b);
+      } else if (sortField === "pendulum-scale") {
+        aValue = getPendulumScaleSortValue(a);
+        bValue = getPendulumScaleSortValue(b);
+      } else if (sortField === "atk") {
+        aValue = getBattleSortValue(a.atk);
+        bValue = getBattleSortValue(b.atk);
+      } else if (sortField === "def") {
+        aValue = getBattleSortValue(a.def);
+        bValue = getBattleSortValue(b.def);
+      }
+
+      if (aValue === bValue) {
+        return a.name.localeCompare(b.name) * direction;
+      }
+
+      return (aValue - bValue) * direction;
     });
-  }, [cards, query, selectedFilterTags, hasHybridCardType, selectedArchetype, authorFilter, statusFilter, sortMode]);
+  }, [cards, query, selectedFilterTags, hasHybridCardType, selectedArchetype, authorFilter, statusFilter, sortField, sortDirection]);
 
   useEffect(() => {
     setPageIndex(1);
-  }, [query, selectedFilterTags, selectedArchetype, authorFilter, statusFilter, sortMode, pageSize]);
+  }, [query, selectedFilterTags, selectedArchetype, authorFilter, statusFilter, sortField, sortDirection, pageSize]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const visible = filtered.slice((pageIndex - 1) * pageSize, pageIndex * pageSize);
-  const databaseTitle = cards.some((card) => card?.source === "official") ? "Official Database" : "Custom Database";
+  const isOfficial = cards.some((card) => card?.source === "official");
+  const databaseTitle = isOfficial ? "Official Database" : "Custom Database";
 
   function addFilterTag(option) {
     if (!option || selectedFilterIds.has(option.id)) return;
@@ -1284,7 +1398,34 @@ function DatabasePage({ cards, onOpen }) {
       <aside className="h-fit rounded-[24px] border border-slate-300 bg-white p-5 shadow-sm space-y-5">
         <div>
           <h3 className="text-lg font-bold text-slate-900">Filters</h3>
-          <p className="text-sm text-slate-600">Refine the database like a proper wiki directory.</p>
+        </div>
+
+        <div className="space-y-2">
+          <div className="text-sm font-semibold text-slate-700">Sort by</div>
+          <div className="grid grid-cols-[1fr_112px] gap-2">
+            <select value={sortField} onChange={(e) => setSortField(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none">
+              <option value="id">ID</option>
+              <option value="name">Name</option>
+              <option value="genesys">Genesys Points</option>
+              <option value="level-rank-link">Level/Rank/Link</option>
+              <option value="pendulum-scale">Pendulum Scale</option>
+              <option value="atk">ATK</option>
+              <option value="def">DEF</option>
+            </select>
+            <select value={sortDirection} onChange={(e) => setSortDirection(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none">
+              {sortField === "name" ? (
+                <>
+                  <option value="asc">A to Z</option>
+                  <option value="desc">Z to A</option>
+                </>
+              ) : (
+                <>
+                  <option value="asc">Ascending</option>
+                  <option value="desc">Descending</option>
+                </>
+              )}
+            </select>
+          </div>
         </div>
 
         <div className="space-y-2">
@@ -1377,23 +1518,31 @@ function DatabasePage({ cards, onOpen }) {
           ) : null}
         </div>
 
-        <div className="space-y-2">
-          <div className="text-sm font-semibold text-slate-700">Author</div>
-          <select value={authorFilter} onChange={(e) => setAuthorFilter(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none">{authors.map((item) => <option key={item}>{item}</option>)}</select>
-        </div>
+        {!isOfficial ? (
+          <div className="space-y-2">
+            <div className="text-sm font-semibold text-slate-700">Author</div>
+            <select
+              value={authorFilter}
+              onChange={(e) => setAuthorFilter(e.target.value)}
+              className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none"
+            >
+              {authors.map((item) => (
+                <option key={item}>{item}</option>
+              ))}
+            </select>
+          </div>
+        ) : null}
 
         <div className="space-y-2">
           <div className="text-sm font-semibold text-slate-700">Banlist Status</div>
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none">{statuses.map((item) => <option key={item}>{item}</option>)}</select>
-        </div>
-
-        <div className="space-y-2">
-          <div className="text-sm font-semibold text-slate-700">Search by ID or Name</div>
-          <select value={sortMode} onChange={(e) => setSortMode(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none">
-            <option value="id-asc">ID ↑</option>
-            <option value="id-desc">ID ↓</option>
-            <option value="name-asc">Name A→Z</option>
-            <option value="name-desc">Name Z→A</option>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none"
+          >
+            {statuses.map((item) => (
+              <option key={item}>{item}</option>
+            ))}
           </select>
         </div>
 
@@ -1417,26 +1566,46 @@ function DatabasePage({ cards, onOpen }) {
           </div>
           <label className="flex items-center gap-3 rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3">
             <Search className="h-4 w-4 text-slate-500" />
-            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search ID, name, type, archetype, author, status, or text..." className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search ID, name, type, archetype, author, status, or text..."
+              className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400"
+            />
           </label>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
-          {visible.map((card) => <CardThumb key={card.id} card={card} onOpen={onOpen} />)}
+          {visible.map((card) => (
+            <CardThumb key={card.id} card={card} onOpen={onOpen} />
+          ))}
         </div>
 
         <div className="flex flex-col gap-3 rounded-[24px] border border-slate-300 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-          <div className="text-sm text-slate-600">Page {pageIndex} of {totalPages}</div>
+          <div className="text-sm text-slate-600">
+            Page {pageIndex} of {totalPages}
+          </div>
           <div className="flex gap-2">
-            <button onClick={() => setPageIndex((p) => Math.max(1, p - 1))} disabled={pageIndex === 1} className="rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 disabled:cursor-not-allowed disabled:opacity-50">Previous</button>
-            <button onClick={() => setPageIndex((p) => Math.min(totalPages, p + 1))} disabled={pageIndex === totalPages} className="rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 disabled:cursor-not-allowed disabled:opacity-50">Next</button>
+            <button
+              onClick={() => setPageIndex((p) => Math.max(1, p - 1))}
+              disabled={pageIndex === 1}
+              className="rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Previous
+            </button>
+            <button
+              onClick={() => setPageIndex((p) => Math.min(totalPages, p + 1))}
+              disabled={pageIndex === totalPages}
+              className="rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Next
+            </button>
           </div>
         </div>
       </div>
     </div>
   );
 }
-
 
 function formatStatValue(value) {
   if (value === -2 || value === "-2") return "?";
@@ -1472,11 +1641,7 @@ function CardDetail({ card, cards, onBack, onOpen }) {
     function handleKeyDown(event) {
       const target = event.target;
       const tagName = target?.tagName?.toLowerCase?.() || "";
-      const isTypingTarget =
-        tagName === "input" ||
-        tagName === "textarea" ||
-        tagName === "select" ||
-        target?.isContentEditable;
+      const isTypingTarget = tagName === "input" || tagName === "textarea" || tagName === "select" || target?.isContentEditable;
 
       if (isTypingTarget) return;
 
@@ -1498,11 +1663,28 @@ function CardDetail({ card, cards, onBack, onOpen }) {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap gap-2">
-        <button onClick={onBack} className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50">
+        <button
+          onClick={onBack}
+          className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
+        >
           <ChevronLeft className="h-4 w-4" /> Back to database
         </button>
-        {prev && <button onClick={() => onOpen(prev)} className="rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">◀ Previous</button>}
-        {next && <button onClick={() => onOpen(next)} className="rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Next ▶</button>}
+        {prev && (
+          <button
+            onClick={() => onOpen(prev)}
+            className="rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          >
+            ◀ Previous
+          </button>
+        )}
+        {next && (
+          <button
+            onClick={() => onOpen(next)}
+            className="rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          >
+            Next ▶
+          </button>
+        )}
       </div>
 
       <div className={`overflow-hidden rounded-[28px] border shadow-sm ${palette.shell}`}>
@@ -1518,7 +1700,9 @@ function CardDetail({ card, cards, onBack, onOpen }) {
 
             <div className={`rounded-xl p-4 text-sm text-slate-700 shadow-sm ${palette.panel}`}>
               <div className="mb-1 font-semibold text-slate-900">Status</div>
-              <div className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${card.status === "Banned" ? "bg-red-100 text-red-700" : "bg-emerald-100 text-emerald-700"}`}>{card.status}</div>
+              <div className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${card.status === "Banned" ? "bg-red-100 text-red-700" : "bg-emerald-100 text-emerald-700"}`}>
+                {card.status}
+              </div>
             </div>
 
             <div className={`rounded-xl p-4 text-sm text-slate-700 shadow-sm ${palette.panel}`}>
@@ -1539,11 +1723,9 @@ function CardDetail({ card, cards, onBack, onOpen }) {
               <StatRow label="Card type" value={getCardTypeDisplay(card)} />
               {card.cardType === "Monster" ? <StatRow label="Attribute" value={getAttributeDisplay(card)} /> : null}
               <StatRow label="Types" value={<TypeLineWithIcons card={card} />} />
-              {card.level ? <StatRow label={getLevelLabel(card)} value={<LevelValue card={card} />} /> : null}
+              {card.level || card.rank || card.linkRating ? <StatRow label={getLevelLabel(card)} value={<LevelValue card={card} />} /> : null}
               {card.scales ? <StatRow label="Pendulum Scale" value={<PendulumScaleValue value={card.scales} />} /> : null}
-              {getBattleStatDisplay(card) ? (
-                <StatRow label={getBattleStatDisplay(card).label} value={getBattleStatDisplay(card).value} />
-              ) : null}
+              {getBattleStatDisplay(card) ? <StatRow label={getBattleStatDisplay(card).label} value={getBattleStatDisplay(card).value} /> : null}
               <StatRow label="Archetype" value={card.archetype} />
               <StatRow label="Author" value={card.author || "Mardras"} />
               <StatRow label="Lore group" value={card.setGroup} />
@@ -1592,13 +1774,7 @@ function CharacterDeckSection({ title, ids, allCards, onOpen, onHover, onLeave }
       {deckCards.length ? (
         <div className="grid grid-cols-4 gap-2 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10">
           {deckCards.map((card) => (
-            <CharacterDeckCard
-              key={`${title}-${card.id}`}
-              card={card}
-              onOpen={onOpen}
-              onHover={onHover}
-              onLeave={onLeave}
-            />
+            <CharacterDeckCard key={`${title}-${card.id}`} card={card} onOpen={onOpen} onHover={onHover} onLeave={onLeave} />
           ))}
         </div>
       ) : (
@@ -1653,7 +1829,9 @@ function CharactersPage({ characters, onOpen }) {
       {!characters.length ? (
         <section className="rounded-[24px] border border-dashed border-slate-300 bg-white p-8 text-center shadow-sm">
           <div className="text-lg font-semibold text-slate-900">No characters found</div>
-          <div className="mt-2 text-sm text-slate-600">Add <code>/public/data/characters.json</code> to your project to populate this page.</div>
+          <div className="mt-2 text-sm text-slate-600">
+            Add <code>/public/data/characters.json</code> to your project to populate this page.
+          </div>
         </section>
       ) : (
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -1674,7 +1852,9 @@ function CharactersPage({ characters, onOpen }) {
                 <div className="text-sm leading-6 text-slate-700">{character.summary || "No summary yet."}</div>
                 <div className="flex flex-wrap gap-2 text-xs">
                   {character.affiliation ? <span className="rounded-full bg-slate-100 px-2.5 py-1 font-medium text-slate-600">{character.affiliation}</span> : null}
-                  <span className="rounded-full bg-slate-100 px-2.5 py-1 font-medium text-slate-600">{character.decks.length} deck{character.decks.length === 1 ? "" : "s"}</span>
+                  <span className="rounded-full bg-slate-100 px-2.5 py-1 font-medium text-slate-600">
+                    {character.decks.length} deck{character.decks.length === 1 ? "" : "s"}
+                  </span>
                 </div>
               </div>
             </button>
@@ -1720,7 +1900,11 @@ function CharacterDetailPage({ character, cards, onOpenCard, onOpenCharacterList
               <div className="flex flex-wrap gap-2 text-xs">
                 {character.affiliation ? <span className="rounded-full bg-slate-100 px-2.5 py-1 font-medium text-slate-600">{character.affiliation}</span> : null}
                 {character.firstAppearance ? <span className="rounded-full bg-slate-100 px-2.5 py-1 font-medium text-slate-600">{character.firstAppearance}</span> : null}
-                {(character.tags || []).map((tag) => <span key={tag} className="rounded-full bg-slate-100 px-2.5 py-1 font-medium text-slate-600">{tag}</span>)}
+                {(character.tags || []).map((tag) => (
+                  <span key={tag} className="rounded-full bg-slate-100 px-2.5 py-1 font-medium text-slate-600">
+                    {tag}
+                  </span>
+                ))}
               </div>
             </div>
           </div>
@@ -1738,7 +1922,9 @@ function CharacterDetailPage({ character, cards, onOpenCard, onOpenCharacterList
             <section className="rounded-[24px] border border-slate-300 bg-white p-5 shadow-sm">
               <h2 className="text-2xl font-bold text-slate-900">Signature Cards</h2>
               <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {signatureCards.map((card) => <FeaturedCard key={`signature-${card.id}`} card={card} onOpen={onOpenCard} />)}
+                {signatureCards.map((card) => (
+                  <FeaturedCard key={`signature-${card.id}`} card={card} onOpen={onOpenCard} />
+                ))}
               </div>
             </section>
           ) : null}
@@ -1756,7 +1942,10 @@ function CharacterDetailPage({ character, cards, onOpenCard, onOpenCharacterList
                   className="rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm outline-none"
                 >
                   {character.decks.map((deck) => (
-                    <option key={deck.id} value={deck.id}>{deck.name}{deck.era ? ` — ${deck.era}` : ""}</option>
+                    <option key={deck.id} value={deck.id}>
+                      {deck.name}
+                      {deck.era ? ` — ${deck.era}` : ""}
+                    </option>
                   ))}
                 </select>
               ) : null}
@@ -1784,7 +1973,9 @@ function CharacterDetailPage({ character, cards, onOpenCard, onOpenCharacterList
                 </div>
               </div>
             ) : (
-              <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-sm text-slate-500">This character does not have any decks yet.</div>
+              <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-sm text-slate-500">
+                This character does not have any decks yet.
+              </div>
             )}
           </section>
         </div>
@@ -1808,7 +1999,13 @@ function DownloadsPage({ settings }) {
 
       <div className="grid gap-4 md:grid-cols-2">
         {(settings.downloads || []).map((item) => (
-          <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="rounded-[24px] border border-slate-300 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg">
+          <a
+            key={item.id}
+            href={item.url}
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-[24px] border border-slate-300 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
+          >
             <div className="mb-2 text-lg font-semibold text-slate-900">{item.title}</div>
             <div className="mb-4 text-sm leading-6 text-slate-600">{item.description}</div>
             <div className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white">
@@ -1838,7 +2035,9 @@ function ArchetypePage({ cards, archetype, onOpen, onBrowseAll }) {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
-        {filtered.map((card) => <CardThumb key={card.id} card={card} onOpen={onOpen} />)}
+        {filtered.map((card) => (
+          <CardThumb key={card.id} card={card} onOpen={onOpen} />
+        ))}
       </div>
     </div>
   );
@@ -1883,6 +2082,11 @@ export default function App() {
   const [archetypeFilter, setArchetypeFilter] = useState(initialRoute.archetypeFilter);
   const [selectedCharacter, setSelectedCharacter] = useState(initialRoute.selectedCharacter);
 
+  const isAdmin = useMemo(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get(ADMIN_QUERY_KEY) === "1";
+  }, []);
+
   useEffect(() => {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
   }, [cards]);
@@ -1915,12 +2119,11 @@ export default function App() {
     setSelectedCharacter(route.selectedCharacter);
   }
 
-
   useEffect(() => {
     let cancelled = false;
     async function loadCharacters() {
       try {
-        const response = await fetch("/data/characters.json");
+        const response = await fetch("/data/characters.json", { cache: "no-store" });
         if (!response.ok) throw new Error(`Failed to load characters JSON: ${response.status}`);
         const parsed = await response.json();
         if (!Array.isArray(parsed)) throw new Error("Characters file is not a JSON array.");
@@ -1936,27 +2139,55 @@ export default function App() {
     };
   }, []);
 
-
-
-useEffect(() => {
-  let cancelled = false;
-  async function loadOfficialCards() {
-    try {
-      const response = await fetch("/data/official-cards.json");
-      if (!response.ok) throw new Error(`Failed to load official cards JSON: ${response.status}`);
-      const parsed = await response.json();
-      if (!Array.isArray(parsed)) throw new Error("Official cards file is not a JSON array.");
-      if (!cancelled) setOfficialCards(parsed.map((card, index) => normalizeOfficialCard(card, index)));
-    } catch (error) {
-      console.warn(error);
-      if (!cancelled) setOfficialCards([]);
+  useEffect(() => {
+    let cancelled = false;
+    async function loadOfficialCards() {
+      try {
+        const response = await fetch("/data/official-cards.json", { cache: "no-store" });
+        if (!response.ok) throw new Error(`Failed to load official cards JSON: ${response.status}`);
+        const parsed = await response.json();
+        if (!Array.isArray(parsed)) throw new Error("Official cards file is not a JSON array.");
+        if (!cancelled) setOfficialCards(parsed.map((card, index) => normalizeOfficialCard(card, index)));
+      } catch (error) {
+        console.warn(error);
+        if (!cancelled) setOfficialCards([]);
+      }
     }
-  }
-  loadOfficialCards();
-  return () => {
-    cancelled = true;
-  };
-}, []);
+    loadOfficialCards();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function bootstrapCards() {
+      const target = settings.dataUrl || defaultSettings.dataUrl;
+      if (!target) return;
+
+      try {
+        const response = await fetch(target, { cache: "no-store" });
+        if (!response.ok) throw new Error(`Failed to load JSON: ${response.status}`);
+
+        const parsed = await response.json();
+        if (!Array.isArray(parsed)) throw new Error("Loaded file is not a JSON array.");
+
+        if (cancelled) return;
+
+        const normalized = parsed.map((card, index) => normalizeCard(card, index, settings));
+        setCards(normalized);
+      } catch (error) {
+        console.warn("Auto-refresh failed, using cached/local cards instead.", error);
+      }
+    }
+
+    bootstrapCards();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [settings.dataUrl, settings.imageBaseUrl, settings.imageExtension]);
 
   function goHome() {
     navigate("/");
@@ -2020,20 +2251,33 @@ useEffect(() => {
     setCards((prev) => prev.map((card, index) => normalizeCard(card, index, merged)));
   }
 
-  async function handleLoadFromUrl(url) {
+  async function handleLoadFromUrl(url, options = {}) {
+    const { navigateAfterLoad = false, silent = false } = options;
     const target = url || settings.dataUrl;
-    if (!target) return;
+
+    if (!target) return false;
+
     try {
-      const response = await fetch(target);
+      const response = await fetch(target, { cache: "no-store" });
       if (!response.ok) throw new Error(`Failed to load JSON: ${response.status}`);
+
       const parsed = await response.json();
       if (!Array.isArray(parsed)) throw new Error("Loaded file is not a JSON array.");
+
       const normalized = parsed.map((card, index) => normalizeCard(card, index, settings));
       setCards(normalized);
-      navigate("/database");
+
+      if (navigateAfterLoad) {
+        navigate("/database");
+      }
+
+      return true;
     } catch (error) {
       console.error(error);
-      alert(error.message || "Failed to load remote JSON.");
+      if (!silent) {
+        alert(error.message || "Failed to load remote JSON.");
+      }
+      return false;
     }
   }
 
@@ -2078,6 +2322,7 @@ useEffect(() => {
             settings={settings}
             onSaveSettings={handleSaveSettings}
             onLoadFromUrl={handleLoadFromUrl}
+            isAdmin={isAdmin}
           />
         )}
 
