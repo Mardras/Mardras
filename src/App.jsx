@@ -381,6 +381,18 @@ const CODE_DOWNLOADS = [
     description: "Fran's Warrior Xyz custom deck and related cards.",
     url: "https://www.mediafire.com/file/pu6l1awbblnegrw/Fran_Customs_Basic_Deck_Weather_Warrior_2026.zip/file",
   },
+  {
+    id: "vylon-pack",
+    title: "Vylon Custom Pack for EDOPro",
+    description: "Veihar's custom Vylon deck (Full Collection).",
+    url: "https://www.mediafire.com/file/xig0cmh7jqkzymw/VylonCustom2026ByMardras.zip/file",
+  },
+  {
+    id: "aura-pack",
+    title: "Aura Deck Pack for EDOPro",
+    description: "Aura's custom Ritual Xyz deck and related cards.",
+    url: "https://www.mediafire.com/file/q6gq4pckaagu1l1/Aura_Customs_Basic_Deck_Duelist_Goddess_2026.zip/file",
+  },
 ];
 
 const defaultSettings = {
