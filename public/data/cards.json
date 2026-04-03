@@ -5079,7 +5079,7 @@
   {
     "id": "317",
     "name": "ZS - Astral Sage",
-    "archetype": "Astral",
+    "archetype": ["ZS-", "Astral"],
     "cardType": "Monster",
     "attribute": "LIGHT",
     "race": "Warrior",
@@ -5621,7 +5621,7 @@
   {
     "id": "8462",
     "name": "Number 99: Hope Dragun",
-    "archetype": ["Number", "Utopia"],
+    "archetype": ["Number", "Utopic"],
     "cardType": "Monster",
     "attribute": "LIGHT",
     "race": "Dragon",
