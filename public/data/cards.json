@@ -2718,7 +2718,7 @@
    {
     "id": "2",
     "name": "Honest-Eyes Lionheart",
-    "archetype": "",
+    "archetype": "Honest-Eyes",
     "cardType": "Monster",
     "attribute": "EARTH",
     "race": "Beast",
@@ -2743,7 +2743,7 @@
   {
     "id": "8",
     "name": "Honest-Eyes Valkyriaura",
-    "archetype": "",
+    "archetype": ["Honest-Eyes", "Aura"],
     "cardType": "Monster",
     "attribute": "LIGHT",
     "race": "Warrior",
@@ -2896,7 +2896,7 @@
   {
     "id": "219",
     "name": "Honest-Eyes Solar Rage Ox",
-    "archetype": "",
+    "archetype": "Honest-Eyes",
     "cardType": "Monster",
     "attribute": "FIRE",
     "race": "Beast",
@@ -2921,7 +2921,7 @@
   {
     "id": "220",
     "name": "Honest Eye of the Storm",
-    "archetype": "",
+    "archetype": "Honest Eye",
     "cardType": "Trap",
     "attribute": "0",
     "race": "0",
@@ -2947,7 +2947,7 @@
   {
     "id": "221",
     "name": "Honest-Eyes Spirit of the Storm",
-    "archetype": "",
+    "archetype": "Honest-Eyes",
     "cardType": "Monster",
     "attribute": "WIND",
     "race": "Winged Beast",
@@ -2972,7 +2972,7 @@
   {
     "id": "222",
     "name": "Templar of Lightning",
-    "archetype": "",
+    "archetype": "Lightning",
     "cardType": "Monster",
     "attribute": "LIGHT",
     "race": "Warrior",
@@ -2998,7 +2998,7 @@
   {
     "id": "227",
     "name": "Honest-Eyes Spirit of The Firestorm",
-    "archetype": "",
+    "archetype": "Honest-Eyes",
     "cardType": "Monster",
     "attribute": "FIRE",
     "race": "Pyro",
@@ -3101,7 +3101,7 @@
   {
     "id": "3002",
     "name": "Honest-Eyes Cloud Sheep",
-    "archetype": "",
+    "archetype": ["Honest-Eyes", "Cloudian"],
     "cardType": "Monster",
     "attribute": "WATER",
     "race": "Beast",
@@ -3152,7 +3152,7 @@
   {
     "id": "3009",
     "name": "Kurifran",
-    "archetype": "",
+    "archetype": "Kuriboh",
     "cardType": "Monster",
     "attribute": "LIGHT",
     "race": "Fairy",
@@ -3177,7 +3177,7 @@
   {
     "id": "5035",
     "name": "Honest-Eyes Hebridean",
-    "archetype": "",
+    "archetype": "Honest-Eyes",
     "cardType": "Monster",
     "attribute": "DARK",
     "race": "Beast",
@@ -3228,7 +3228,7 @@
   {
     "id": "5037",
     "name": "Spartan of Lightning",
-    "archetype": "",
+    "archetype": "Lightning",
     "cardType": "Monster",
     "attribute": "LIGHT",
     "race": "Warrior",
@@ -3254,7 +3254,7 @@
   {
     "id": "5047",
     "name": "Honest-Eyes Mother Nature",
-    "archetype": "",
+    "archetype": ["Honest-Eyes", "Naturia"],
     "cardType": "Monster",
     "attribute": "EARTH",
     "race": "Beast",
@@ -3279,7 +3279,7 @@
   {
     "id": "5048",
     "name": "Honest-Eyes Hussar",
-    "archetype": "",
+    "archetype": "Honest-Eyes",
     "cardType": "Monster",
     "attribute": "LIGHT",
     "race": "Warrior",
@@ -3304,7 +3304,7 @@
   {
     "id": "5050",
     "name": "Winged Hussar of Lightning",
-    "archetype": "",
+    "archetype": "Lightning",
     "cardType": "Monster",
     "attribute": "LIGHT",
     "race": "Warrior",
@@ -3330,7 +3330,7 @@
   {
     "id": "5052",
     "name": "Honest-Eyes Mounted Grenadier",
-    "archetype": "",
+    "archetype": "Honest-Eyes",
     "cardType": "Monster",
     "attribute": "WATER",
     "race": "Warrior",
@@ -3381,7 +3381,7 @@
   {
     "id": "6159",
     "name": "Honest-Eyes Ashes of The Phoenix",
-    "archetype": "",
+    "archetype": "Honest-Eyes",
     "cardType": "Monster",
     "attribute": "DARK",
     "race": "Winged Beast",
@@ -3406,7 +3406,7 @@
   {
     "id": "6160",
     "name": "Honest-Eyes Spirit of The Thunderstorm",
-    "archetype": "",
+    "archetype": "Honest-Eyes",
     "cardType": "Monster",
     "attribute": "LIGHT",
     "race": "Thunder",
@@ -3457,7 +3457,7 @@
   {
     "id": "6646",
     "name": "Honest-Eyes Thunders of War",
-    "archetype": "",
+    "archetype": "Honest-Eyes",
     "cardType": "Monster",
     "attribute": "LIGHT",
     "race": "Beast",
@@ -3482,7 +3482,7 @@
   {
     "id": "7789",
     "name": "Honest-Eyes Raincoat Girl",
-    "archetype": "",
+    "archetype": "Honest-Eyes",
     "cardType": "Monster",
     "attribute": "WATER",
     "race": "Beast",
@@ -3532,7 +3532,7 @@
   {
     "id": "8504",
     "name": "Leonidas, The Honest-Eyes Spartan",
-    "archetype": "",
+    "archetype": "Honest-Eyes",
     "cardType": "Monster",
     "attribute": "DARK",
     "race": "Warrior",
@@ -3558,7 +3558,7 @@
   {
     "id": "8813",
     "name": "Aquaura",
-    "archetype": "",
+    "archetype": "Aura",
     "cardType": "Monster",
     "attribute": "WATER",
     "race": "Aqua",
@@ -5053,7 +5053,7 @@
   {
     "id": "120",
     "name": "Asura's Numbers",
-    "archetype": "",
+    "archetype": "Number",
     "cardType": "Spell",
     "attribute": "0",
     "race": "0",
@@ -5079,7 +5079,7 @@
   {
     "id": "317",
     "name": "ZS - Astral Sage",
-    "archetype": "",
+    "archetype": "Astral",
     "cardType": "Monster",
     "attribute": "LIGHT",
     "race": "Warrior",
@@ -5104,7 +5104,7 @@
   {
     "id": "318",
     "name": "Aura, The Duelist Goddess",
-    "archetype": "",
+    "archetype": "Aura",
     "cardType": "Monster",
     "attribute": "DIVINE",
     "race": "Fairy",
@@ -5155,7 +5155,7 @@
   {
     "id": "339",
     "name": "Number S39: Light of Hope",
-    "archetype": "",
+    "archetype": ["Number S", "Utopia"],
     "cardType": "Monster",
     "attribute": "LIGHT",
     "race": "Warrior",
@@ -5181,7 +5181,7 @@
   {
     "id": "340",
     "name": "Number S39: Ray of Hope",
-    "archetype": "",
+    "archetype": ["Number S", "Utopia"],
     "cardType": "Monster",
     "attribute": "LIGHT",
     "race": "Warrior",
@@ -5233,7 +5233,7 @@
   {
     "id": "669",
     "name": "Aura's Numbers",
-    "archetype": "",
+    "archetype": ["Aura", "Number"],
     "cardType": "Trap",
     "attribute": "0",
     "race": "0",
@@ -5259,7 +5259,7 @@
   {
     "id": "3339",
     "name": "Number S39: Spark of Hope",
-    "archetype": "",
+    "archetype": ["Number S", "Utopia"],
     "cardType": "Monster",
     "attribute": "LIGHT",
     "race": "Warrior",
@@ -5285,7 +5285,7 @@
   {
     "id": "4000",
     "name": "Astral Avatar",
-    "archetype": "",
+    "archetype": "Astral",
     "cardType": "Monster",
     "attribute": "LIGHT",
     "race": "Fairy",
@@ -5310,7 +5310,7 @@
   {
     "id": "6000",
     "name": "Number S39: Lightspeed of Hope",
-    "archetype": "",
+    "archetype": ["Number S", "Utopia"],
     "cardType": "Monster",
     "attribute": "LIGHT",
     "race": "Warrior",
@@ -5336,7 +5336,7 @@
   {
     "id": "7000",
     "name": "Number SF100: Aura of Hope",
-    "archetype": "",
+    "archetype": ["Number SF", "Aura", "Utopia"],
     "cardType": "Monster",
     "attribute": "DIVINE",
     "race": "Warrior",
@@ -5362,7 +5362,7 @@
   {
     "id": "7001",
     "name": "Astral Maiden",
-    "archetype": "",
+    "archetype": "Astral",
     "cardType": "Monster",
     "attribute": "LIGHT",
     "race": "Fairy",
@@ -5387,7 +5387,7 @@
   {
     "id": "7695",
     "name": "Number C39: Utopia Ray Neo",
-    "archetype": "",
+    "archetype": ["Number C39", "Utopia", "Chaos"],
     "cardType": "Monster",
     "attribute": "LIGHT",
     "race": "Warrior",
@@ -5413,7 +5413,7 @@
   {
     "id": "7696",
     "name": "Number 39: Utopia",
-    "archetype": "",
+    "archetype": ["Number", "Utopia"],
     "cardType": "Monster",
     "attribute": "LIGHT",
     "race": "Warrior",
@@ -5439,7 +5439,7 @@
   {
     "id": "7719",
     "name": "Number 100: Numeron Dragon",
-    "archetype": "",
+    "archetype": ["Number", "Numeron"],
     "cardType": "Monster",
     "attribute": "LIGHT",
     "race": "Dragon",
@@ -5465,7 +5465,7 @@
   {
     "id": "7793",
     "name": "Number S39: Utopia One",
-    "archetype": "",
+    "archetype": ["Number S", "Utopia"],
     "cardType": "Monster",
     "attribute": "LIGHT",
     "race": "Warrior",
@@ -5491,7 +5491,7 @@
   {
     "id": "7794",
     "name": "Number S39: Utopia the Lightning",
-    "archetype": "",
+    "archetype": ["Number S", "Utopia", "Lightning"],
     "cardType": "Monster",
     "attribute": "LIGHT",
     "race": "Warrior",
@@ -5517,7 +5517,7 @@
   {
     "id": "8228",
     "name": "Number S39: Utopia The Legend",
-    "archetype": "",
+    "archetype": ["Number S", "Utopia"],
     "cardType": "Monster",
     "attribute": "LIGHT",
     "race": "Warrior",
@@ -5543,7 +5543,7 @@
   {
     "id": "8447",
     "name": "Number 39: Utopia Beyond Infinity",
-    "archetype": "",
+    "archetype": ["Number", "Utopia"],
     "cardType": "Monster",
     "attribute": "LIGHT",
     "race": "Warrior",
@@ -5569,7 +5569,7 @@
   {
     "id": "8448",
     "name": "Rank-Up-Magic Karma's Force",
-    "archetype": "",
+    "archetype": "Rank-Up-Magic",
     "cardType": "Spell",
     "attribute": "0",
     "race": "0",
@@ -5595,7 +5595,7 @@
   {
     "id": "8449",
     "name": "Hyper Rank-Up-Magic Dormant Shield",
-    "archetype": "",
+    "archetype": "Rank-Up-Magic",
     "cardType": "Spell",
     "attribute": "0",
     "race": "0",
@@ -5621,7 +5621,7 @@
   {
     "id": "8462",
     "name": "Number 99: Hope Dragun",
-    "archetype": "",
+    "archetype": ["Number", "Utopia"],
     "cardType": "Monster",
     "attribute": "LIGHT",
     "race": "Dragon",
@@ -5647,7 +5647,7 @@
   {
     "id": "8463",
     "name": "Number 98: Utopia Kaiser",
-    "archetype": "",
+    "archetype": ["Number", "Utopia"],
     "cardType": "Monster",
     "attribute": "LIGHT",
     "race": "Warrior",
@@ -5673,7 +5673,7 @@
   {
     "id": "19999",
     "name": "Number SF0: Enlightenment of Hope",
-    "archetype": "",
+    "archetype": ["Number SF", "Utopia"],
     "cardType": "Monster",
     "attribute": "DIVINE",
     "race": "Warrior",
@@ -5699,7 +5699,7 @@
   {
     "id": "20000",
     "name": "Rank-Up-Magic Enlightenment Force",
-    "archetype": "",
+    "archetype": "Rank-Up-Magic",
     "cardType": "Spell",
     "attribute": "0",
     "race": "0",
@@ -5777,7 +5777,7 @@
   {
     "id": "20011",
     "name": "Astral Effigy",
-    "archetype": "",
+    "archetype": "Astral",
     "cardType": "Monster",
     "attribute": "LIGHT",
     "race": "Fairy",
@@ -5802,7 +5802,7 @@
   {
     "id": "25006",
     "name": "Kuribaura",
-    "archetype": "",
+    "archetype": ["Kuriboh", "Aura"],
     "cardType": "Monster",
     "attribute": "LIGHT",
     "race": "Fairy",
@@ -5827,7 +5827,7 @@
   {
     "id": "40001",
     "name": "Astral Pyramid",
-    "archetype": "",
+    "archetype": "Astral",
     "cardType": "Monster",
     "attribute": "LIGHT",
     "race": "Fairy",
@@ -5852,7 +5852,7 @@
   {
     "id": "40002",
     "name": "Astral Monolith",
-    "archetype": "",
+    "archetype": "Astral",
     "cardType": "Monster",
     "attribute": "LIGHT",
     "race": "Fairy",
@@ -6433,5 +6433,57 @@
     "rightScale": "",
     "type": "Monster Effect Xyz",
     "rank": 4
+  },
+  {
+    "id": "8690",
+    "name": "Legolas, The Elven Deadeye",
+    "archetype": "",
+    "cardType": "Monster",
+    "attribute": "EARTH",
+    "race": "Warrior",
+    "level": 8,
+    "atk": 3000,
+    "def": 1000,
+    "scales": "",
+    "lore": "2+ Rank 4 Warrior-Type monsters with 1000 DEF\r\nWhile this card has Xyz Material, your opponent must play with their hand revealed. When this card destroys an opponent's monster by battle: You can attach that monster to this card as material. Once per turn, when your opponent activates an effect (except during the Damage Step) (Quick Effect): You can detach 1 Xyz Material from this card to activate this effect; until the end of this turn, this face-up card is unaffected by the activated effects of your opponent's cards, then both players draw 2 cards. Once per turn, (Quick Effect): You can detach 1 Xyz Material from this card to activate this effect; face-up monsters you control cannot be destroyed, or banished, by your opponent's card effects this turn, then both players draw 2 cards.",
+    "status": "Unlimited",
+    "setGroup": "Imported from CDB",
+    "author": "Siege",
+    "image": "",
+    "ot": 32,
+    "alias": 0,
+    "setcode": 0,
+    "typeFlags": 8388641,
+    "category": 0,
+    "leftScale": "",
+    "rightScale": "",
+    "type": "Monster Effect Xyz",
+    "rank": 8
+  },
+  {
+    "id": "8691",
+    "name": "Legolas, The Elven Deadeye",
+    "archetype": "",
+    "cardType": "Monster",
+    "attribute": "EARTH",
+    "race": "Warrior",
+    "level": 8,
+    "atk": 3000,
+    "def": 1000,
+    "scales": "",
+    "lore": "2+ Rank 4 Warrior-Type monsters with 1000 DEF\r\nWhile this card has Xyz Material, your opponent must play with their hand revealed. When this card destroys an opponent's monster by battle: You can attach that monster to this card as material. Once per turn, when your opponent activates an effect (except during the Damage Step) (Quick Effect): You can detach 1 Xyz Material from this card to activate this effect; until the end of this turn, this face-up card is unaffected by the activated effects of your opponent's cards, then both players draw 2 cards. Once per turn, (Quick Effect): You can detach 1 Xyz Material from this card to activate this effect; face-up monsters you control cannot be destroyed, or banished, by your opponent's card effects this turn, then both players draw 2 cards.",
+    "status": "Unlimited",
+    "setGroup": "Imported from CDB",
+    "author": "Siege",
+    "image": "",
+    "ot": 32,
+    "alias": 8690,
+    "setcode": 0,
+    "typeFlags": 8388641,
+    "category": 0,
+    "leftScale": "",
+    "rightScale": "",
+    "type": "Monster Effect Xyz",
+    "rank": 8
   }
 ]

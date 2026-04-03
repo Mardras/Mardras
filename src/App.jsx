@@ -91,6 +91,27 @@ const SETTINGS_KEY = "mardras-db-settings-v1";
 const DEFAULT_PAGE_SIZE = 15;
 const ADMIN_QUERY_KEY = "admin";
 
+
+function getArchetypeList(card) {
+  if (Array.isArray(card?.archetype)) {
+    return card.archetype
+      .map((value) => String(value || "").trim())
+      .filter(Boolean);
+  }
+
+  const single = String(card?.archetype || "").trim();
+  return single ? [single] : [];
+}
+
+function getArchetypeText(card) {
+  const archetypes = getArchetypeList(card);
+  return archetypes.length ? archetypes.join(" / ") : "—";
+}
+
+function cardHasArchetype(card, archetype) {
+  return getArchetypeList(card).includes(archetype);
+}
+
 const ATTRIBUTE_ICON_MAP = {
   DARK: "/icons/attributes/dark.png",
   EARTH: "/icons/attributes/earth.png",
@@ -405,6 +426,12 @@ const CODE_DOWNLOADS = [
     description: "TheArcDes' custom Archer cards. Contribution: Fran.",
     url: "https://www.mediafire.com/file/5jbsyvsy25pfs11/Arrow_Archer_Cards_by_TheArcDes_and_Fran.zip/file",
   },
+   {
+    id: "Legolas-pack",
+    title: "The 2 Legolas Customs for EDOPro",
+    description: "Siege's custom Legolas Xyz Cards. Contribution: Fran.",
+    url: "https://www.mediafire.com/file/0pu7q6w0nqj0mqk/Legolas_by_Siege.zip/file",
+  },
 ];
 
 const defaultSettings = {
@@ -419,7 +446,9 @@ function normalizeCard(card, index, settings = defaultSettings) {
     id: String(card.id || `card-${index + 1}`),
     name: card.name || `Untitled Card ${index + 1}`,
     author: card.author || "Mardras",
-    archetype: card.archetype || "Other Customs",
+    archetype: Array.isArray(card.archetype)
+      ? card.archetype.map((value) => String(value || "").trim()).filter(Boolean)
+      : String(card.archetype || "").trim() || "Other Customs",
     type: card.type || card.race || "Effect Monster",
     attribute: card.attribute || "—",
     race: card.race || card.type || "—",
@@ -900,7 +929,7 @@ function CardThumb({ card, onOpen }) {
       <div className="space-y-1 p-3">
         <div className="line-clamp-2 text-sm font-semibold text-slate-900">{card.name}</div>
         <div className="text-xs text-slate-500">
-          {card.archetype} • {card.cardType}
+          {getArchetypeText(card)} • {card.cardType}
         </div>
         <div className="text-xs text-slate-400">By {card.author || "Mardras"}</div>
         <div className="text-[11px] text-slate-400">ID: {card.id}</div>
@@ -920,7 +949,7 @@ function FeaturedCard({ card, onOpen }) {
       </div>
       <div className="space-y-2">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">{card.archetype}</span>
+          <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">{getArchetypeText(card)}</span>
           <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">{card.cardType}</span>
         </div>
         <h3 className="text-xl font-bold text-slate-900">{card.name}</h3>
@@ -1307,7 +1336,7 @@ function DatabasePage({ cards, onOpen }) {
   const [statusFilter, setStatusFilter] = useState("All");
 
   const { options: filterOptions, hasHybridCardType } = useMemo(() => buildFilterOptions(cards), [cards]);
-  const archetypes = useMemo(() => [...new Set(cards.map((c) => c.archetype).filter(Boolean))].sort((a, b) => a.localeCompare(b)), [cards]);
+  const archetypes = useMemo(() => [...new Set(cards.flatMap((card) => getArchetypeList(card)))].sort((a, b) => a.localeCompare(b)), [cards]);
   const authors = ["All", ...new Set(cards.map((c) => c.author).filter(Boolean))];
   const statuses = ["All", ...new Set(cards.map((c) => c.status).filter(Boolean))];
 
@@ -1338,7 +1367,7 @@ function DatabasePage({ cards, onOpen }) {
     const base = cards.filter((card) => {
       const matchQuery =
         !query ||
-        [card.id, card.name, card.author, card.type, card.attribute, card.race, card.archetype, card.setGroup, card.status, card.lore]
+        [card.id, card.name, card.author, card.type, card.attribute, card.race, getArchetypeText(card), card.setGroup, card.status, card.lore]
           .filter(Boolean)
           .join(" ")
           .toLowerCase()
@@ -1349,7 +1378,7 @@ function DatabasePage({ cards, onOpen }) {
       return (
         matchQuery &&
         matchesTags &&
-        (!selectedArchetype || card.archetype === selectedArchetype) &&
+        (!selectedArchetype || cardHasArchetype(card, selectedArchetype)) &&
         (authorFilter === "All" || card.author === authorFilter) &&
         (statusFilter === "All" || card.status === statusFilter)
       );
@@ -1658,7 +1687,8 @@ function CardDetail({ card, cards, onBack, onOpen }) {
   const index = cards.findIndex((c) => String(c.id) === String(card.id));
   const prev = index > 0 ? cards[index - 1] : null;
   const next = index < cards.length - 1 ? cards[index + 1] : null;
-  const sameArchetype = cards.filter((c) => c.archetype === card.archetype);
+  const primaryArchetype = getArchetypeList(card)[0] || "";
+  const sameArchetype = primaryArchetype ? cards.filter((c) => cardHasArchetype(c, primaryArchetype)) : [];
   const palette = getCardPalette(card);
 
   useEffect(() => {
@@ -1750,7 +1780,7 @@ function CardDetail({ card, cards, onBack, onOpen }) {
               {card.level || card.rank || card.linkRating ? <StatRow label={getLevelLabel(card)} value={<LevelValue card={card} />} /> : null}
               {card.scales ? <StatRow label="Pendulum Scale" value={<PendulumScaleValue value={card.scales} />} /> : null}
               {getBattleStatDisplay(card) ? <StatRow label={getBattleStatDisplay(card).label} value={getBattleStatDisplay(card).value} /> : null}
-              <StatRow label="Archetype" value={card.archetype} />
+              <StatRow label="Archetype" value={getArchetypeText(card)} />
               <StatRow label="Author" value={card.author || "Mardras"} />
               <StatRow label="Lore group" value={card.setGroup} />
             </div>
@@ -1831,7 +1861,7 @@ function CharacterHoverPreview({ card }) {
       <div className="mt-4 space-y-2">
         <div className="text-xl font-bold text-slate-900">{card.name}</div>
         <div className="flex flex-wrap gap-2 text-xs">
-          <span className="rounded-full bg-slate-100 px-2.5 py-1 font-medium text-slate-600">{card.archetype || "—"}</span>
+          <span className="rounded-full bg-slate-100 px-2.5 py-1 font-medium text-slate-600">{getArchetypeText(card)}</span>
           <span className="rounded-full bg-slate-100 px-2.5 py-1 font-medium text-slate-600">{getFilterCardType(card)}</span>
           <span className="rounded-full bg-slate-100 px-2.5 py-1 font-medium text-slate-600">ID: {card.id}</span>
         </div>
@@ -2043,7 +2073,7 @@ function DownloadsPage({ settings }) {
 }
 
 function ArchetypePage({ cards, archetype, onOpen, onBrowseAll }) {
-  const filtered = cards.filter((card) => card.archetype === archetype);
+  const filtered = cards.filter((card) => cardHasArchetype(card, archetype));
   return (
     <div className="space-y-6">
       <div className="rounded-[24px] border border-slate-300 bg-white p-5 shadow-sm">
@@ -2382,9 +2412,15 @@ export default function App() {
               <button onClick={goDatabase} className="rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50">
                 Back to database
               </button>
-              <button onClick={() => openArchetype(selectedCard.archetype)} className="rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50">
-                More from {selectedCard.archetype}
-              </button>
+              {getArchetypeList(selectedCard).map((archetype) => (
+                <button
+                  key={archetype}
+                  onClick={() => openArchetype(archetype)}
+                  className="rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                >
+                  More from {archetype}
+                </button>
+              ))}
             </div>
             <CardDetail card={selectedCard} cards={cards} onBack={goDatabase} onOpen={openCard} />
           </div>
