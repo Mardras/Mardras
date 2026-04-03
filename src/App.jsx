@@ -393,6 +393,12 @@ const CODE_DOWNLOADS = [
     description: "Aura's custom Ritual Xyz deck and related cards.",
     url: "https://www.mediafire.com/file/q6gq4pckaagu1l1/Aura_Customs_Basic_Deck_Duelist_Goddess_2026.zip/file",
   },
+  {
+    id: "pk-pack",
+    title: "Phantom Knights Custom for EDOPro",
+    description: "Sae's custom Phantom Knights cards.",
+    url: "https://www.mediafire.com/file/6iezt5tuxl0i204/Phantom_Knights_Support.zip/file",
+  },
 ];
 
 const defaultSettings = {
