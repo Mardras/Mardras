@@ -399,6 +399,12 @@ const CODE_DOWNLOADS = [
     description: "Sae's custom Phantom Knights cards.",
     url: "https://www.mediafire.com/file/6iezt5tuxl0i204/Phantom_Knights_Support.zip/file",
   },
+  {
+    id: "archers-pack",
+    title: "Archers Custom for EDOPro",
+    description: "TheArcDes' custom Archer cards. Contribution: Fran.",
+    url: "https://www.mediafire.com/file/5jbsyvsy25pfs11/Arrow_Archer_Cards_by_TheArcDes_and_Fran.zip/file",
+  },
 ];
 
 const defaultSettings = {
