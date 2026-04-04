@@ -73,7 +73,7 @@
     "image": "/characters/commander-damhir-veles.png",
     "summary": "Story character who used a custom DARK Beast Deck and a few L.S. monsters.",
     "biography": "Add the full biography/story for Commander Damhir Veles here.",
-    "affiliation": "",
+    "affiliation": "Red Operators",
     "aliases": [],
     "firstAppearance": "Arc I: Grim Repertoire",
     "tags": ["commander", "dark beast"],
@@ -95,6 +95,42 @@
           23971061,22862454,71384012,39064822,65741786
         ],
         "side": []
+      }
+    ]
+  },
+  {
+    "id": "milius",
+    "name": "Milius K. Roydenburg",
+    "title": "Obscure Strategist",
+    "image": "/characters/Milius.png",
+    "summary": "One the 3 Strategist under Mardras' command",
+    "biography": "Add the full biography/story for Milius here.",
+    "affiliation": "Insurrexi",
+    "aliases": ["Archfiend Master","Royal Dominator"],
+    "firstAppearance": "Arc VII: Hellhound Crisis",
+    "tags": ["Archfiend", "Dice", "Sub-Antagonist"],
+    "signatureCards": ["5071858", "34728300", "31857953"],
+    "decks": [
+      {
+        "id": "archfiend-chess",
+        "name": "Archfiend Chess",
+        "era": "modern",
+        "description": "A Combo Deck inspired in Chess Moves, do the right strat and the game is yours",
+        "main": [
+          52248570,61370518,46357684,46357684,48675364,48675364,9603356,9603356,35975813,8581705,
+          8581705,8581705,72192100,72192100,72192100,35798491,35798491,35798491,73219648,73219648,
+          70368879,73628505,3493058,16787039,16787039,16787039,34728300,34728300,34728300,93078761,
+          93078761,93078761,25858549,25858549,94585852,94585852,43061293,39454112,39454112,39454112
+
+        ],
+        "extra": [
+          7584225,81507316,6533069,6533069,31857953,84691237,84691237,129127,129127,129127,
+          5071858,5071858,5071858,19489753,19489753
+        ],
+        "side": [
+          66073051,6133894,68371799,75375465,35606858,18144507,69313735,69313735,75500286,81439174,
+          83764718,24224830,43898403,10045474,31863912
+]
       }
     ]
   },
