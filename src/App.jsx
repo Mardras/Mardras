@@ -112,6 +112,48 @@ function cardHasArchetype(card, archetype) {
   return getArchetypeList(card).includes(archetype);
 }
 
+function getAttributeList(card) {
+  if (Array.isArray(card?.attribute)) {
+    return card.attribute
+      .map((value) => String(value || "").trim().toUpperCase())
+      .filter(Boolean);
+  }
+
+  const single = String(card?.attribute || "").trim().toUpperCase();
+  if (!single || single === "—" || single === "0") return [];
+  return [single];
+}
+
+function getAttributeText(card) {
+  const attributes = getAttributeList(card);
+  return attributes.length ? attributes.join(" / ") : "—";
+}
+
+function cardHasAttribute(card, attribute) {
+  return getAttributeList(card).includes(String(attribute || "").trim().toUpperCase());
+}
+
+function getRaceList(card) {
+  if (Array.isArray(card?.race)) {
+    return card.race
+      .map((value) => String(value || "").trim())
+      .filter(Boolean);
+  }
+
+  const single = String(card?.race || "").trim();
+  if (!single || single === "—" || single === "0") return [];
+  return [single];
+}
+
+function getRaceText(card) {
+  const races = getRaceList(card);
+  return races.length ? races.join(" / ") : "—";
+}
+
+function cardHasRace(card, race) {
+  return getRaceList(card).includes(String(race || "").trim());
+}
+
 const ATTRIBUTE_ICON_MAP = {
   DARK: "/icons/attributes/dark.png",
   EARTH: "/icons/attributes/earth.png",
@@ -454,6 +496,13 @@ const defaultSettings = {
 };
 
 function normalizeCard(card, index, settings = defaultSettings) {
+  const normalizedRaceList = Array.isArray(card?.race)
+    ? card.race.map((value) => String(value || "").trim()).filter(Boolean)
+    : [];
+  const normalizedAttributeList = Array.isArray(card?.attribute)
+    ? card.attribute.map((value) => String(value || "").trim().toUpperCase()).filter(Boolean)
+    : [];
+
   return {
     id: String(card.id || `card-${index + 1}`),
     name: card.name || `Untitled Card ${index + 1}`,
@@ -461,9 +510,9 @@ function normalizeCard(card, index, settings = defaultSettings) {
     archetype: Array.isArray(card.archetype)
       ? card.archetype.map((value) => String(value || "").trim()).filter(Boolean)
       : String(card.archetype || "").trim() || "Other Customs",
-    type: card.type || card.race || "Effect Monster",
-    attribute: card.attribute || "—",
-    race: card.race || card.type || "—",
+    type: card.type || (normalizedRaceList.length ? normalizedRaceList.join(" ") : card.race) || "Effect Monster",
+    attribute: normalizedAttributeList.length ? normalizedAttributeList : (card.attribute || "—"),
+    race: normalizedRaceList.length ? normalizedRaceList : (card.race || card.type || "—"),
     level: card.level ?? "",
     rank: card.rank ?? "",
     linkRating: card.linkRating ?? card.link ?? "",
@@ -538,18 +587,21 @@ function getDisplayTypes(card) {
       .filter(Boolean);
 
     const filteredParts = typeParts.filter((part) => !["Monster", "Normal", "Spell", "Trap"].includes(part));
+    const raceParts = getRaceList(card);
+    const seen = new Set(raceParts.map((part) => String(part).toLowerCase()));
+    const uniqueTypeParts = [];
 
-    const uniqueParts = [];
-    const seen = new Set();
-
-    [card.race, ...filteredParts].forEach((part) => {
+    filteredParts.forEach((part) => {
       if (!part) return;
-      if (seen.has(part)) return;
-      seen.add(part);
-      uniqueParts.push(part);
+      const key = String(part).toLowerCase();
+      if (seen.has(key)) return;
+      seen.add(key);
+      uniqueTypeParts.push(part);
     });
 
-    return uniqueParts.join(" ") || card.race || card.type || "—";
+    const raceText = raceParts.length ? raceParts.join(" / ") : "";
+    const extraText = uniqueTypeParts.join(" ");
+    return [raceText, extraText].filter(Boolean).join(" ") || getRaceText(card) || card.type || "—";
   }
 
   if (getSpellTrapBaseTypes(card).length) {
@@ -921,7 +973,29 @@ function getCardTypeDisplay(card) {
 }
 
 function getAttributeDisplay(card) {
-  return <StatValueWithIcon value={card.attribute} iconSrc={getAttributeIcon(card.attribute)} iconAlt={`${card.attribute} attribute`} />;
+  const attributes = getAttributeList(card);
+
+  if (attributes.length > 1) {
+    return (
+      <div className="flex flex-wrap items-center gap-2">
+        {attributes.map((attribute) => (
+          <span key={attribute} className="inline-flex items-center gap-2">
+            <span>{attribute}</span>
+            {getAttributeIcon(attribute) ? (
+              <img
+                src={getAttributeIcon(attribute)}
+                alt={`${attribute} attribute`}
+                className="h-8 w-8 object-contain"
+                loading="lazy"
+              />
+            ) : null}
+          </span>
+        ))}
+      </div>
+    );
+  }
+
+  return <StatValueWithIcon value={getAttributeText(card)} iconSrc={getAttributeIcon(attributes[0])} iconAlt={`${getAttributeText(card)} attribute`} />;
 }
 
 function CardThumb({ card, onOpen }) {
@@ -1206,6 +1280,12 @@ function normalizeAttributeFilterValue(value) {
   return raw.toUpperCase();
 }
 
+function getMonsterAttributeTags(card) {
+  if (String(card?.cardType || "").trim().toLowerCase() !== "monster") return [];
+  const values = getAttributeList(card).map((value) => normalizeAttributeFilterValue(value));
+  return values.length ? [...new Set(values)] : ["0"];
+}
+
 function normalizeRaceFilterValue(value) {
   const raw = String(value ?? "").trim();
   if (!raw || raw === "—" || raw === "0") return "0";
@@ -1240,7 +1320,8 @@ function getMonsterSubtypeTags(card) {
 
 function getMonsterRaceTags(card) {
   if (String(card?.cardType || "").trim().toLowerCase() !== "monster") return [];
-  return [normalizeRaceFilterValue(card?.race)];
+  const values = getRaceList(card).map((value) => normalizeRaceFilterValue(value));
+  return values.length ? [...new Set(values)] : ["0"];
 }
 
 function getLevelRankLinkTags(card) {
@@ -1318,7 +1399,7 @@ function cardMatchesFilterTag(card, tag, hasHybridCardType) {
     case "monster-subtype":
       return getMonsterSubtypeTags(card).includes(tag.value);
     case "attribute":
-      return normalizeAttributeFilterValue(card?.attribute) === tag.value;
+      return getMonsterAttributeTags(card).includes(tag.value);
     case "race":
       return getMonsterRaceTags(card).includes(tag.value);
     case "level":
