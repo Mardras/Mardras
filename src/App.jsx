@@ -435,7 +435,7 @@ const CODE_DOWNLOADS = [
   {
     id: "archfiend-chess-pack",
     title: "Archfiend Chess Pack for EDOPro",
-    description: "Milius K. Roydenburg's Chess Stategy Deck",
+    description: "Milius K. Roydenburg's Chess Strategy Deck",
     url: "https://www.mediafire.com/file/wo8uxhvok2kzity/ArchfiendChessbyMardras.zip/file",
   },
   {
