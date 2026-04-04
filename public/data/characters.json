@@ -129,5 +129,37 @@
       "side": []
     }
   ]
+},
+{
+  "id": "aura-basic",
+  "name": "Aura",
+  "title": "The Great Duelist",
+  "image": "/characters/aura.png",
+  "summary": "A goddess duelist from the Astral World.",
+  "biography": "Add the full biography/story for Aura.",
+  "affiliation": ["Queen's Lancers", "Barians"],
+  "aliases": ["Aura, The Great Duelist"],
+  "firstAppearance": "Pandora's Numbers",
+  "tags": ["number", "xyz"],
+  "signatureCards": ["7000", "19999", "8447"],
+  "decks": [
+    {
+      "id": "aura-base",
+      "name": "Number Xyz Deck",
+      "era": "",
+      "description": "Level/Rank 4 Rituals.",
+      "main": [
+          318,317,317,317,7001,7001,7001,25006,4000,4000,
+          4000,20011,20011,20011,40001,40001,40001,40002,40002,40002,
+          8448,8449,8449,8449,120,20000,20000,20000,20006,20006,
+          20006,20008,20008,20008,400,400,400,603,669,669,
+          669
+      ],
+      "extra": [
+        7000,19999,8447,8463,8462,6000,7695,7794,8228,340,7793,339,3339,7696,7719,327
+      ],
+      "side": []
+    }
+  ]
 }
 ]
