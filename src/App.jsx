@@ -432,6 +432,12 @@ const CODE_DOWNLOADS = [
     description: "Siege's custom Legolas Xyz Cards. Contribution: Fran.",
     url: "https://www.mediafire.com/file/0pu7q6w0nqj0mqk/Legolas_by_Siege.zip/file",
   },
+  {
+    id: "archfiend-chess-pack",
+    title: "Archfiend Chess Pack for EDOPro",
+    description: "Milius K. Roydenburg's Chess Stategy Deck",
+    url: "https://www.mediafire.com/file/wo8uxhvok2kzity/ArchfiendChessbyMardras.zip/file",
+  },
 ];
 
 const defaultSettings = {
