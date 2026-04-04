@@ -438,6 +438,12 @@ const CODE_DOWNLOADS = [
     description: "Milius K. Roydenburg's Chess Stategy Deck",
     url: "https://www.mediafire.com/file/wo8uxhvok2kzity/ArchfiendChessbyMardras.zip/file",
   },
+  {
+    id: "ragnaraika-customs-pack",
+    title: "Ragnaraika Customs for EDOPro",
+    description: "Zeith Leinsdoom's Ragnaraika custom cards",
+    url: "https://www.mediafire.com/file/juxcre6b8d8myjv/RagnaraikaCustoms2026byMardras.zip/file",
+  },
 ];
 
 const defaultSettings = {
