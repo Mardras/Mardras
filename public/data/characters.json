@@ -133,24 +133,36 @@
       }
     ]
   },
-   {
-    "id": "zeith-leinsdoom",
-    "name": "Zeith Leinsdoom",
-    "title": "The 1st Undead Overlord",
-    "image": "/characters/zeith-leinsdoom.png",
-    "summary": "Final Boss of the After-story",
-    "biography": "Add the full biography/story for the 1st Undead Overlord here.",
-    "affiliation": "-Why would I need one?-",
-    "aliases": ["Undead Overlord"],
-    "firstAppearance": "Arc IX: Aftermath",
-    "tags": ["Ragnaraika", "Unkillable"],
-    "signatureCards": ["24842898", "70326279", "90784562"],
-    "decks": [
-      {
-        "id": "zeith-leinsdoom-main",
-        "name": "Ragnaraika Main Deck",
-        "era": "After-Story (Future)",
-        "description": "THE Deck used by Zeith Leinsdoom. -You will die by my hand, here and now-",
+{
+  "id": "zeith-leinsdoom",
+  "name": "Zeith Leinsdoom",
+  "title": "The 1st Undead Overlord",
+  "image": "/characters/zeith-leinsdoom.png",
+  "summary": "A sovereign of death who rules over the remnants of fallen worlds.",
+  "biography": "Zeith Leinsdoom is the First Undead Overlord, a being born from the collapse of ancient realms. Feared as a tyrant, Zeith commands legions of undead and corrupted entities, bending life and death to his will. His reign began after the Cataclysm, where he seized control of the remnants of existence and forged a new order built on decay and rebirth.",
+  "affiliation": "-Why would I need one?-",
+  "aliases": ["Unbeatable", "The First Undead Overlord"],
+  "firstAppearance": "Arc IX: Aftermath",
+  "tags": ["Unkillable", "after-story", "ragnaraika"],
+  "signatureCards": [
+    "90784562",
+    "70326279",
+    "24842898"
+  ],
+  "videoGuides": [
+    {
+      "id": "ragnaraika-guide-1",
+      "title": "Ragnaraika Custom Deck Guide",
+      "url": "https://www.youtube.com/watch?v=idqVszxXkyU&list=PL5u9uuBx5ej9GaGJx1pXwDOcdj_XWF31i&index=2",
+      "description": "Combo guide, and optimal plays for the Ragnaraika custom deck."
+    }
+  ],
+  "decks": [
+    {
+      "id": "ragnaraika-main",
+      "name": "Ragnaraika Main Deck — After-Story (Future)",
+      "era": "After Story",
+      "description": "A high-pressure Link-based strategy focused on recursion, control, and overwhelming board presence through Ragnaraika monsters. -You will die by my hand, here and now-",
         "main": [
           27204311,27134209,29726552,3084730,97262307,97262307,51578214,96938986,96938986,96938986,
           42141493,42141493,52543404,52543404,26548709,26548709,26548709,39041550,17535764,14558127,
@@ -165,8 +177,8 @@
           36956512,90784562,75352507,70514456,38314840,2295440,18144507,25311006,35269904,83764719,
           24299458,98829635,15693423,15693423,15693423
         ]
-      }
-    ]
+       }
+  ]
   },
   {
   "id": "fran-basic",
