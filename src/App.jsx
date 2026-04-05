@@ -204,14 +204,14 @@ const LINK_ARROW_LAYOUT = [
 ];
 
 const LINK_ARROW_ICON_MAP = {
-  "top-left": { on: "/link-arrows/top-left-red.png", off: "/link-arrows/top-left-grey.png" },
-  top: { on: "/link-arrows/top-red.png", off: "/link-arrows/top-grey.png" },
-  "top-right": { on: "/link-arrows/top-right-red.png", off: "/link-arrows/top-right-grey.png" },
-  left: { on: "/link-arrows/left-red.png", off: "/link-arrows/left-grey.png" },
-  right: { on: "/link-arrows/right-red.png", off: "/link-arrows/right-grey.png" },
-  "bottom-left": { on: "/link-arrows/bottom-left-red.png", off: "/link-arrows/bottom-left-grey.png" },
-  bottom: { on: "/link-arrows/bottom-red.png", off: "/link-arrows/bottom-grey.png" },
-  "bottom-right": { on: "/link-arrows/bottom-right-red.png", off: "/link-arrows/bottom-right-grey.png" },
+  "top-left": {on: "/icons/link-arrows/top-left-red.png", off: "/icons/link-arrows/top-left-grey.png"},
+  top: {on: "/icons/link-arrows/top-red.png", off: "/icons/link-arrows/top-grey.png"},
+  "top-right": {on: "/icons/link-arrows/top-right-red.png", off: "/icons/link-arrows/top-right-grey.png"},
+  left: {on: "/icons/link-arrows/left-red.png", off: "/icons/link-arrows/left-grey.png"},
+  right: {on: "/icons/link-arrows/right-red.png", off: "/icons/link-arrows/right-grey.png"},
+  "bottom-left": {on: "/icons/link-arrows/bottom-left-red.png", off: "/icons/link-arrows/bottom-left-grey.png"},
+  bottom: {on: "/icons/link-arrows/bottom-red.png", off: "/icons/link-arrows/bottom-grey.png"},
+  "bottom-right": {on: "/icons/link-arrows/bottom-right-red.png", off: "/icons/link-arrows/bottom-right-grey.png"},
 };
 
 function normalizeLinkArrowName(value) {
