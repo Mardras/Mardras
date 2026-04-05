@@ -1150,10 +1150,15 @@ function getAttributeDisplay(card) {
   return <StatValueWithIcon value={getAttributeText(card)} iconSrc={getAttributeIcon(attributes[0])} iconAlt={`${getAttributeText(card)} attribute`} />;
 }
 
-function CardThumb({ card, onOpen }) {
+function CardThumb({ card, onOpen, onHover, onLeave, onMove }) {
   return (
     <button
       onClick={() => onOpen(card)}
+      onMouseEnter={(event) => onHover?.(card, event)}
+      onMouseMove={(event) => onMove?.(event)}
+      onMouseLeave={onLeave}
+      onFocus={(event) => onHover?.(card, event)}
+      onBlur={onLeave}
       className="group overflow-hidden rounded-2xl border border-slate-300 bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
     >
       <div className="aspect-[2/3] w-full overflow-hidden bg-slate-100">
@@ -1567,6 +1572,69 @@ function cardMatchesFilterTag(card, tag, hasHybridCardType) {
   }
 }
 
+function DatabaseHoverPreview({ card, pointer }) {
+  if (!card) return null;
+
+  const safePointer = pointer || { x: 24, y: 24 };
+  const viewportWidth = typeof window !== "undefined" ? window.innerWidth : 1440;
+  const viewportHeight = typeof window !== "undefined" ? window.innerHeight : 900;
+  const previewWidth = 420;
+  const previewHeight = 560;
+
+  const left = Math.max(16, Math.min(safePointer.x + 24, viewportWidth - previewWidth - 16));
+  const top = Math.max(16, Math.min(safePointer.y - 18, viewportHeight - previewHeight - 16));
+  const battleStats = getBattleStatDisplay(card);
+  const primaryAttribute = getAttributeList(card)[0] || card.attribute;
+
+  return (
+    <div
+      className="pointer-events-none fixed z-50 hidden w-[420px] overflow-hidden rounded-[24px] border border-slate-700/80 bg-slate-950/95 text-white shadow-2xl backdrop-blur lg:block"
+      style={{ left: `${left}px`, top: `${top}px` }}
+    >
+      <div className="grid grid-cols-[150px_1fr] gap-0 border-b border-slate-700/80 bg-slate-900/80 p-4">
+        <div className="overflow-hidden rounded-xl border border-slate-700 bg-slate-900">
+          <img src={card.image} alt={card.name} loading="lazy" className="aspect-[2/3] w-full object-cover" />
+        </div>
+        <div className="space-y-3 pl-4">
+          <div>
+            <div className="text-2xl font-bold leading-tight text-white">{card.name}</div>
+            <div className="mt-2 text-sm font-semibold text-slate-200">[{getDisplayTypes(card)}]</div>
+          </div>
+          <div className="space-y-2 text-sm leading-6 text-slate-200">
+            {primaryAttribute && String(primaryAttribute) !== "—" ? (
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-300">
+                <span>{getAttributeText(card)}</span>
+                {getAttributeIcon(primaryAttribute) ? (
+                  <img src={getAttributeIcon(primaryAttribute)} alt={getAttributeText(card)} className="h-6 w-6 object-contain" loading="lazy" />
+                ) : null}
+              </div>
+            ) : null}
+            <div className="line-clamp-[12] whitespace-pre-wrap text-[15px] leading-7 text-slate-100">{card.lore || "No effect text provided."}</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-3 bg-slate-900/90 px-4 py-3 text-sm text-slate-200">
+        <div className="flex flex-wrap items-center gap-2 text-xs text-slate-300">
+          <span className="rounded-full border border-slate-700 bg-slate-800/90 px-2.5 py-1">{getArchetypeText(card)}</span>
+          <span className="rounded-full border border-slate-700 bg-slate-800/90 px-2.5 py-1">{getFilterCardType(card)}</span>
+          <span className="rounded-full border border-slate-700 bg-slate-800/90 px-2.5 py-1">ID: {card.id}</span>
+        </div>
+
+        {battleStats ? (
+          <div className="text-xl font-semibold text-white">{battleStats.label.replace(" / ", "/")}: {battleStats.value}</div>
+        ) : null}
+
+        <div className="grid gap-1 text-xs text-slate-400">
+          <div>Author: {card.author || "Mardras"}</div>
+          <div>Status: {card.status || "Legal"}</div>
+          <div>Set Group: {card.setGroup || "Unsorted"}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function DatabasePage({ cards, onOpen }) {
   const [query, setQuery] = useState("");
   const [archetypeQuery, setArchetypeQuery] = useState("");
@@ -1579,6 +1647,8 @@ function DatabasePage({ cards, onOpen }) {
   const [pageIndex, setPageIndex] = useState(1);
   const [authorFilter, setAuthorFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [hoveredCard, setHoveredCard] = useState(null);
+  const [hoverPointer, setHoverPointer] = useState({ x: 24, y: 24 });
 
   const { options: filterOptions, hasHybridCardType } = useMemo(() => buildFilterOptions(cards), [cards]);
   const archetypes = useMemo(() => [...new Set(cards.flatMap((card) => getArchetypeList(card)))].sort((a, b) => a.localeCompare(b)), [cards]);
@@ -1671,6 +1741,10 @@ function DatabasePage({ cards, onOpen }) {
     setPageIndex(1);
   }, [query, selectedFilterTags, selectedArchetype, authorFilter, statusFilter, sortField, sortDirection, pageSize]);
 
+  useEffect(() => {
+    setHoveredCard(null);
+  }, [pageIndex, query, selectedFilterTags, selectedArchetype, authorFilter, statusFilter, sortField, sortDirection, pageSize, cards]);
+
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const visible = filtered.slice((pageIndex - 1) * pageSize, pageIndex * pageSize);
   const isOfficial = cards.some((card) => card?.source === "official");
@@ -1689,6 +1763,21 @@ function DatabasePage({ cards, onOpen }) {
   function clearAllFilterTags() {
     setSelectedFilterTags([]);
     setFilterQuery("");
+  }
+
+  function handleHoverCard(card, event) {
+    setHoveredCard(card);
+    if (event) {
+      setHoverPointer({ x: event.clientX, y: event.clientY });
+    }
+  }
+
+  function handleHoverMove(event) {
+    setHoverPointer({ x: event.clientX, y: event.clientY });
+  }
+
+  function handleHoverLeave() {
+    setHoveredCard(null);
   }
 
   return (
@@ -1875,7 +1964,14 @@ function DatabasePage({ cards, onOpen }) {
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
           {visible.map((card) => (
-            <CardThumb key={card.id} card={card} onOpen={onOpen} />
+            <CardThumb
+              key={card.id}
+              card={card}
+              onOpen={onOpen}
+              onHover={handleHoverCard}
+              onMove={handleHoverMove}
+              onLeave={handleHoverLeave}
+            />
           ))}
         </div>
 
@@ -1901,6 +1997,7 @@ function DatabasePage({ cards, onOpen }) {
           </div>
         </div>
       </div>
+      <DatabaseHoverPreview card={hoveredCard} pointer={hoverPointer} />
     </div>
   );
 }
