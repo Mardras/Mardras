@@ -303,21 +303,21 @@ function LinkArrowsValue({ card }) {
   const activeArrows = new Set(getLinkArrowNames(card));
 
   return (
-    <div className="inline-flex rounded-lg border border-slate-300 bg-slate-50 p-1.5">
-      <div className="grid grid-cols-3 gap-0.5">
+    <div className="inline-flex rounded-md border border-slate-300 bg-slate-50 p-1">
+      <div className="grid grid-cols-3 gap-[1px]">
         {LINK_ARROW_LAYOUT.flat().map((position, index) => {
           if (!position) {
-            return <div key={`empty-${index}`} className="h-8 w-8 rounded-sm bg-slate-200/70" />;
+            return <div key={`empty-${index}`} className="h-[14px] w-[14px] rounded-[2px] bg-slate-200/70" />;
           }
 
           const isActive = activeArrows.has(position);
           const icon = LINK_ARROW_ICON_MAP[position];
           return (
-            <div key={position} className="flex h-8 w-8 items-center justify-center rounded-sm bg-white">
+            <div key={position} className="flex h-[14px] w-[14px] items-center justify-center rounded-[2px] bg-white">
               <img
                 src={isActive ? icon?.on : icon?.off}
                 alt={`${position} ${isActive ? "active" : "inactive"} link arrow`}
-                className="h-7 w-7 object-contain"
+                className="h-[10px] w-[10px] object-contain"
                 loading="lazy"
               />
             </div>
@@ -658,6 +658,16 @@ function normalizeCard(card, index, settings = defaultSettings) {
     level: card.level ?? "",
     rank: card.rank ?? "",
     linkRating: card.linkRating ?? card.link ?? "",
+    linkMarkers: Array.isArray(card?.linkMarkers)
+      ? card.linkMarkers.map(normalizeLinkArrowName).filter(Boolean)
+      : (typeof card?.linkMarkers === "string"
+          ? card.linkMarkers.split(/[|,/;]/).map(normalizeLinkArrowName).filter(Boolean)
+          : card?.linkMarkers ?? ""),
+    linkArrows: Array.isArray(card?.linkArrows)
+      ? card.linkArrows.map(normalizeLinkArrowName).filter(Boolean)
+      : (typeof card?.linkArrows === "string"
+          ? card.linkArrows.split(/[|,/;]/).map(normalizeLinkArrowName).filter(Boolean)
+          : card?.linkArrows ?? ""),
     leftScale: card.leftScale ?? "",
     rightScale: card.rightScale ?? "",
     atk: card.atk ?? "—",
