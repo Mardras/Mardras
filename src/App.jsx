@@ -1578,8 +1578,8 @@ function DatabaseHoverPreview({ card, pointer }) {
   const safePointer = pointer || { x: 24, y: 24 };
   const viewportWidth = typeof window !== "undefined" ? window.innerWidth : 1440;
   const viewportHeight = typeof window !== "undefined" ? window.innerHeight : 900;
-  const previewWidth = 420;
-  const previewHeight = 560;
+  const previewWidth = 560;
+  const previewHeight = 680;
 
   const left = Math.max(16, Math.min(safePointer.x + 24, viewportWidth - previewWidth - 16));
   const top = Math.max(16, Math.min(safePointer.y - 18, viewportHeight - previewHeight - 16));
@@ -1588,44 +1588,44 @@ function DatabaseHoverPreview({ card, pointer }) {
 
   return (
     <div
-      className="pointer-events-none fixed z-50 hidden w-[420px] overflow-hidden rounded-[24px] border border-slate-700/80 bg-slate-950/95 text-white shadow-2xl backdrop-blur lg:block"
+      className="pointer-events-none fixed z-50 hidden w-[560px] max-w-[90vw] overflow-hidden rounded-[24px] border border-[#3a5275] bg-gradient-to-br from-[#071120]/98 via-[#07162a]/97 to-[#0b1b33]/98 text-white shadow-[0_20px_60px_rgba(0,0,0,0.55)] backdrop-blur-md lg:block"
       style={{ left: `${left}px`, top: `${top}px` }}
     >
-      <div className="grid grid-cols-[150px_1fr] gap-0 border-b border-slate-700/80 bg-slate-900/80 p-4">
-        <div className="overflow-hidden rounded-xl border border-slate-700 bg-slate-900">
+      <div className="grid grid-cols-[110px_1fr] gap-0 border-b border-[#2b4265] bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.14),transparent_34%),linear-gradient(180deg,rgba(10,23,44,0.96),rgba(7,18,32,0.98))] p-4">
+        <div className="overflow-hidden rounded-[18px] border border-[#334e73] bg-[#06101f] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.03)]">
           <img src={card.image} alt={card.name} loading="lazy" className="aspect-[2/3] w-full object-cover" />
         </div>
-        <div className="space-y-3 pl-4">
+        <div className="space-y-2.5 pl-4">
           <div>
-            <div className="text-2xl font-bold leading-tight text-white">{card.name}</div>
-            <div className="mt-2 text-sm font-semibold text-slate-200">[{getDisplayTypes(card)}]</div>
+            <div className="text-lg font-bold leading-tight text-white line-clamp-2">{card.name}</div>
+            <div className="mt-1.5 text-xs font-semibold text-slate-200">[{getDisplayTypes(card)}]</div>
           </div>
-          <div className="space-y-2 text-sm leading-6 text-slate-200">
+          <div className="space-y-2 text-xs leading-5 text-slate-200">
             {primaryAttribute && String(primaryAttribute) !== "—" ? (
-              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-300">
+              <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-slate-300">
                 <span>{getAttributeText(card)}</span>
                 {getAttributeIcon(primaryAttribute) ? (
-                  <img src={getAttributeIcon(primaryAttribute)} alt={getAttributeText(card)} className="h-6 w-6 object-contain" loading="lazy" />
+                  <img src={getAttributeIcon(primaryAttribute)} alt={getAttributeText(card)} className="h-5 w-5 object-contain" loading="lazy" />
                 ) : null}
               </div>
             ) : null}
-            <div className="line-clamp-[12] whitespace-pre-wrap text-[15px] leading-7 text-slate-100">{card.lore || "No effect text provided."}</div>
+            <div className="max-h-[320px] overflow-y-auto pr-2 text-[12px] leading-5 text-slate-100 whitespace-pre-wrap [scrollbar-width:thin]">{card.lore || "No effect text provided."}</div>
           </div>
         </div>
       </div>
 
-      <div className="space-y-3 bg-slate-900/90 px-4 py-3 text-sm text-slate-200">
-        <div className="flex flex-wrap items-center gap-2 text-xs text-slate-300">
-          <span className="rounded-full border border-slate-700 bg-slate-800/90 px-2.5 py-1">{getArchetypeText(card)}</span>
-          <span className="rounded-full border border-slate-700 bg-slate-800/90 px-2.5 py-1">{getFilterCardType(card)}</span>
-          <span className="rounded-full border border-slate-700 bg-slate-800/90 px-2.5 py-1">ID: {card.id}</span>
+      <div className="space-y-2 bg-[linear-gradient(180deg,rgba(8,18,34,0.94),rgba(6,14,28,0.98))] px-4 py-3 text-xs text-slate-200">
+        <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-300">
+          <span className="rounded-full border border-[#314866] bg-[#13233c]/90 px-2.5 py-1">{getArchetypeText(card)}</span>
+          <span className="rounded-full border border-[#314866] bg-[#13233c]/90 px-2.5 py-1">{getFilterCardType(card)}</span>
+          <span className="rounded-full border border-[#314866] bg-[#13233c]/90 px-2.5 py-1">ID: {card.id}</span>
         </div>
 
         {battleStats ? (
-          <div className="text-xl font-semibold text-white">{battleStats.label.replace(" / ", "/")}: {battleStats.value}</div>
+          <div className="text-[16px] font-semibold text-white">{battleStats.label.replace(" / ", "/")}: {battleStats.value}</div>
         ) : null}
 
-        <div className="grid gap-1 text-xs text-slate-400">
+        <div className="grid gap-1 text-[11px] text-slate-400">
           <div>Author: {card.author || "Mardras"}</div>
           <div>Status: {card.status || "Legal"}</div>
           <div>Set Group: {card.setGroup || "Unsorted"}</div>
