@@ -186,6 +186,148 @@ const LEVEL_ICON_MAP = {
 
 const PENDULUM_SCALE_ICON = "/icons/pendulum/Pendulum_Scale.png";
 
+const LINK_ARROW_POSITIONS = [
+  "top-left",
+  "top",
+  "top-right",
+  "left",
+  "right",
+  "bottom-left",
+  "bottom",
+  "bottom-right",
+];
+
+const LINK_ARROW_LAYOUT = [
+  ["top-left", "top", "top-right"],
+  ["left", null, "right"],
+  ["bottom-left", "bottom", "bottom-right"],
+];
+
+const LINK_ARROW_ICON_MAP = {
+  "top-left": { on: "/link-arrows/top-left-red.png", off: "/link-arrows/top-left-grey.png" },
+  top: { on: "/link-arrows/top-red.png", off: "/link-arrows/top-grey.png" },
+  "top-right": { on: "/link-arrows/top-right-red.png", off: "/link-arrows/top-right-grey.png" },
+  left: { on: "/link-arrows/left-red.png", off: "/link-arrows/left-grey.png" },
+  right: { on: "/link-arrows/right-red.png", off: "/link-arrows/right-grey.png" },
+  "bottom-left": { on: "/link-arrows/bottom-left-red.png", off: "/link-arrows/bottom-left-grey.png" },
+  bottom: { on: "/link-arrows/bottom-red.png", off: "/link-arrows/bottom-grey.png" },
+  "bottom-right": { on: "/link-arrows/bottom-right-red.png", off: "/link-arrows/bottom-right-grey.png" },
+};
+
+function normalizeLinkArrowName(value) {
+  const raw = String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/_/g, "-")
+    .replace(/\s+/g, "-");
+
+  const normalized = raw
+    .replace(/^middle-/, "")
+    .replace(/-center$/g, "")
+    .replace(/^centre$/g, "")
+    .replace(/-centre$/g, "")
+    .replace(/^mid-/, "");
+
+  const aliasMap = {
+    topleft: "top-left",
+    topright: "top-right",
+    bottomleft: "bottom-left",
+    bottomright: "bottom-right",
+    middleleft: "left",
+    middleright: "right",
+    centerleft: "left",
+    centerright: "right",
+    topcenter: "top",
+    bottomcenter: "bottom",
+    topcentre: "top",
+    bottomcentre: "bottom",
+  };
+
+  const condensed = normalized.replace(/-/g, "");
+  if (aliasMap[condensed]) return aliasMap[condensed];
+  if (LINK_ARROW_POSITIONS.includes(normalized)) return normalized;
+  return "";
+}
+
+function getLinkArrowNames(card) {
+  const candidates = [
+    card?.linkArrows,
+    card?.linkarrows,
+    card?.linkMarkers,
+    card?.linkmarkers,
+    card?.linkArrow,
+    card?.linkMarker,
+  ];
+
+  for (const candidate of candidates) {
+    if (Array.isArray(candidate)) {
+      const values = candidate.map(normalizeLinkArrowName).filter(Boolean);
+      if (values.length) return [...new Set(values)];
+      continue;
+    }
+
+    if (typeof candidate === "string") {
+      const values = candidate
+        .split(/[|,/;]/)
+        .map(normalizeLinkArrowName)
+        .filter(Boolean);
+      if (values.length) return [...new Set(values)];
+      continue;
+    }
+
+    if (typeof candidate === "number" && Number.isFinite(candidate) && candidate > 0) {
+      const bitMap = [
+        [0x001, "bottom-left"],
+        [0x002, "bottom"],
+        [0x004, "bottom-right"],
+        [0x008, "left"],
+        [0x020, "right"],
+        [0x040, "top-left"],
+        [0x080, "top"],
+        [0x100, "top-right"],
+      ];
+      const values = bitMap.filter(([bit]) => (candidate & bit) === bit).map(([, name]) => name);
+      if (values.length) return values;
+    }
+  }
+
+  return [];
+}
+
+function isLinkMonster(card) {
+  const typeText = `${card?.cardType || ""} ${card?.type || ""}`.toLowerCase();
+  return String(card?.cardType || "").trim().toLowerCase() === "monster" && typeText.includes("link");
+}
+
+function LinkArrowsValue({ card }) {
+  const activeArrows = new Set(getLinkArrowNames(card));
+
+  return (
+    <div className="inline-flex rounded-lg border border-slate-300 bg-slate-50 p-1.5">
+      <div className="grid grid-cols-3 gap-0.5">
+        {LINK_ARROW_LAYOUT.flat().map((position, index) => {
+          if (!position) {
+            return <div key={`empty-${index}`} className="h-8 w-8 rounded-sm bg-slate-200/70" />;
+          }
+
+          const isActive = activeArrows.has(position);
+          const icon = LINK_ARROW_ICON_MAP[position];
+          return (
+            <div key={position} className="flex h-8 w-8 items-center justify-center rounded-sm bg-white">
+              <img
+                src={isActive ? icon?.on : icon?.off}
+                alt={`${position} ${isActive ? "active" : "inactive"} link arrow`}
+                className="h-7 w-7 object-contain"
+                loading="lazy"
+              />
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function getAttributeIcon(attribute) {
   return ATTRIBUTE_ICON_MAP[String(attribute || "").toUpperCase()] || null;
 }
@@ -212,7 +354,7 @@ function getLevelIcon(card) {
 function getLevelLabel(card) {
   const typeText = `${card.cardType || ""} ${card.type || ""}`.toLowerCase();
   if (typeText.includes("xyz")) return "Rank";
-  if (typeText.includes("link")) return "Link Rating";
+  if (typeText.includes("link")) return "Link Arrows";
   return "Level";
 }
 
@@ -1870,7 +2012,11 @@ function CardDetail({ card, cards, onBack, onOpen }) {
               <StatRow label="Card type" value={getCardTypeDisplay(card)} />
               {card.cardType === "Monster" ? <StatRow label="Attribute" value={getAttributeDisplay(card)} /> : null}
               <StatRow label="Types" value={<TypeLineWithIcons card={card} />} />
-              {card.level || card.rank || card.linkRating ? <StatRow label={getLevelLabel(card)} value={<LevelValue card={card} />} /> : null}
+              {isLinkMonster(card) ? (
+                <StatRow label="Link Arrows" value={<LinkArrowsValue card={card} />} />
+              ) : card.level || card.rank || card.linkRating ? (
+                <StatRow label={getLevelLabel(card)} value={<LevelValue card={card} />} />
+              ) : null}
               {card.scales ? <StatRow label="Pendulum Scale" value={<PendulumScaleValue value={card.scales} />} /> : null}
               {getBattleStatDisplay(card) ? <StatRow label={getBattleStatDisplay(card).label} value={getBattleStatDisplay(card).value} /> : null}
               <StatRow label="Archetype" value={getArchetypeText(card)} />
