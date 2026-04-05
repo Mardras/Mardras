@@ -707,6 +707,12 @@ function normalizeOfficialCard(card, index) {
 
 function normalizeCharacter(character, index) {
   const decks = Array.isArray(character?.decks) ? character.decks : [];
+  const rawVideoGuides = Array.isArray(character?.videoGuides)
+    ? character.videoGuides
+    : Array.isArray(character?.videos)
+      ? character.videos
+      : [];
+
   return {
     id: String(character?.id || `character-${index + 1}`),
     name: character?.name || `Untitled Character ${index + 1}`,
@@ -719,6 +725,27 @@ function normalizeCharacter(character, index) {
     firstAppearance: character?.firstAppearance || "",
     tags: Array.isArray(character?.tags) ? character.tags : [],
     signatureCards: Array.isArray(character?.signatureCards) ? character.signatureCards.map(String) : [],
+    videoGuides: rawVideoGuides
+      .map((video, videoIndex) => {
+        if (typeof video === "string") {
+          return {
+            id: `video-${videoIndex + 1}`,
+            title: `Video Guide ${videoIndex + 1}`,
+            url: video,
+            description: "",
+            thumbnail: "",
+          };
+        }
+
+        return {
+          id: String(video?.id || `video-${videoIndex + 1}`),
+          title: video?.title || `Video Guide ${videoIndex + 1}`,
+          url: video?.url || "",
+          description: video?.description || "",
+          thumbnail: video?.thumbnail || "",
+        };
+      })
+      .filter((video) => video.url),
     decks: decks.map((deck, deckIndex) => ({
       id: String(deck?.id || `${character?.id || `character-${index + 1}`}-deck-${deckIndex + 1}`),
       name: deck?.name || `Deck ${deckIndex + 1}`,
@@ -1185,18 +1212,18 @@ function FeaturedCard({ card, onOpen }) {
   return (
     <button
       onClick={() => onOpen(card)}
-      className="grid gap-4 rounded-[24px] border border-slate-300 bg-white p-4 text-left shadow-sm transition hover:shadow-lg md:grid-cols-[140px_1fr]"
+      className="grid gap-3 overflow-hidden rounded-[24px] border border-slate-300 bg-white p-4 text-left shadow-sm transition hover:shadow-lg md:grid-cols-[140px_minmax(0,1fr)]"
     >
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
         <img src={card.image} alt={card.name} loading="lazy" className="h-full w-full object-cover" />
       </div>
-      <div className="space-y-2">
+      <div className="min-w-0 space-y-2 overflow-hidden">
         <div className="flex flex-wrap items-center gap-2">
           <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">{getArchetypeText(card)}</span>
           <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">{card.cardType}</span>
         </div>
-        <h3 className="text-xl font-bold text-slate-900">{card.name}</h3>
-        <p className="line-clamp-4 text-sm leading-6 text-slate-600">{card.lore}</p>
+        <h3 className="break-words text-lg font-bold leading-tight text-slate-900 line-clamp-3">{card.name}</h3>
+        <p className="break-words text-sm leading-6 text-slate-600 line-clamp-6">{card.lore}</p>
       </div>
     </button>
   );
@@ -2200,7 +2227,7 @@ function CharacterHoverPreview({ card }) {
   }
 
   return (
-    <div className="rounded-[24px] border border-slate-300 bg-white p-4 shadow-sm">
+    <div className="rounded-[24px] border border-slate-300 bg-white p-4 shadow-sm max-h-[calc(100vh-2rem)] overflow-hidden">
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
         <img src={card.image} alt={card.name} loading="lazy" className="w-full object-cover" />
       </div>
@@ -2211,9 +2238,83 @@ function CharacterHoverPreview({ card }) {
           <span className="rounded-full bg-slate-100 px-2.5 py-1 font-medium text-slate-600">{getFilterCardType(card)}</span>
           <span className="rounded-full bg-slate-100 px-2.5 py-1 font-medium text-slate-600">ID: {card.id}</span>
         </div>
-        <div className="text-sm leading-6 text-slate-700 line-clamp-10">{card.lore || "No effect text provided."}</div>
+        <div className="max-h-[24rem] overflow-y-auto pr-1 text-sm leading-6 text-slate-700">{card.lore || "No effect text provided."}</div>
       </div>
     </div>
+  );
+}
+
+function getYouTubeVideoId(url) {
+  const source = String(url || "").trim();
+  if (!source) return "";
+
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_-]{11})/i,
+    /youtube\.com\/embed\/([A-Za-z0-9_-]{11})/i,
+    /youtube\.com\/shorts\/([A-Za-z0-9_-]{11})/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = source.match(pattern);
+    if (match?.[1]) return match[1];
+  }
+
+  return "";
+}
+
+function getVideoEmbedUrl(url) {
+  const videoId = getYouTubeVideoId(url);
+  if (videoId) return `https://www.youtube.com/embed/${videoId}`;
+  return "";
+}
+
+function getVideoThumbnail(url, fallback = "") {
+  const videoId = getYouTubeVideoId(url);
+  if (videoId) return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+  return fallback || "https://placehold.co/640x360/e5e7eb/475569?text=Video";
+}
+
+function VideoGuideCard({ video }) {
+  const embedUrl = getVideoEmbedUrl(video?.url);
+  const thumbnail = getVideoThumbnail(video?.url, video?.thumbnail);
+
+  return (
+    <article className="overflow-hidden rounded-[24px] border border-slate-300 bg-white shadow-sm">
+      {embedUrl ? (
+        <div className="aspect-video overflow-hidden bg-slate-100">
+          <iframe
+            src={embedUrl}
+            title={video?.title || "Video guide"}
+            loading="lazy"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
+            className="h-full w-full border-0"
+          />
+        </div>
+      ) : (
+        <a
+          href={video?.url}
+          target="_blank"
+          rel="noreferrer"
+          className="block aspect-video overflow-hidden bg-slate-100"
+        >
+          <img src={thumbnail} alt={video?.title || "Video guide"} loading="lazy" className="h-full w-full object-cover" />
+        </a>
+      )}
+      <div className="space-y-2 p-4">
+        <h3 className="text-lg font-semibold text-slate-900">{video?.title || "Video Guide"}</h3>
+        {video?.description ? <p className="text-sm leading-6 text-slate-700">{video.description}</p> : null}
+        <a
+          href={video?.url}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+        >
+          <Sparkles className="h-4 w-4" /> Watch on YouTube
+        </a>
+      </div>
+    </article>
   );
 }
 
@@ -2276,6 +2377,7 @@ function CharacterDetailPage({ character, cards, onOpenCard, onOpenCharacterList
 
   const activeDeck = character?.decks?.find((deck) => deck.id === activeDeckId) || character?.decks?.[0] || null;
   const signatureCards = (character?.signatureCards || []).map((id) => cards.find((card) => String(card.id) === String(id))).filter(Boolean);
+  const videoGuides = Array.isArray(character?.videoGuides) ? character.videoGuides : [];
 
   return (
     <div className="space-y-6">
@@ -2309,7 +2411,9 @@ function CharacterDetailPage({ character, cards, onOpenCard, onOpenCharacterList
             </div>
           </div>
 
-          <CharacterHoverPreview card={hoveredCard} />
+          <div className="sticky top-6 self-start">
+            <CharacterHoverPreview card={hoveredCard} />
+          </div>
         </div>
 
         <div className="space-y-6">
@@ -2324,6 +2428,18 @@ function CharacterDetailPage({ character, cards, onOpenCard, onOpenCharacterList
               <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {signatureCards.map((card) => (
                   <FeaturedCard key={`signature-${card.id}`} card={card} onOpen={onOpenCard} />
+                ))}
+              </div>
+            </section>
+          ) : null}
+
+          {videoGuides.length ? (
+            <section className="rounded-[24px] border border-slate-300 bg-white p-5 shadow-sm">
+              <h2 className="text-2xl font-bold text-slate-900">Video Guides</h2>
+              <div className="mt-2 text-sm text-slate-600">Watch combo lines, openings, and pilot tips before trying the downloaded deck.</div>
+              <div className="mt-4 grid gap-4 xl:grid-cols-2">
+                {videoGuides.map((video) => (
+                  <VideoGuideCard key={video.id} video={video} />
                 ))}
               </div>
             </section>
