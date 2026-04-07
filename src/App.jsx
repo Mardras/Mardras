@@ -2901,3 +2901,147 @@ export default function App() {
     </div>
   );
 }
+
+import React, { useState } from "react";
+
+// =========================
+// THREAT SYSTEM CONFIG
+// =========================
+export const THREAT_TIERS = [
+  { label: "EX++", min: 330, win: "99.1%+", group: "Non-Sense Tier" },
+  { label: "EX+", min: 320, win: "96.1% - 99%", group: "Unfair Tier" },
+  { label: "EX", min: 310, win: "93.1% - 96%", group: "Unfair Tier" },
+  { label: "EX-", min: 300, win: "90.1% - 93%", group: "Unfair Tier" },
+
+  { label: "SSS+", min: 290, win: "87.1% - 90%", group: "Broken Custom" },
+  { label: "SSS", min: 280, win: "84.1% - 87%", group: "Broken Custom" },
+  { label: "SSS-", min: 270, win: "81.1% - 84%", group: "Broken Custom" },
+
+  { label: "SS+", min: 260, win: "78.1% - 81%", group: "Custom Tier" },
+  { label: "SS", min: 250, win: "75.1% - 78%", group: "Custom Tier" },
+  { label: "SS-", min: 240, win: "72.1% - 75%", group: "Custom Tier" },
+
+  { label: "S+", min: 230, win: "69.1% - 72%", group: "Tier 0" },
+  { label: "S", min: 220, win: "66.1% - 69%", group: "Tier 0" },
+  { label: "S-", min: 210, win: "63.1% - 66%", group: "Tier 0" },
+
+  { label: "A+", min: 200, win: "60.1% - 63%", group: "Tier 0.5" },
+
+  { label: "A", min: 190, win: "57.1% - 60%", group: "Tier 1" },
+  { label: "A-", min: 180, win: "54.1% - 57%", group: "Tier 1" },
+
+  { label: "B+", min: 170, win: "51.1% - 54%", group: "Tier 2" },
+  { label: "B", min: 160, win: "48.1% - 51%", group: "Tier 2" },
+  { label: "B-", min: 150, win: "45.1% - 48%", group: "Tier 2" },
+
+  { label: "C+", min: 140, win: "42.1% - 45%", group: "Tier 3" },
+  { label: "C", min: 130, win: "39.1% - 42%", group: "Tier 3" },
+  { label: "C-", min: 120, win: "36.1% - 39%", group: "Tier 3" },
+
+  { label: "D+", min: 110, win: "33.1% - 36%", group: "Tier 4" },
+  { label: "D", min: 100, win: "30.1% - 33%", group: "Tier 4" },
+  { label: "D-", min: 90, win: "27.1% - 30%", group: "Tier 4" },
+
+  { label: "E+", min: 80, win: "24.1% - 27%", group: "Tier 5" },
+  { label: "E", min: 70, win: "21.1% - 24%", group: "Tier 5" },
+  { label: "E-", min: 60, win: "18.1% - 21%", group: "Tier 5" },
+
+  { label: "F+", min: 50, win: "15.1% - 18%", group: "Tier 6" },
+  { label: "F", min: 40, win: "12.1% - 15%", group: "Tier 6" },
+  { label: "F-", min: 30, win: "9.1% - 12%", group: "Tier 6" },
+
+  { label: "G+", min: 20, win: "6.1% - 9%", group: "Tier 7" },
+  { label: "G", min: 10, win: "3.1% - 6%", group: "Tier 7" },
+  { label: "G-", min: 1, win: "1% - 3%", group: "Tier 7" },
+
+  { label: "Test", min: 0, win: "0% - 0.9%", group: "Tier 8" },
+];
+
+export function getThreatTier(points = 0) {
+  return THREAT_TIERS.find(t => points >= t.min) || THREAT_TIERS[THREAT_TIERS.length - 1];
+}
+
+export function getThreatTier(points = 0) {
+
+  return (
+    <div className="p-6 space-y-6">
+      <h1 className="text-3xl font-bold">Threat Tier List</h1>
+
+      {THREAT_TIERS.map(tier => (
+        <div key={tier.label} className="border rounded-xl p-4 bg-white">
+          <div className="flex justify-between items-center mb-3">
+            <div className="text-xl font-bold">{tier.label}</div>
+            <div className="text-sm text-gray-500">{tier.win}</div>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-3">
+            {(grouped[tier.label] || []).map(deck => (
+              <div key={deck.id} className="p-3 border rounded-lg">
+                <div className="font-semibold">{deck.name}</div>
+                <div className="text-xs text-gray-500">WR: {deck.winRate}%</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// =========================
+// DECKLIST PAGE (Top Decks)
+// =========================
+function DecklistsPage({ decks }) {
+  const sorted = [...decks].sort((a, b) => b.winRate - a.winRate);
+
+  return (
+    <div className="p-6 space-y-6">
+      <h1 className="text-3xl font-bold">Top Decks</h1>
+
+      <div className="grid md:grid-cols-3 gap-4">
+        {sorted.map(deck => {
+          const tier = getThreatTier(deck.points);
+
+          return (
+            <div key={deck.id} className="border rounded-xl p-4 bg-white">
+              <div className="text-lg font-bold">{deck.name}</div>
+              <div className="text-sm text-gray-500">{deck.author}</div>
+
+              <div className="mt-2 text-sm">
+                Win Rate: <b>{deck.winRate}%</b>
+              </div>
+
+              <div className="mt-1 text-sm">
+                Tier: <b>{tier.label}</b>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// =========================
+// MAIN APP (ROUTING ADD)
+// =========================
+export default function App() {
+  const [page, setPage] = useState("home");
+  const [decks] = useState(sampleDecks);
+
+  return (
+    <div>
+      {/* NAV */}
+      <div className="flex gap-3 p-4 border-b">
+        <button onClick={() => setPage("home")}>Home</button>
+        <button onClick={() => setPage("tiers")}>Threat Tier</button>
+        <button onClick={() => setPage("decks")}>Decklists</button>
+      </div>
+
+      {/* ROUTES */}
+      {page === "home" && <div className="p-6">Home Page</div>}
+      {page === "tiers" && <ThreatTierPage decks={decks} />}
+      {page === "decks" && <DecklistsPage decks={decks} />}
+    </div>
+  );
+}
