@@ -1,3 +1,4 @@
+//<FILE filename="App8.jsx" size="128462 bytes">
 import React, { useEffect, useMemo, useState } from "react";
 import {
   Search,
@@ -10,6 +11,7 @@ import {
   Sparkles,
   Link as LinkIcon,
   Package,
+  AlertTriangle,
 } from "lucide-react";
 
 const defaultCards = [
@@ -91,6 +93,534 @@ const SETTINGS_KEY = "mardras-db-settings-v1";
 const DEFAULT_PAGE_SIZE = 15;
 const ADMIN_QUERY_KEY = "admin";
 
+const TIER_DEFINITIONS = [
+  { category: "Non-Sense Tier", subTier: "EX++", pointsMin: 330, pointsMax: Infinity, winMin: 99.1, winMax: Infinity, colorClass: "bg-red-700 text-white border-red-800 shadow-red-500/30" },
+  { category: "Unfair Tier", subTier: "EX+", pointsMin: 320, pointsMax: 329, winMin: 96.1, winMax: 99, colorClass: "bg-red-600 text-white border-red-700 shadow-red-400/30" },
+  { category: "Unfair Tier", subTier: "EX", pointsMin: 310, pointsMax: 319, winMin: 93.1, winMax: 96, colorClass: "bg-red-600 text-white border-red-700 shadow-red-400/30" },
+  { category: "Unfair Tier", subTier: "EX-", pointsMin: 300, pointsMax: 309, winMin: 90.1, winMax: 93, colorClass: "bg-red-600 text-white border-red-700 shadow-red-400/30" },
+  { category: "Broken Custom Tier", subTier: "SSS+", pointsMin: 290, pointsMax: 299, winMin: 87.1, winMax: 90, colorClass: "bg-orange-600 text-white border-orange-700 shadow-orange-400/30" },
+  { category: "Broken Custom Tier", subTier: "SSS", pointsMin: 280, pointsMax: 289, winMin: 84.1, winMax: 87, colorClass: "bg-orange-600 text-white border-orange-700 shadow-orange-400/30" },
+  { category: "Broken Custom Tier", subTier: "SSS-", pointsMin: 270, pointsMax: 279, winMin: 81.1, winMax: 84, colorClass: "bg-orange-600 text-white border-orange-700 shadow-orange-400/30" },
+  { category: "Custom Tier", subTier: "SS+", pointsMin: 260, pointsMax: 269, winMin: 78.1, winMax: 81, colorClass: "bg-amber-500 text-slate-900 border-amber-600 shadow-amber-400/30" },
+  { category: "Custom Tier", subTier: "SS", pointsMin: 250, pointsMax: 259, winMin: 75.1, winMax: 78, colorClass: "bg-amber-500 text-slate-900 border-amber-600 shadow-amber-400/30" },
+  { category: "Custom Tier", subTier: "SS-", pointsMin: 240, pointsMax: 249, winMin: 72.1, winMax: 75, colorClass: "bg-amber-500 text-slate-900 border-amber-600 shadow-amber-400/30" },
+  { category: "Tier 0", subTier: "S+", pointsMin: 230, pointsMax: 239, winMin: 69.1, winMax: 72, colorClass: "bg-yellow-500 text-slate-900 border-yellow-600 shadow-yellow-400/30" },
+  { category: "Tier 0", subTier: "S", pointsMin: 220, pointsMax: 229, winMin: 66.1, winMax: 69, colorClass: "bg-yellow-500 text-slate-900 border-yellow-600 shadow-yellow-400/30" },
+  { category: "Tier 0", subTier: "S-", pointsMin: 210, pointsMax: 219, winMin: 63.1, winMax: 66, colorClass: "bg-yellow-500 text-slate-900 border-yellow-600 shadow-yellow-400/30" },
+  { category: "Tier 0.5", subTier: "A+", pointsMin: 200, pointsMax: 209, winMin: 60.1, winMax: 63, colorClass: "bg-lime-500 text-slate-900 border-lime-600 shadow-lime-400/30" },
+  { category: "Tier 1", subTier: "A", pointsMin: 190, pointsMax: 199, winMin: 57.1, winMax: 60, colorClass: "bg-green-500 text-white border-green-600 shadow-green-400/30" },
+  { category: "Tier 1", subTier: "A-", pointsMin: 180, pointsMax: 189, winMin: 54.1, winMax: 57, colorClass: "bg-green-500 text-white border-green-600 shadow-green-400/30" },
+  { category: "Tier 2", subTier: "B+", pointsMin: 170, pointsMax: 179, winMin: 51.1, winMax: 54, colorClass: "bg-blue-500 text-white border-blue-600 shadow-blue-400/30" },
+  { category: "Tier 2", subTier: "B", pointsMin: 160, pointsMax: 169, winMin: 48.1, winMax: 51, colorClass: "bg-blue-500 text-white border-blue-600 shadow-blue-400/30" },
+  { category: "Tier 2", subTier: "B-", pointsMin: 150, pointsMax: 159, winMin: 45.1, winMax: 48, colorClass: "bg-blue-500 text-white border-blue-600 shadow-blue-400/30" },
+  { category: "Tier 3", subTier: "C+", pointsMin: 140, pointsMax: 149, winMin: 42.1, winMax: 45, colorClass: "bg-cyan-500 text-white border-cyan-600 shadow-cyan-400/30" },
+  { category: "Tier 3", subTier: "C", pointsMin: 130, pointsMax: 139, winMin: 39.1, winMax: 42, colorClass: "bg-cyan-500 text-white border-cyan-600 shadow-cyan-400/30" },
+  { category: "Tier 3", subTier: "C-", pointsMin: 120, pointsMax: 129, winMin: 36.1, winMax: 39, colorClass: "bg-cyan-500 text-white border-cyan-600 shadow-cyan-400/30" },
+  { category: "Tier 4", subTier: "D+", pointsMin: 110, pointsMax: 119, winMin: 33.1, winMax: 36, colorClass: "bg-teal-500 text-white border-teal-600 shadow-teal-400/30" },
+  { category: "Tier 4", subTier: "D", pointsMin: 100, pointsMax: 109, winMin: 30.1, winMax: 33, colorClass: "bg-teal-500 text-white border-teal-600 shadow-teal-400/30" },
+  { category: "Tier 4", subTier: "D-", pointsMin: 90, pointsMax: 99, winMin: 27.1, winMax: 30, colorClass: "bg-teal-500 text-white border-teal-600 shadow-teal-400/30" },
+  { category: "Tier 5", subTier: "E+", pointsMin: 80, pointsMax: 89, winMin: 24.1, winMax: 27, colorClass: "bg-emerald-500 text-white border-emerald-600 shadow-emerald-400/30" },
+  { category: "Tier 5", subTier: "E", pointsMin: 70, pointsMax: 79, winMin: 21.1, winMax: 24, colorClass: "bg-emerald-500 text-white border-emerald-600 shadow-emerald-400/30" },
+  { category: "Tier 5", subTier: "E-", pointsMin: 60, pointsMax: 69, winMin: 18.1, winMax: 21, colorClass: "bg-emerald-500 text-white border-emerald-600 shadow-emerald-400/30" },
+  { category: "Tier 6", subTier: "F+", pointsMin: 50, pointsMax: 59, winMin: 15.1, winMax: 18, colorClass: "bg-slate-500 text-white border-slate-600 shadow-slate-400/30" },
+  { category: "Tier 6", subTier: "F", pointsMin: 40, pointsMax: 49, winMin: 12.1, winMax: 15, colorClass: "bg-slate-500 text-white border-slate-600 shadow-slate-400/30" },
+  { category: "Tier 6", subTier: "F-", pointsMin: 30, pointsMax: 39, winMin: 9.1, winMax: 12, colorClass: "bg-slate-500 text-white border-slate-600 shadow-slate-400/30" },
+  { category: "Tier 7", subTier: "G+", pointsMin: 20, pointsMax: 29, winMin: 6.1, winMax: 9, colorClass: "bg-gray-500 text-white border-gray-600 shadow-gray-400/30" },
+  { category: "Tier 7", subTier: "G", pointsMin: 10, pointsMax: 19, winMin: 3.1, winMax: 6, colorClass: "bg-gray-500 text-white border-gray-600 shadow-gray-400/30" },
+  { category: "Tier 7", subTier: "G-", pointsMin: 1, pointsMax: 9, winMin: 1, winMax: 3, colorClass: "bg-gray-500 text-white border-gray-600 shadow-gray-400/30" },
+  { category: "Tier 8", subTier: "Test Deck", pointsMin: 0, pointsMax: 0.9, winMin: 0, winMax: 0.9, colorClass: "bg-zinc-400 text-slate-900 border-zinc-500 shadow-zinc-400/30" },
+];
+
+function getThreatTier(deck) {
+  const winRate = Number(deck?.winRate) || 0;
+  const points = Number(deck?.points) || 0;
+
+  // Internal point system (never shown to users) takes priority if present
+  const scoreToCheck = points > 0 ? points : winRate;
+
+  return (
+    TIER_DEFINITIONS.find((tier) => {
+      if (points > 0) {
+        return scoreToCheck >= tier.pointsMin && scoreToCheck <= tier.pointsMax;
+      }
+      return scoreToCheck >= tier.winMin && (tier.winMax === Infinity || scoreToCheck <= tier.winMax);
+    }) || TIER_DEFINITIONS[TIER_DEFINITIONS.length - 1]
+  );
+}
+
+const THREAT_DECKS = [
+  {
+    id: "threat-expp-1",
+    name: "L.S. Shadow Emperor Dragon OTK",
+    owner: "Mardras",
+    winRate: 99.5,
+    points: 340,
+    description: "New deck that is obviously Tier 0 / Non-Sense. Instant win condition.",
+    archetype: "L.S.",
+    deckData: {
+      name: "L.S. Apex Threat",
+      main: ["60060041", "60060092", "60060102"],
+      extra: [],
+      side: [],
+    },
+  },
+  {
+    id: "threat-explus-1",
+    name: "L.S. Unfair Control",
+    owner: "Fran",
+    winRate: 97.8,
+    points: 325,
+    description: "Unfair Tier EX+ – 98% win rate in tournament play.",
+    archetype: "L.S.",
+    deckData: {
+      name: "L.S. Unfair Control",
+      main: ["60060041", "60060092", "60060102"],
+      extra: [],
+      side: [],
+    },
+  },
+  {
+    id: "threat-ex-1",
+    name: "L.S. Jiauer Combo",
+    owner: "Mardras",
+    winRate: 94.2,
+    points: 315,
+    description: "Unfair Tier EX – Consistent turn-1 kills.",
+    archetype: "L.S.",
+    deckData: {
+      name: "L.S. Jiauer Combo",
+      main: ["60060041", "60060092", "60060102"],
+      extra: [],
+      side: [],
+    },
+  },
+  {
+    id: "threat-sssplus-1",
+    name: "Broken Custom Fusion Beast",
+    owner: "Aura",
+    winRate: 88.9,
+    points: 295,
+    description: "Broken Custom Tier SSS+ – Meta-warping fusion engine.",
+    archetype: "Custom",
+    deckData: {
+      name: "Broken Fusion Beast",
+      main: ["60060041", "60060092", "60060102"],
+      extra: [],
+      side: [],
+    },
+  },
+  {
+    id: "threat-s-1",
+    name: "Tier 0 L.S. Synchro Engine",
+    owner: "Veihar",
+    winRate: 67.4,
+    points: 225,
+    description: "Tier 0 S – Strong but fair meta contender.",
+    archetype: "L.S.",
+    deckData: {
+      name: "Tier 0 Synchro",
+      main: ["60060041", "60060092", "60060102"],
+      extra: [],
+      side: [],
+    },
+  },
+  {
+    id: "threat-a-1",
+    name: "Tier 1 Ritual Xyz",
+    owner: "TheArcDes",
+    winRate: 58.3,
+    points: 195,
+    description: "Tier 1 A – Reliable ladder climber.",
+    archetype: "Custom",
+    deckData: {
+      name: "Tier 1 Ritual Xyz",
+      main: ["60060041", "60060092", "60060102"],
+      extra: [],
+      side: [],
+    },
+  },
+  {
+    id: "threat-test-1",
+    name: "New Test Deck – Balance Check",
+    owner: "Siege",
+    winRate: 0.4,
+    points: 0.4,
+    description: "Tier 8 Test Deck – Being evaluated for future threat level.",
+    archetype: "Test",
+    deckData: {
+      name: "Test Deck",
+      main: [],
+      extra: [],
+      side: [],
+    },
+  },
+];
+
+const CODE_DOWNLOADS = [
+  {
+    id: "ls-pack-main",
+    title: "L.S. Pack for EDOPro",
+    description: "Full Collection of L.S. cards",
+    url: "https://www.mediafire.com/file/g2m9dptch1sdd20/LS-2026FullbyMardras.zip/file",
+  },
+  {
+    id: "fran-pack",
+    title: "Fran Deck Pack for EDOPro",
+    description: "Fran's Warrior Xyz custom deck and related cards.",
+    url: "https://www.mediafire.com/file/pu6l1awbblnegrw/Fran_Customs_Basic_Deck_Weather_Warrior_2026.zip/file",
+  },
+  {
+    id: "vylon-pack",
+    title: "Vylon Custom Pack for EDOPro",
+    description: "Veihar's custom Vylon deck (Full Collection).",
+    url: "https://www.mediafire.com/file/xig0cmh7jqkzymw/VylonCustom2026ByMardras.zip/file",
+  },
+  {
+    id: "aura-pack",
+    title: "Aura Deck Pack for EDOPro",
+    description: "Aura's custom Ritual Xyz deck and related cards.",
+    url: "https://www.mediafire.com/file/q6gq4pckaagu1l1/Aura_Customs_Basic_Deck_Duelist_Goddess_2026.zip/file",
+  },
+  {
+    id: "pk-pack",
+    title: "Phantom Knights Custom for EDOPro",
+    description: "Sae's custom Phantom Knights cards.",
+    url: "https://www.mediafire.com/file/6iezt5tuxl0i204/Phantom_Knights_Support.zip/file",
+  },
+  {
+    id: "archers-pack",
+    title: "Archers Custom for EDOPro",
+    description: "TheArcDes' custom Archer cards. Contribution: Fran.",
+    url: "https://www.mediafire.com/file/5jbsyvsy25pfs11/Arrow_Archer_Cards_by_TheArcDes_and_Fran.zip/file",
+  },
+  {
+    id: "Legolas-pack",
+    title: "The 2 Legolas Customs for EDOPro",
+    description: "Siege's custom Legolas Xyz Cards. Contribution: Fran.",
+    url: "https://www.mediafire.com/file/0pu7q6w0nqj0mqk/Legolas_by_Siege.zip/file",
+  },
+  {
+    id: "archfiend-chess-pack",
+    title: "Archfiend Chess Pack for EDOPro",
+    description: "Milius K. Roydenburg's Chess Strategy Deck",
+    url: "https://www.mediafire.com/file/wo8uxhvok2kzity/ArchfiendChessbyMardras.zip/file",
+  },
+  {
+    id: "ragnaraika-customs-pack",
+    title: "Ragnaraika Customs for EDOPro",
+    description: "Zeith Leinsdoom's Ragnaraika custom cards",
+    url: "https://www.mediafire.com/file/juxcre6b8d8myjv/RagnaraikaCustoms2026byMardras.zip/file",
+  },
+];
+
+const defaultSettings = {
+  imageBaseUrl: "/cards",
+  imageExtension: "jpg",
+  dataUrl: "/data/cards.json",
+  downloads: CODE_DOWNLOADS,
+};
+
+function normalizeCard(card, index, settings = defaultSettings) {
+  const normalizedRaceList = Array.isArray(card?.race)
+    ? card.race.map((value) => String(value || "").trim()).filter(Boolean)
+    : [];
+  const normalizedAttributeList = Array.isArray(card?.attribute)
+    ? card.attribute.map((value) => String(value || "").trim().toUpperCase()).filter(Boolean)
+    : [];
+
+  return {
+    id: String(card.id || `card-${index + 1}`),
+    name: card.name || `Untitled Card ${index + 1}`,
+    author: card.author || "Mardras",
+    archetype: Array.isArray(card.archetype)
+      ? card.archetype.map((value) => String(value || "").trim()).filter(Boolean)
+      : String(card.archetype || "").trim() || "Other Customs",
+    type: card.type || (normalizedRaceList.length ? normalizedRaceList.join(" ") : card.race) || "Effect Monster",
+    attribute: normalizedAttributeList.length ? normalizedAttributeList : (card.attribute || "—"),
+    race: normalizedRaceList.length ? normalizedRaceList : (card.race || card.type || "—"),
+    level: card.level ?? "",
+    rank: card.rank ?? "",
+    linkRating: card.linkRating ?? card.link ?? "",
+    linkMarkers: Array.isArray(card?.linkMarkers)
+      ? card.linkMarkers.map(normalizeLinkArrowName).filter(Boolean)
+      : (typeof card?.linkMarkers === "string"
+          ? card.linkMarkers.split(/[|,/;]/).map(normalizeLinkArrowName).filter(Boolean)
+          : card?.linkMarkers ?? ""),
+    linkArrows: Array.isArray(card?.linkArrows)
+      ? card.linkArrows.map(normalizeLinkArrowName).filter(Boolean)
+      : (typeof card?.linkArrows === "string"
+          ? card.linkArrows.split(/[|,/;]/).map(normalizeLinkArrowName).filter(Boolean)
+          : card?.linkArrows ?? ""),
+    leftScale: card.leftScale ?? "",
+    rightScale: card.rightScale ?? "",
+    atk: card.atk ?? "—",
+    def: card.def ?? "—",
+    scales: card.scales || "",
+    property: card.property || "",
+    cardType: card.cardType || "Monster",
+    image:
+      card.image ||
+      (card.id && settings.imageBaseUrl
+        ? `${settings.imageBaseUrl.replace(/\/$/, "")}/${card.id}.${settings.imageExtension || "jpg"}`
+        : "https://placehold.co/280x410/e5e7eb/475569?text=No+Image"),
+    lore: card.lore || "No effect text provided.",
+    status: card.status || "Legal",
+    setGroup: card.setGroup || "Unsorted",
+  };
+}
+
+function normalizeOfficialCard(card, index) {
+  const normalized = normalizeCard(
+    {
+      ...card,
+      author: card?.author || "Konami",
+      source: "official",
+      image: card?.image || (card?.id ? `/official-cards/${card.id}.jpg` : ""),
+    },
+    index,
+    defaultSettings
+  );
+  return {
+    ...normalized,
+    source: "official",
+    image: normalized.image || (normalized.id ? `/official-cards/${normalized.id}.jpg` : ""),
+    author: normalized.author || "Konami",
+  };
+}
+
+function normalizeCharacter(character, index) {
+  const decks = Array.isArray(character?.decks) ? character.decks : [];
+  const rawVideoGuides = Array.isArray(character?.videoGuides)
+    ? character.videoGuides
+    : Array.isArray(character?.videos)
+      ? character.videos
+      : [];
+
+  return {
+    id: String(character?.id || `character-${index + 1}`),
+    name: character?.name || `Untitled Character ${index + 1}`,
+    title: character?.title || "",
+    image: character?.image || "https://placehold.co/600x800/e5e7eb/475569?text=Character",
+    summary: character?.summary || "",
+    biography: character?.biography || "",
+    affiliation: character?.affiliation || "",
+    aliases: Array.isArray(character?.aliases) ? character.aliases : [],
+    firstAppearance: character?.firstAppearance || "",
+    tags: Array.isArray(character?.tags) ? character.tags : [],
+    signatureCards: Array.isArray(character?.signatureCards) ? character.signatureCards.map(String) : [],
+    videoGuides: rawVideoGuides
+      .map((video, videoIndex) => {
+        if (typeof video === "string") {
+          return {
+            id: `video-${videoIndex + 1}`,
+            title: `Video Guide ${videoIndex + 1}`,
+            url: video,
+            description: "",
+            thumbnail: "",
+          };
+        }
+
+        return {
+          id: String(video?.id || `video-${videoIndex + 1}`),
+          title: video?.title || `Video Guide ${videoIndex + 1}`,
+          url: video?.url || "",
+          description: video?.description || "",
+          thumbnail: video?.thumbnail || "",
+        };
+      })
+      .filter((video) => video.url),
+    decks: decks.map((deck, deckIndex) => ({
+      id: String(deck?.id || `${character?.id || `character-${index + 1}`}-deck-${deckIndex + 1}`),
+      name: deck?.name || `Deck ${deckIndex + 1}`,
+      era: deck?.era || "",
+      description: deck?.description || "",
+      main: Array.isArray(deck?.main) ? deck.main.map(String) : [],
+      extra: Array.isArray(deck?.extra) ? deck.extra.map(String) : [],
+      side: Array.isArray(deck?.side) ? deck.side.map(String) : [],
+    })),
+  };
+}
+
+function getThreatTier(deck) {
+  const winRate = Number(deck?.winRate) || 0;
+  const points = Number(deck?.points) || 0;
+  const scoreToCheck = points > 0 ? points : winRate;
+  return (
+    TIER_DEFINITIONS.find((tier) => {
+      if (points > 0) {
+        return scoreToCheck >= tier.pointsMin && scoreToCheck <= tier.pointsMax;
+      }
+      return scoreToCheck >= tier.winMin && (tier.winMax === Infinity || scoreToCheck <= tier.winMax);
+    }) || TIER_DEFINITIONS[TIER_DEFINITIONS.length - 1]
+  );
+}
+
+function ThreatTierListPage({ decks }) {
+  const groupedDecks = useMemo(() => {
+    const groups = {};
+    decks.forEach((deck) => {
+      const tier = getThreatTier(deck);
+      const groupKey = `${tier.category} — ${tier.subTier}`;
+      if (!groups[groupKey]) {
+        groups[groupKey] = { tier, decks: [] };
+      }
+      groups[groupKey].decks.push(deck);
+    });
+    return Object.values(groups).sort((a, b) => b.tier.winMin - a.tier.winMin);
+  }, [decks]);
+
+  return (
+    <div className="space-y-10">
+      <div className="rounded-[28px] border border-slate-300 bg-white p-6 shadow-sm">
+        <div className="flex items-center gap-3">
+          <AlertTriangle className="h-8 w-8 text-red-600" />
+          <div>
+            <h1 className="text-4xl font-bold tracking-tight text-slate-900">Threat Tier List</h1>
+            <p className="text-slate-600">Decklists ranked by average win rate • Internal point system (hidden from users)</p>
+          </div>
+        </div>
+        <div className="mt-3 text-xs font-medium text-slate-400">New powerful decks are automatically placed here (Tier 0 / Non-Sense Tier and above).</div>
+      </div>
+
+      {groupedDecks.map((group) => (
+        <section key={group.tier.subTier} className="rounded-[24px] border border-slate-300 bg-white p-6 shadow-sm">
+          <div
+            className={`inline-flex items-center gap-2 rounded-2xl border px-5 py-2 text-lg font-bold ${group.tier.colorClass}`}
+          >
+            {group.tier.category} — {group.tier.subTier}
+          </div>
+          <div className="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            {group.decks.map((deck) => {
+              const tier = getThreatTier(deck);
+              return (
+                <div
+                  key={deck.id}
+                  className="group rounded-2xl border border-slate-200 bg-white p-5 transition hover:-translate-y-1 hover:shadow-xl"
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="text-xl font-semibold text-slate-900 line-clamp-2">{deck.name}</div>
+                      <div className="text-sm text-slate-500">by {deck.owner}</div>
+                    </div>
+                    <div className={`px-3 py-1 text-xs font-bold rounded-xl ${tier.colorClass}`}>
+                      {tier.subTier}
+                    </div>
+                  </div>
+                  <div className="mt-4 flex items-baseline gap-2">
+                    <span className="text-4xl font-bold font-mono text-slate-900">{deck.winRate}</span>
+                    <span className="text-slate-400 text-sm">%</span>
+                    <span className="text-xs text-slate-500 ml-auto">win rate</span>
+                  </div>
+                  <p className="mt-3 text-sm text-slate-600 line-clamp-3">{deck.description}</p>
+                  <button
+                    onClick={() => downloadYdk(deck.deckData, deck.owner)}
+                    className="mt-6 w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800"
+                  >
+                    <Download className="h-4 w-4" />
+                    Download .ydk
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      ))}
+    </div>
+  );
+}
+
+function DecklistsPage({ decks }) {
+  const [query, setQuery] = useState("");
+  const [sortBy, setSortBy] = useState("winRate");
+
+  const filteredAndSorted = useMemo(() => {
+    let list = decks.filter((deck) =>
+      deck.name.toLowerCase().includes(query.toLowerCase()) ||
+      deck.owner.toLowerCase().includes(query.toLowerCase()) ||
+      deck.archetype.toLowerCase().includes(query.toLowerCase())
+    );
+
+    if (sortBy === "winRate") {
+      list.sort((a, b) => b.winRate - a.winRate);
+    } else if (sortBy === "points") {
+      list.sort((a, b) => (b.points || 0) - (a.points || 0));
+    } else if (sortBy === "name") {
+      list.sort((a, b) => a.name.localeCompare(b.name));
+    }
+    return list;
+  }, [decks, query, sortBy]);
+
+  return (
+    <div className="space-y-8">
+      <div className="rounded-[24px] border border-slate-300 bg-white p-5 shadow-sm">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900">Decklists</h1>
+            <p className="text-slate-600">Top decks • Similar to Master Duel Meta Top Decks</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <label className="flex items-center gap-2 rounded-2xl border border-slate-300 bg-slate-50 px-4 py-2 text-sm">
+              <Search className="h-4 w-4" />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search decks..."
+                className="bg-transparent outline-none w-64"
+              />
+            </label>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm outline-none"
+            >
+              <option value="winRate">Sort by Win Rate</option>
+              <option value="name">Sort by Name</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {filteredAndSorted.map((deck) => {
+          const tier = getThreatTier(deck);
+          return (
+            <div
+              key={deck.id}
+              className="rounded-3xl border border-slate-200 bg-white overflow-hidden shadow-sm hover:shadow-2xl transition"
+            >
+              <div className="px-6 pt-6 pb-4">
+                <div className={`inline-flex rounded-2xl text-xs font-bold px-4 py-1 ${tier.colorClass}`}>
+                  {tier.category} {tier.subTier}
+                </div>
+                <div className="mt-4 text-2xl font-bold leading-none text-slate-900">{deck.name}</div>
+                <div className="text-slate-500 text-sm mt-1">by {deck.owner} • {deck.archetype}</div>
+                <div className="mt-8 flex items-end justify-between">
+                  <div>
+                    <div className="text-xs text-slate-400">WIN RATE</div>
+                    <div className="text-5xl font-bold font-mono text-slate-900 tracking-tighter">{deck.winRate}</div>
+                    <div className="text-xs text-slate-400 -mt-1">%</div>
+                  </div>
+                  <button
+                    onClick={() => downloadYdk(deck.deckData, deck.owner)}
+                    className="rounded-2xl bg-slate-900 text-white px-6 py-4 flex items-center gap-2 text-sm font-semibold hover:bg-slate-800"
+                  >
+                    <Download className="h-4 w-4" /> .ydk
+                  </button>
+                </div>
+              </div>
+              <div className="bg-slate-50 px-6 py-4 text-xs text-slate-500 border-t">
+                {deck.description}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      {filteredAndSorted.length === 0 && (
+        <div className="text-center py-12 text-slate-400">No decks match your search.</div>
+      )}
+    </div>
+  );
+}
 
 function getArchetypeList(card) {
   if (Array.isArray(card?.archetype)) {
@@ -573,70 +1103,6 @@ function StatValueWithIcon({ value, iconSrc, iconAlt }) {
   );
 }
 
-const CODE_DOWNLOADS = [
-  {
-    id: "ls-pack-main",
-    title: "L.S. Pack for EDOPro",
-    description: "Full Collection of L.S. cards",
-    url: "https://www.mediafire.com/file/g2m9dptch1sdd20/LS-2026FullbyMardras.zip/file",
-  },
-  {
-    id: "fran-pack",
-    title: "Fran Deck Pack for EDOPro",
-    description: "Fran's Warrior Xyz custom deck and related cards.",
-    url: "https://www.mediafire.com/file/pu6l1awbblnegrw/Fran_Customs_Basic_Deck_Weather_Warrior_2026.zip/file",
-  },
-  {
-    id: "vylon-pack",
-    title: "Vylon Custom Pack for EDOPro",
-    description: "Veihar's custom Vylon deck (Full Collection).",
-    url: "https://www.mediafire.com/file/xig0cmh7jqkzymw/VylonCustom2026ByMardras.zip/file",
-  },
-  {
-    id: "aura-pack",
-    title: "Aura Deck Pack for EDOPro",
-    description: "Aura's custom Ritual Xyz deck and related cards.",
-    url: "https://www.mediafire.com/file/q6gq4pckaagu1l1/Aura_Customs_Basic_Deck_Duelist_Goddess_2026.zip/file",
-  },
-  {
-    id: "pk-pack",
-    title: "Phantom Knights Custom for EDOPro",
-    description: "Sae's custom Phantom Knights cards.",
-    url: "https://www.mediafire.com/file/6iezt5tuxl0i204/Phantom_Knights_Support.zip/file",
-  },
-  {
-    id: "archers-pack",
-    title: "Archers Custom for EDOPro",
-    description: "TheArcDes' custom Archer cards. Contribution: Fran.",
-    url: "https://www.mediafire.com/file/5jbsyvsy25pfs11/Arrow_Archer_Cards_by_TheArcDes_and_Fran.zip/file",
-  },
-   {
-    id: "Legolas-pack",
-    title: "The 2 Legolas Customs for EDOPro",
-    description: "Siege's custom Legolas Xyz Cards. Contribution: Fran.",
-    url: "https://www.mediafire.com/file/0pu7q6w0nqj0mqk/Legolas_by_Siege.zip/file",
-  },
-  {
-    id: "archfiend-chess-pack",
-    title: "Archfiend Chess Pack for EDOPro",
-    description: "Milius K. Roydenburg's Chess Strategy Deck",
-    url: "https://www.mediafire.com/file/wo8uxhvok2kzity/ArchfiendChessbyMardras.zip/file",
-  },
-  {
-    id: "ragnaraika-customs-pack",
-    title: "Ragnaraika Customs for EDOPro",
-    description: "Zeith Leinsdoom's Ragnaraika custom cards",
-    url: "https://www.mediafire.com/file/juxcre6b8d8myjv/RagnaraikaCustoms2026byMardras.zip/file",
-  },
-];
-
-const defaultSettings = {
-  imageBaseUrl: "/cards",
-  imageExtension: "jpg",
-  dataUrl: "/data/cards.json",
-  downloads: CODE_DOWNLOADS,
-};
-
 function normalizeCard(card, index, settings = defaultSettings) {
   const normalizedRaceList = Array.isArray(card?.race)
     ? card.race.map((value) => String(value || "").trim()).filter(Boolean)
@@ -1110,6 +1576,10 @@ function parseRoute(cards, characters = [], officialCards = []) {
     return { page: "downloads", selectedCard: null, selectedOfficialCard: null, archetypeFilter: null, selectedCharacter: null };
   if (parts[0] === "database")
     return { page: "database", selectedCard: null, selectedOfficialCard: null, archetypeFilter: null, selectedCharacter: null };
+  if (parts[0] === "threat-tier-list")
+    return { page: "threat-tier-list", selectedCard: null, selectedOfficialCard: null, archetypeFilter: null, selectedCharacter: null };
+  if (parts[0] === "decklists")
+    return { page: "decklists", selectedCard: null, selectedOfficialCard: null, archetypeFilter: null, selectedCharacter: null };
   return { page: "home", selectedCard: null, selectedOfficialCard: null, archetypeFilter: null, selectedCharacter: null };
 }
 
@@ -2740,6 +3210,14 @@ export default function App() {
     navigate("/downloads");
   }
 
+  function goThreatTierList() {
+    navigate("/threat-tier-list");
+  }
+
+  function goDecklists() {
+    navigate("/decklists");
+  }
+
   function openCard(card) {
     navigate(`/card/${card.id}`);
   }
@@ -2844,6 +3322,12 @@ export default function App() {
               <button onClick={goDownloads} className={`inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-medium transition ${page === "downloads" ? "bg-slate-900 text-white" : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50"}`}>
                 <Download className="h-4 w-4" /> Downloads
               </button>
+              <button onClick={goThreatTierList} className={`inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-medium transition ${page === "threat-tier-list" ? "bg-slate-900 text-white" : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50"}`}>
+                <AlertTriangle className="h-4 w-4" /> Threat Tier List
+              </button>
+              <button onClick={goDecklists} className={`inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-medium transition ${page === "decklists" ? "bg-slate-900 text-white" : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50"}`}>
+                <Package className="h-4 w-4" /> Decklists
+              </button>
             </nav>
           </div>
         </header>
@@ -2868,6 +3352,8 @@ export default function App() {
         {page === "character" && selectedCharacter && <CharacterDetailPage character={selectedCharacter} cards={allCards} onOpenCard={openAnyCard} onOpenCharacterList={goCharacters} />}
         {page === "archetype" && archetypeFilter && <ArchetypePage cards={cards} archetype={archetypeFilter} onOpen={openCard} onBrowseAll={goDatabase} />}
         {page === "downloads" && <DownloadsPage settings={settings} />}
+        {page === "threat-tier-list" && <ThreatTierListPage decks={THREAT_DECKS} />}
+        {page === "decklists" && <DecklistsPage decks={THREAT_DECKS} />}
         {page === "card" && selectedCard && (
           <div className="space-y-4">
             <div className="flex flex-wrap gap-2">
@@ -2901,147 +3387,4 @@ export default function App() {
     </div>
   );
 }
-
-import React, { useState } from "react";
-
-// =========================
-// THREAT SYSTEM CONFIG
-// =========================
-export const THREAT_TIERS = [
-  { label: "EX++", min: 330, win: "99.1%+", group: "Non-Sense Tier" },
-  { label: "EX+", min: 320, win: "96.1% - 99%", group: "Unfair Tier" },
-  { label: "EX", min: 310, win: "93.1% - 96%", group: "Unfair Tier" },
-  { label: "EX-", min: 300, win: "90.1% - 93%", group: "Unfair Tier" },
-
-  { label: "SSS+", min: 290, win: "87.1% - 90%", group: "Broken Custom" },
-  { label: "SSS", min: 280, win: "84.1% - 87%", group: "Broken Custom" },
-  { label: "SSS-", min: 270, win: "81.1% - 84%", group: "Broken Custom" },
-
-  { label: "SS+", min: 260, win: "78.1% - 81%", group: "Custom Tier" },
-  { label: "SS", min: 250, win: "75.1% - 78%", group: "Custom Tier" },
-  { label: "SS-", min: 240, win: "72.1% - 75%", group: "Custom Tier" },
-
-  { label: "S+", min: 230, win: "69.1% - 72%", group: "Tier 0" },
-  { label: "S", min: 220, win: "66.1% - 69%", group: "Tier 0" },
-  { label: "S-", min: 210, win: "63.1% - 66%", group: "Tier 0" },
-
-  { label: "A+", min: 200, win: "60.1% - 63%", group: "Tier 0.5" },
-
-  { label: "A", min: 190, win: "57.1% - 60%", group: "Tier 1" },
-  { label: "A-", min: 180, win: "54.1% - 57%", group: "Tier 1" },
-
-  { label: "B+", min: 170, win: "51.1% - 54%", group: "Tier 2" },
-  { label: "B", min: 160, win: "48.1% - 51%", group: "Tier 2" },
-  { label: "B-", min: 150, win: "45.1% - 48%", group: "Tier 2" },
-
-  { label: "C+", min: 140, win: "42.1% - 45%", group: "Tier 3" },
-  { label: "C", min: 130, win: "39.1% - 42%", group: "Tier 3" },
-  { label: "C-", min: 120, win: "36.1% - 39%", group: "Tier 3" },
-
-  { label: "D+", min: 110, win: "33.1% - 36%", group: "Tier 4" },
-  { label: "D", min: 100, win: "30.1% - 33%", group: "Tier 4" },
-  { label: "D-", min: 90, win: "27.1% - 30%", group: "Tier 4" },
-
-  { label: "E+", min: 80, win: "24.1% - 27%", group: "Tier 5" },
-  { label: "E", min: 70, win: "21.1% - 24%", group: "Tier 5" },
-  { label: "E-", min: 60, win: "18.1% - 21%", group: "Tier 5" },
-
-  { label: "F+", min: 50, win: "15.1% - 18%", group: "Tier 6" },
-  { label: "F", min: 40, win: "12.1% - 15%", group: "Tier 6" },
-  { label: "F-", min: 30, win: "9.1% - 12%", group: "Tier 6" },
-
-  { label: "G+", min: 20, win: "6.1% - 9%", group: "Tier 7" },
-  { label: "G", min: 10, win: "3.1% - 6%", group: "Tier 7" },
-  { label: "G-", min: 1, win: "1% - 3%", group: "Tier 7" },
-
-  { label: "Test", min: 0, win: "0% - 0.9%", group: "Tier 8" },
-];
-
-export function getThreatTier(points = 0) {
-  return THREAT_TIERS.find(t => points >= t.min) || THREAT_TIERS[THREAT_TIERS.length - 1];
-}
-
-export function getThreatTier(points = 0) {
-
-  return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-3xl font-bold">Threat Tier List</h1>
-
-      {THREAT_TIERS.map(tier => (
-        <div key={tier.label} className="border rounded-xl p-4 bg-white">
-          <div className="flex justify-between items-center mb-3">
-            <div className="text-xl font-bold">{tier.label}</div>
-            <div className="text-sm text-gray-500">{tier.win}</div>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-3">
-            {(grouped[tier.label] || []).map(deck => (
-              <div key={deck.id} className="p-3 border rounded-lg">
-                <div className="font-semibold">{deck.name}</div>
-                <div className="text-xs text-gray-500">WR: {deck.winRate}%</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// =========================
-// DECKLIST PAGE (Top Decks)
-// =========================
-function DecklistsPage({ decks }) {
-  const sorted = [...decks].sort((a, b) => b.winRate - a.winRate);
-
-  return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-3xl font-bold">Top Decks</h1>
-
-      <div className="grid md:grid-cols-3 gap-4">
-        {sorted.map(deck => {
-          const tier = getThreatTier(deck.points);
-
-          return (
-            <div key={deck.id} className="border rounded-xl p-4 bg-white">
-              <div className="text-lg font-bold">{deck.name}</div>
-              <div className="text-sm text-gray-500">{deck.author}</div>
-
-              <div className="mt-2 text-sm">
-                Win Rate: <b>{deck.winRate}%</b>
-              </div>
-
-              <div className="mt-1 text-sm">
-                Tier: <b>{tier.label}</b>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-// =========================
-// MAIN APP (ROUTING ADD)
-// =========================
-export default function App() {
-  const [page, setPage] = useState("home");
-  const [decks] = useState(sampleDecks);
-
-  return (
-    <div>
-      {/* NAV */}
-      <div className="flex gap-3 p-4 border-b">
-        <button onClick={() => setPage("home")}>Home</button>
-        <button onClick={() => setPage("tiers")}>Threat Tier</button>
-        <button onClick={() => setPage("decks")}>Decklists</button>
-      </div>
-
-      {/* ROUTES */}
-      {page === "home" && <div className="p-6">Home Page</div>}
-      {page === "tiers" && <ThreatTierPage decks={decks} />}
-      {page === "decks" && <DecklistsPage decks={decks} />}
-    </div>
-  );
-}
+//</FILE>
