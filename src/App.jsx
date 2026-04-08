@@ -129,12 +129,20 @@ const TIER_DEFINITIONS = [
   { category: "Tier 7", subTier: "G", pointsMin: 10, pointsMax: 19, winMin: 3.1, winMax: 6, colorClass: "bg-gray-500 text-white border-gray-600 shadow-gray-400/30" },
   { category: "Tier 7", subTier: "G-", pointsMin: 1, pointsMax: 9, winMin: 1, winMax: 3, colorClass: "bg-gray-500 text-white border-gray-600 shadow-gray-400/30" },
   { category: "Tier 8", subTier: "Test Deck", pointsMin: 0, pointsMax: 0.9, winMin: 0, winMax: 0.9, colorClass: "bg-zinc-400 text-slate-900 border-zinc-500 shadow-zinc-400/30" },
+  { category: "Untiered", subTier: "Pending", pointsMin: -1, pointsMax: -1, winMin: -1, winMax: -1, colorClass: "bg-slate-500 text-white border-slate-600 shadow-slate-400/30" },
 ];
 
 function getThreatTier(deck) {
   const winRate = Number(deck?.winRate) || 0;
   const points = Number(deck?.points) || 0;
+
+  // Brand-new decks with 0/0 go to Untiered
+  if (points === 0 && winRate === 0) {
+    return TIER_DEFINITIONS[0]; // Untiered
+  }
+
   const scoreToCheck = points > 0 ? points : winRate;
+
   return (
     TIER_DEFINITIONS.find((tier) => {
       if (points > 0) {
@@ -144,79 +152,6 @@ function getThreatTier(deck) {
     }) || TIER_DEFINITIONS[TIER_DEFINITIONS.length - 1]
   );
 }
-
-const THREAT_DECKS = [
-  {
-    id: "threat-expp-1",
-    name: "L.S. Shadow Emperor Dragon OTK",
-    owner: "Mardras",
-    winRate: 99.5,
-    points: 340,
-    description: "New deck that is obviously Tier 0 / Non-Sense. Instant win condition.",
-    archetype: "L.S.",
-    deckData: { name: "L.S. Apex Threat", main: ["60060041", "60060092", "60060102"], extra: [], side: [] },
-  },
-  {
-    id: "threat-explus-1",
-    name: "L.S. Unfair Control",
-    owner: "Fran",
-    winRate: 97.8,
-    points: 325,
-    description: "Unfair Tier EX+ – 98% win rate in tournament play.",
-    archetype: "L.S.",
-    deckData: { name: "L.S. Unfair Control", main: ["60060041", "60060092", "60060102"], extra: [], side: [] },
-  },
-  {
-    id: "threat-ex-1",
-    name: "L.S. Jiauer Combo",
-    owner: "Mardras",
-    winRate: 94.2,
-    points: 315,
-    description: "Unfair Tier EX – Consistent turn-1 kills.",
-    archetype: "L.S.",
-    deckData: { name: "L.S. Jiauer Combo", main: ["60060041", "60060092", "60060102"], extra: [], side: [] },
-  },
-  {
-    id: "threat-sssplus-1",
-    name: "Broken Custom Fusion Beast",
-    owner: "Aura",
-    winRate: 88.9,
-    points: 295,
-    description: "Broken Custom Tier SSS+ – Meta-warping fusion engine.",
-    archetype: "Custom",
-    deckData: { name: "Broken Fusion Beast", main: ["60060041", "60060092", "60060102"], extra: [], side: [] },
-  },
-  {
-    id: "threat-s-1",
-    name: "Tier 0 L.S. Synchro Engine",
-    owner: "Veihar",
-    winRate: 67.4,
-    points: 225,
-    description: "Tier 0 S – Strong but fair meta contender.",
-    archetype: "L.S.",
-    deckData: { name: "Tier 0 Synchro", main: ["60060041", "60060092", "60060102"], extra: [], side: [] },
-  },
-  {
-    id: "threat-a-1",
-    name: "Tier 1 Ritual Xyz",
-    owner: "TheArcDes",
-    winRate: 58.3,
-    points: 195,
-    description: "Tier 1 A – Reliable ladder climber.",
-    archetype: "Custom",
-    deckData: { name: "Tier 1 Ritual Xyz", main: ["60060041", "60060092", "60060102"], extra: [], side: [] },
-  },
-  {
-    id: "threat-test-1",
-    name: "New Test Deck – Balance Check",
-    owner: "Siege",
-    winRate: 0.4,
-    points: 0.4,
-    description: "Tier 8 Test Deck – Being evaluated for future threat level.",
-    archetype: "Test",
-    deckData: { name: "Test Deck", main: ["60060041"], extra: [], side: [] },
-  },
-];
 
 const CODE_DOWNLOADS = [
   {
@@ -281,6 +216,61 @@ const defaultSettings = {
   dataUrl: "/data/cards.json",
   downloads: CODE_DOWNLOADS,
 };
+
+function TieredDecksPage({ deck, cards, onOpenCard }) {
+  const sampleDeck = deck?.deckData?.[0] || deck?.deckData || { main: [], extra: [], side: [] };
+
+  return (
+    <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+      {/* LEFT - Sample Deck */}
+      <div className="xl:col-span-7 rounded-[24px] border border-slate-300 bg-white p-6 shadow-sm">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight">Sample Deck</h2>
+            <p className="text-slate-600">{deck.name} — 40 cards</p>
+          </div>
+          <button
+            onClick={() => downloadYdk(sampleDeck, deck.owner)}
+            className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-800"
+          >
+            <Download className="h-4 w-4" />
+            Download .ydk
+          </button>
+        </div>
+
+        <CharacterDeckSection title="Main Deck" ids={sampleDeck.main} allCards={cards} onOpen={onOpenCard} />
+        <CharacterDeckSection title="Extra Deck" ids={sampleDeck.extra} allCards={cards} onOpen={onOpenCard} />
+        <CharacterDeckSection title="Side Deck" ids={sampleDeck.side} allCards={cards} onOpen={onOpenCard} />
+      </div>
+
+      {/* RIGHT - Best Decks table */}
+      <div className="xl:col-span-5 rounded-[24px] border border-slate-300 bg-white p-6 shadow-sm">
+        <h2 className="text-3xl font-bold mb-6">Best {deck.name} Decks</h2>
+        <div className="space-y-4">
+          {[
+            { place: "Top 4", date: "Apr 5, 2026", power: "14.0" },
+            { place: "Top 8", date: "Apr 4, 2026", power: "11.0" },
+            { place: "Top 16", date: "Mar 30, 2026", power: "9.0" },
+          ].map((entry, i) => (
+            <div key={i} className="flex items-center justify-between rounded-2xl border p-4 hover:bg-slate-50">
+              <div className="flex items-center gap-4">
+                <div className="text-2xl font-bold text-slate-900">{entry.place}</div>
+                <div>
+                  <div className="font-medium">{deck.name} Variant {i + 1}</div>
+                  <div className="text-sm text-slate-500">{entry.date}</div>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-xl font-mono font-bold">{entry.power}</div>
+                <div className="text-xs text-slate-400">power</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /* ==================== ONLY ONE COPY OF EACH NORMALIZE FUNCTION ==================== */
 function normalizeCard(card, index, settings = defaultSettings) {
@@ -405,7 +395,7 @@ function normalizeCharacter(character, index) {
 }
 
 /* ==================== NEW PAGES (KEPT EXACTLY AS YOU HAD) ==================== */
-function ThreatTierListPage({ decks }) {
+function ThreatTierListPage({ decks, onSelectDeck }) {
   const groupedDecks = useMemo(() => {
     const groups = {};
     decks.forEach((deck) => {
@@ -426,44 +416,32 @@ function ThreatTierListPage({ decks }) {
           <AlertTriangle className="h-8 w-8 text-red-600" />
           <div>
             <h1 className="text-4xl font-bold tracking-tight text-slate-900">Threat Tier List</h1>
-            <p className="text-slate-600">Decklists ranked by average win rate • Internal point system (hidden from users)</p>
+            <p className="text-slate-600">Decklists ranked by average win rate • Internal point system</p>
           </div>
         </div>
-        <div className="mt-3 text-xs font-medium text-slate-400">New powerful decks are automatically placed here (Tier 0 / Non-Sense Tier and above).</div>
       </div>
 
       {groupedDecks.map((group) => (
         <section key={group.tier.subTier} className="rounded-[24px] border border-slate-300 bg-white p-6 shadow-sm">
-          <div className={`inline-flex items-center gap-2 rounded-2xl border px-5 py-2 text-lg font-bold ${group.tier.colorClass}`}>
+          <div className={`inline-flex items-center gap-2 rounded-2xl border px-6 py-3 text-xl font-bold ${group.tier.colorClass}`}>
             {group.tier.category} — {group.tier.subTier}
           </div>
-          <div className="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {group.decks.map((deck) => {
               const tier = getThreatTier(deck);
               return (
-                <div key={deck.id} className="group rounded-2xl border border-slate-200 bg-white p-5 transition hover:-translate-y-1 hover:shadow-xl">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <div className="text-xl font-semibold text-slate-900 line-clamp-2">{deck.name}</div>
-                      <div className="text-sm text-slate-500">by {deck.owner}</div>
-                    </div>
-                    <div className={`px-3 py-1 text-xs font-bold rounded-xl ${tier.colorClass}`}>
-                      {tier.subTier}
-                    </div>
+                <div
+                  key={deck.id}
+                  onClick={() => onSelectDeck(deck)}
+                  className="group flex cursor-pointer items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 transition hover:-translate-y-1 hover:shadow-xl"
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="text-lg font-semibold text-slate-900 line-clamp-1">{deck.name}</div>
+                    <div className="text-sm text-slate-500">by {deck.owner}</div>
                   </div>
-                  <div className="mt-4 flex items-baseline gap-2">
-                    <span className="text-4xl font-bold font-mono text-slate-900">{deck.winRate}</span>
-                    <span className="text-slate-400 text-sm">%</span>
-                    <span className="text-xs text-slate-500 ml-auto">win rate</span>
+                  <div className={`px-4 py-1 text-sm font-bold rounded-2xl ${tier.colorClass}`}>
+                    {deck.winRate}%
                   </div>
-                  <p className="mt-3 text-sm text-slate-600 line-clamp-3">{deck.description}</p>
-                  <button
-                    onClick={() => downloadYdk(deck.deckData, deck.owner)}
-                    className="mt-6 w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800"
-                  >
-                    <Download className="h-4 w-4" />
-                    Download .ydk
-                  </button>
                 </div>
               );
             })}
@@ -474,24 +452,23 @@ function ThreatTierListPage({ decks }) {
   );
 }
 
-function DecklistsPage({ decks }) {
+function DecklistsPage({ decks, onSelectDeck }) {
   const [query, setQuery] = useState("");
   const [sortBy, setSortBy] = useState("winRate");
+  const [tierFilter, setTierFilter] = useState("all");
 
   const filteredAndSorted = useMemo(() => {
     let list = decks.filter((deck) =>
-      deck.name.toLowerCase().includes(query.toLowerCase()) ||
-      deck.owner.toLowerCase().includes(query.toLowerCase()) ||
-      deck.archetype.toLowerCase().includes(query.toLowerCase())
+      (deck.name.toLowerCase().includes(query.toLowerCase()) ||
+       deck.owner.toLowerCase().includes(query.toLowerCase()) ||
+       deck.archetype.toLowerCase().includes(query.toLowerCase())) &&
+      (tierFilter === "all" || getThreatTier(deck).category === tierFilter)
     );
 
-    if (sortBy === "winRate") {
-      list.sort((a, b) => b.winRate - a.winRate);
-    } else if (sortBy === "name") {
-      list.sort((a, b) => a.name.localeCompare(b.name));
-    }
+    if (sortBy === "winRate") list.sort((a, b) => b.winRate - a.winRate);
+    else if (sortBy === "name") list.sort((a, b) => a.name.localeCompare(b.name));
     return list;
-  }, [decks, query, sortBy]);
+  }, [decks, query, sortBy, tierFilter]);
 
   return (
     <div className="space-y-8">
@@ -512,55 +489,36 @@ function DecklistsPage({ decks }) {
               />
             </label>
             <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
+              value={tierFilter}
+              onChange={(e) => setTierFilter(e.target.value)}
               className="rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm outline-none"
             >
-              <option value="winRate">Sort by Win Rate</option>
-              <option value="name">Sort by Name</option>
+              <option value="all">All Tiers</option>
+              {TIER_DEFINITIONS.map((t) => (
+                <option key={t.category} value={t.category}>{t.category}</option>
+              ))}
             </select>
           </div>
         </div>
       </div>
 
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {filteredAndSorted.map((deck) => {
-          const tier = getThreatTier(deck);
-          return (
-            <div
-              key={deck.id}
-              className="rounded-3xl border border-slate-200 bg-white overflow-hidden shadow-sm hover:shadow-2xl transition"
-            >
-              <div className="px-6 pt-6 pb-4">
-                <div className={`inline-flex rounded-2xl text-xs font-bold px-4 py-1 ${tier.colorClass}`}>
-                  {tier.category} {tier.subTier}
-                </div>
-                <div className="mt-4 text-2xl font-bold leading-none text-slate-900">{deck.name}</div>
-                <div className="text-slate-500 text-sm mt-1">by {deck.owner} • {deck.archetype}</div>
-                <div className="mt-8 flex items-end justify-between">
-                  <div>
-                    <div className="text-xs text-slate-400">WIN RATE</div>
-                    <div className="text-5xl font-bold font-mono text-slate-900 tracking-tighter">{deck.winRate}</div>
-                    <div className="text-xs text-slate-400 -mt-1">%</div>
-                  </div>
-                  <button
-                    onClick={() => downloadYdk(deck.deckData, deck.owner)}
-                    className="rounded-2xl bg-slate-900 text-white px-6 py-4 flex items-center gap-2 text-sm font-semibold hover:bg-slate-800"
-                  >
-                    <Download className="h-4 w-4" /> .ydk
-                  </button>
-                </div>
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {filteredAndSorted.map((deck) => (
+          <div
+            key={deck.id}
+            onClick={() => onSelectDeck(deck)}
+            className="cursor-pointer rounded-2xl border border-slate-200 bg-white p-5 transition hover:shadow-xl"
+          >
+            <div className="flex justify-between items-start">
+              <div>
+                <div className="text-xl font-semibold text-slate-900 line-clamp-2">{deck.name}</div>
+                <div className="text-sm text-slate-500">by {deck.owner}</div>
               </div>
-              <div className="bg-slate-50 px-6 py-4 text-xs text-slate-500 border-t">
-                {deck.description}
-              </div>
+              <div className="text-right text-3xl font-bold font-mono text-slate-900">{deck.winRate}%</div>
             </div>
-          );
-        })}
+          </div>
+        ))}
       </div>
-      {filteredAndSorted.length === 0 && (
-        <div className="text-center py-12 text-slate-400">No decks match your search.</div>
-      )}
     </div>
   );
 }
@@ -1381,6 +1339,9 @@ function parseRoute(cards, characters = [], officialCards = []) {
     const found = characters.find((character) => String(character.id) === decodeURIComponent(parts[1]));
     if (found)
       return { page: "character", selectedCard: null, selectedOfficialCard: null, archetypeFilter: null, selectedCharacter: found };
+  }
+  if (parts[0] === "tiered-decks" && parts[1]) {
+    return { page: "tiered-decks", selectedCard: null, selectedOfficialCard: null, archetypeFilter: null, selectedCharacter: null };
   }
   if (parts[0] === "characters")
     return { page: "characters", selectedCard: null, selectedOfficialCard: null, archetypeFilter: null, selectedCharacter: null };
@@ -2893,6 +2854,8 @@ export default function App() {
 
   const [characters, setCharacters] = useState([]);
   const [officialCards, setOfficialCards] = useState([]);
+  const [threatDecks, setThreatDecks] = useState([]);
+  const [selectedTieredDeck, setSelectedTieredDeck] = useState(null);
 
   const initialRoute = useMemo(() => parseRoute(cards, characters, officialCards), [cards, characters, officialCards]);
   const [page, setPage] = useState(initialRoute.page);
@@ -2983,6 +2946,24 @@ export default function App() {
     };
   }, []);
 
+useEffect(() => {
+    let cancelled = false;
+    async function loadThreatDecks() {
+      try {
+        const response = await fetch("/data/threat-tier-list.json", { cache: "no-store" });
+        if (!response.ok) throw new Error(`Failed to load threat-tier-list.json`);
+        const parsed = await response.json();
+        if (!Array.isArray(parsed)) throw new Error("threat-tier-list.json must be an array.");
+        if (!cancelled) setThreatDecks(parsed);
+      } catch (error) {
+        console.warn("Could not load threat-tier-list.json – using empty array", error);
+        if (!cancelled) setThreatDecks([]);
+      }
+    }
+    loadThreatDecks();
+    return () => { cancelled = true; };
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -3035,6 +3016,11 @@ export default function App() {
 
   function goThreatTierList() {
     navigate("/threat-tier-list");
+  }
+
+function goTieredDecks(deck) {
+    setSelectedTieredDeck(deck);
+    navigate(`/tiered-decks/${deck.id}`);
   }
 
   function goDecklists() {
@@ -3175,8 +3161,11 @@ export default function App() {
         {page === "character" && selectedCharacter && <CharacterDetailPage character={selectedCharacter} cards={allCards} onOpenCard={openAnyCard} onOpenCharacterList={goCharacters} />}
         {page === "archetype" && archetypeFilter && <ArchetypePage cards={cards} archetype={archetypeFilter} onOpen={openCard} onBrowseAll={goDatabase} />}
         {page === "downloads" && <DownloadsPage settings={settings} />}
-        {page === "threat-tier-list" && <ThreatTierListPage decks={THREAT_DECKS} />}
-        {page === "decklists" && <DecklistsPage decks={THREAT_DECKS} />}
+        {page === "threat-tier-list" && <ThreatTierListPage decks={threatDecks} onSelectDeck={goTieredDecks} />}
+        {page === "decklists" && <DecklistsPage decks={threatDecks} onSelectDeck={goTieredDecks} />}
+        {page === "tiered-decks" && selectedTieredDeck && (
+          <TieredDecksPage deck={selectedTieredDeck} cards={allCards} onOpenCard={openAnyCard} />
+          )}
         {page === "card" && selectedCard && (
           <div className="space-y-4">
             <div className="flex flex-wrap gap-2">
