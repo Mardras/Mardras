@@ -1,4 +1,4 @@
-//<FILE filename="App8.jsx" size="128462 bytes">
+
 import React, { useEffect, useMemo, useState } from "react";
 import {
   Search,
@@ -134,8 +134,6 @@ const TIER_DEFINITIONS = [
 function getThreatTier(deck) {
   const winRate = Number(deck?.winRate) || 0;
   const points = Number(deck?.points) || 0;
-
-  // Internal point system (never shown to users) takes priority if present
   const scoreToCheck = points > 0 ? points : winRate;
 
   return (
@@ -157,12 +155,7 @@ const THREAT_DECKS = [
     points: 340,
     description: "New deck that is obviously Tier 0 / Non-Sense. Instant win condition.",
     archetype: "L.S.",
-    deckData: {
-      name: "L.S. Apex Threat",
-      main: ["60060041", "60060092", "60060102"],
-      extra: [],
-      side: [],
-    },
+    deckData: { name: "L.S. Apex Threat", main: ["60060041", "60060092", "60060102"], extra: [], side: [] },
   },
   {
     id: "threat-explus-1",
@@ -172,12 +165,7 @@ const THREAT_DECKS = [
     points: 325,
     description: "Unfair Tier EX+ – 98% win rate in tournament play.",
     archetype: "L.S.",
-    deckData: {
-      name: "L.S. Unfair Control",
-      main: ["60060041", "60060092", "60060102"],
-      extra: [],
-      side: [],
-    },
+    deckData: { name: "L.S. Unfair Control", main: ["60060041", "60060092", "60060102"], extra: [], side: [] },
   },
   {
     id: "threat-ex-1",
@@ -187,12 +175,7 @@ const THREAT_DECKS = [
     points: 315,
     description: "Unfair Tier EX – Consistent turn-1 kills.",
     archetype: "L.S.",
-    deckData: {
-      name: "L.S. Jiauer Combo",
-      main: ["60060041", "60060092", "60060102"],
-      extra: [],
-      side: [],
-    },
+    deckData: { name: "L.S. Jiauer Combo", main: ["60060041", "60060092", "60060102"], extra: [], side: [] },
   },
   {
     id: "threat-sssplus-1",
@@ -202,12 +185,7 @@ const THREAT_DECKS = [
     points: 295,
     description: "Broken Custom Tier SSS+ – Meta-warping fusion engine.",
     archetype: "Custom",
-    deckData: {
-      name: "Broken Fusion Beast",
-      main: ["60060041", "60060092", "60060102"],
-      extra: [],
-      side: [],
-    },
+    deckData: { name: "Broken Fusion Beast", main: ["60060041", "60060092", "60060102"], extra: [], side: [] },
   },
   {
     id: "threat-s-1",
@@ -217,12 +195,7 @@ const THREAT_DECKS = [
     points: 225,
     description: "Tier 0 S – Strong but fair meta contender.",
     archetype: "L.S.",
-    deckData: {
-      name: "Tier 0 Synchro",
-      main: ["60060041", "60060092", "60060102"],
-      extra: [],
-      side: [],
-    },
+    deckData: { name: "Tier 0 Synchro", main: ["60060041", "60060092", "60060102"], extra: [], side: [] },
   },
   {
     id: "threat-a-1",
@@ -232,12 +205,7 @@ const THREAT_DECKS = [
     points: 195,
     description: "Tier 1 A – Reliable ladder climber.",
     archetype: "Custom",
-    deckData: {
-      name: "Tier 1 Ritual Xyz",
-      main: ["60060041", "60060092", "60060102"],
-      extra: [],
-      side: [],
-    },
+    deckData: { name: "Tier 1 Ritual Xyz", main: ["60060041", "60060092", "60060102"], extra: [], side: [] },
   },
   {
     id: "threat-test-1",
@@ -247,12 +215,7 @@ const THREAT_DECKS = [
     points: 0.4,
     description: "Tier 8 Test Deck – Being evaluated for future threat level.",
     archetype: "Test",
-    deckData: {
-      name: "Test Deck",
-      main: [],
-      extra: [],
-      side: [],
-    },
+    deckData: { name: "Test Deck", main: ["60060041"], extra: [], side: [] },
   },
 ];
 
@@ -3387,4 +3350,3 @@ export default function App() {
     </div>
   );
 }
-//</FILE>
