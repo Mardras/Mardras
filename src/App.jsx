@@ -248,9 +248,9 @@ function TieredDecksPage({ deck, cards, onOpenCard }) {
         <h2 className="text-3xl font-bold mb-6">Best {deck.name} Decks</h2>
         <div className="space-y-4">
           {[
-            { place: "Top 4", date: "Apr 5, 2026", power: "14.0" },
-            { place: "Top 8", date: "Apr 4, 2026", power: "11.0" },
-            { place: "Top 16", date: "Mar 30, 2026", power: "9.0" },
+            { place: "Top 4", date: "Apr 5, 2026", points: "327.0" },
+            { place: "Top 8", date: "Apr 4, 2026", points: "325.0" },
+            { place: "Top 16", date: "Mar 30, 2026", points: "322.0" },
           ].map((entry, i) => (
             <div key={i} className="flex items-center justify-between rounded-2xl border p-4 hover:bg-slate-50">
               <div className="flex items-center gap-4">
@@ -261,8 +261,8 @@ function TieredDecksPage({ deck, cards, onOpenCard }) {
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-xl font-mono font-bold">{entry.power}</div>
-                <div className="text-xs text-slate-400">power</div>
+                <div className="text-xl font-mono font-bold">{entry.points}</div>
+                <div className="text-xs text-slate-400">points</div>
               </div>
             </div>
           ))}
