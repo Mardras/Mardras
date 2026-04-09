@@ -412,6 +412,34 @@ function normalizeCharacter(character, index) {
   };
 }
 
+function getDeckDisplayImage(deck, allCards) {
+  if (!deck?.main?.length) return null;
+
+  const deckCards = deck.main
+    .map(id => allCards.find(c => String(c.id) === String(id)))
+    .filter(Boolean);
+
+  if (!deckCards.length) return null;
+
+  // Priority: archetype match
+  if (deck.archetype) {
+    const archetypeMatch = deckCards.find(card =>
+      (card.archetype || "").toLowerCase().includes(deck.archetype.toLowerCase())
+    );
+    if (archetypeMatch?.image) return archetypeMatch.image;
+  }
+
+  // Fallback: highest ATK monster (usually boss)
+  const boss = deckCards
+    .filter(c => c.cardType === "Monster")
+    .sort((a, b) => (b.atk || 0) - (a.atk || 0))[0];
+
+  if (boss?.image) return boss.image;
+
+  // Final fallback
+  return deckCards[0]?.image || null;
+}
+
 /* ==================== NEW PAGES (KEPT EXACTLY AS YOU HAD) ==================== */
 function ThreatTierListPage({ decks, onSelectDeck }) {
   const groupedDecks = useMemo(() => {
@@ -434,7 +462,7 @@ function ThreatTierListPage({ decks, onSelectDeck }) {
           <AlertTriangle className="h-8 w-8 text-red-600" />
           <div>
             <h1 className="text-4xl font-bold tracking-tight text-slate-900">Threat Tier List</h1>
-            <p className="text-slate-600">Decklists ranked by average win rate • Internal point system</p>
+            <p className="text-slate-600">Decklists ranked by average win rate.</p>
           </div>
         </div>
       </div>
@@ -444,23 +472,55 @@ function ThreatTierListPage({ decks, onSelectDeck }) {
           <div className={`inline-flex items-center gap-2 rounded-2xl border px-6 py-3 text-xl font-bold ${group.tier.colorClass}`}>
             {group.tier.category} — {group.tier.subTier}
           </div>
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4">
             {group.decks.map((deck) => {
               const tier = getThreatTier(deck);
               return (
-                <div
-                  key={deck.id}
-                  onClick={() => onSelectDeck(deck)}
-                  className="group flex cursor-pointer items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 transition hover:-translate-y-1 hover:shadow-xl"
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="text-lg font-semibold text-slate-900 line-clamp-1">{deck.name}</div>
-                    <div className="text-sm text-slate-500">by {deck.owner}</div>
-                  </div>
-                  <div className={`px-4 py-1 text-sm font-bold rounded-2xl ${tier.colorClass}`}>
-                    {deck.winRate}%
-                  </div>
-                </div>
+
+                (() => {
+              const image = getDeckDisplayImage(deck, allCards);
+
+               return (
+               <div
+                   key={deck.id}
+                   onClick={() => onSelectDeck(deck)}
+                   className="relative group cursor-pointer overflow-hidden rounded-2xl border border-slate-300 shadow-md transition hover:-translate-y-1 hover:shadow-xl"
+                 >
+                {/* Background Image */}
+                {image && (
+                 <img
+                   src={image}
+                 alt={deck.name}
+          className="absolute inset-0 w-full h-full object-cover transition duration-500 group-hover:scale-110"
+        />
+      )}
+
+      {/* Dark Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-black/20" />
+
+      {/* Content */}
+      <div className="relative z-10 flex items-center justify-between p-4">
+        
+        {/* Left side */}
+        <div className="min-w-0">
+          <div className="text-lg font-bold text-white line-clamp-1">
+            {deck.name}
+          </div>
+          <div className="text-xs text-slate-300">
+            by {deck.owner}
+          </div>
+        </div>
+
+        {/* Right badge */}
+        <div className={`px-4 py-1 text-sm font-bold rounded-xl backdrop-blur-md ${tier.colorClass}`}>
+          {deck.winRate}%
+        </div>
+
+      </div>
+    </div>
+             );
+            })()
+
               );
             })}
           </div>
@@ -469,6 +529,7 @@ function ThreatTierListPage({ decks, onSelectDeck }) {
     </div>
   );
 }
+
 
 function DecklistsPage({ decks, onSelectDeck }) {
   const [query, setQuery] = useState("");
