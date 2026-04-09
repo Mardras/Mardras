@@ -494,7 +494,7 @@ function DecklistsPage({ decks, onSelectDeck }) {
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-3xl font-bold text-slate-900">Decklists</h1>
-            <p className="text-slate-600">Top decks • Similar to Master Duel Meta Top Decks</p>
+            <p className="text-slate-600">Top decks </p>
           </div>
           <div className="flex items-center gap-3">
             <label className="flex items-center gap-2 rounded-2xl border border-slate-300 bg-slate-50 px-4 py-2 text-sm">
