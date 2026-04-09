@@ -208,6 +208,24 @@ const CODE_DOWNLOADS = [
     description: "Zeith Leinsdoom's Ragnaraika custom cards",
     url: "https://www.mediafire.com/file/juxcre6b8d8myjv/RagnaraikaCustoms2026byMardras.zip/file",
   },
+  {
+    id: "mekk-knights-customs-pack",
+    title: "Mekk-Knight Customs for EDOPro",
+    description: "Going 1st is a death sentence for your opponent. Going 2nd can and will brute-force almost any stablished board in the game for an OTK.",
+    url: "https://www.mediafire.com/file/y9w02sppkhz6e6m/Mekk-KnightsCustombyMardras.zip/file",
+  },
+  {
+    id: "the-wicked-gods-customs-pack",
+    title: "Wicked Gods custom support for EDOPro",
+    description: "Now they feel like actual final bosses.",
+    url: "https://www.mediafire.com/file/q94t3i1uil1aqu2/WickedGodsCustomSupportByMardras.zip/file",
+  },
+  {
+    id: "terrenalastreas-pack",
+    title: "All 13 Terrenalastreas cards for EDOPro",
+    description: "While the restrictions of the deck force you to play it pure, don't be fooled by them, it is actually really hard to lose using this deck.",
+    url: "https://www.mediafire.com/file/vspv6dgz8i505r6/TerrenalastreasByMardras.zip/file",
+  }
 ];
 
 const defaultSettings = {

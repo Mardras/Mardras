@@ -3,7 +3,7 @@
     "id": "non-sense-expp-1",
     "name": "5 cards Exodia deck",
     "owner": "random guy",
-    "winRate": 99.5,
+    "winRate": 99.9,
     "points": 340,
     "description": "Instant win condition ZTK. Illegal Deck.",
     "archetype": ["Exodia", "Forbidden One"],
@@ -21,10 +21,10 @@
   {
     "id": "unfair-exp-1",
     "name": "L.S. Fully Unlimited",
-    "owner": "Mardras",
+    "owner": "Veylz",
     "winRate": 99.0,
     "points": 329.0,
-    "description": "Banned L.S. build performing FTK combos, full locks, erases your cards, and with Veylofragma cannot lose the Duel. Has infinite ultra recursion being able to almost fully redo the entire deck's multi-combos each turn too. The Side Deck has tools to counter most decks too",
+    "description": "Banned L.S. build performing FTK combos, full locks, erases your cards, and with Veylofragma cannot lose the Duel. Has infinite ultra recursion being able to almost fully redo the entire deck's multi-combos each turn too. The Side Deck has tools to counter most decks",
     "archetype": ["L.S."],
     "deckData": [
       {
@@ -50,120 +50,198 @@
   },
   {
     "id": "unfair-ex-1",
-    "name": "L.S. Unfair Control",
-    "owner": "Mardras",
-    "winRate": 94.8,
-    "points": 315,
-    "description": "deck under construction.",
-    "archetype": ["L.S."],
+    "name": "Vylon Fully Unlimited",
+    "owner": "Veylz",
+    "winRate": 96.0,
+    "points": 319.0,
+    "description": "Banned Vylon build performing FTK combos, full locks, turn skips, and more.",
+    "archetype": ["Vylon"],
     "deckData": [
       {
-        "name": "L.S. Unfair Control",
-        "main": [60060041, 60060092, 60060102],
-        "extra": [],
-        "side": []
+        "name": "Vylon Fully Unlimited",
+        "main": [
+          74853194, 74853194, 74853194, 104386, 104386, 104386, 168917, 74064212, 84313685, 47228077,
+          38679204, 41431329, 43910952, 9548657, 2784593, 15639479, 15639479, 73951, 1281505, 39023895,
+          39023895, 45392314, 126758, 75886890, 36728, 28461093, 1845204, 41858121, 91752, 43898403,
+          65659181, 162534780, 1644289, 14659728, 55046718, 59365810, 74657662, 90592429, 7384162, 547398,
+          62904231, 30268471, 575649870, 45869320
+        ],
+        "extra": [
+          93150256, 94029628, 64237, 62103591, 10693486, 93157004, 47291, 48370501, 53920256, 92136734,
+          73095841, 54639821, 23968437, 21438954, 30495468
+        ],
+        "side": [
+          32916848, 23871586, 10693486, 56768355, 75779210, 45215453, 25481, 46178993, 94035471, 39987164,
+          53714, 90834217, 42136587, 22473217, 30495468
+        ]
       }
     ]
   },
   {
     "id": "unfair-exm-1",
-    "name": "L.S. Jiauer Combo",
-    "owner": "Mardras",
-    "winRate": 92.1,
-    "points": 305,
-    "description": "Unfair Tier EX- – Extremely consistent and hard to interact with.",
+    "name": "L.S. 2026",
+    "owner": "Veylz",
+    "winRate": 93.0,
+    "points": 309.0,
+    "description": "Looking for a truth challenge? Come a face the Legendary Spirits.",
     "archetype": ["L.S."],
     "deckData": [
       {
-        "name": "L.S. Jiauer Combo",
-        "main": [60060041, 60060092, 60060102],
-        "extra": [],
-        "side": []
+        "name": "L.S. 2026",
+        "main": [
+          60060053, 60060019, 60060061, 60060018, 60060086, 60060015, 60060060, 60060033, 60060084, 60060034,
+          60060035, 60060036, 60060083, 60060038, 60060040, 60060047, 60060050, 60060091, 60060093, 60060079,
+          60060076, 60060075, 60060092, 60060067, 60060054, 60060052, 60060023, 60060051, 73628505, 75500286,
+          81439174, 83764719, 60060025, 60060002, 60060031, 60060004, 60060024, 60060003, 60060032, 82732705
+        ],
+        "extra": [
+          60060030, 60060098, 60060022, 60060096, 60060021, 60060099, 60060065, 60060094, 60060028, 60060095,
+          60060020, 60060097, 60060029, 60060068, 60060069
+        ],
+        "side": [
+          60060016, 60060013, 60060037, 60060078, 60060077, 13048472, 18144507, 33017964, 60060006, 24224830,
+          60060011, 40605147, 41420027, 78114463, 84749824
+        ]
       }
     ]
   },
   {
-    "id": "broken-sssp-1",
-    "name": "Broken Custom Fusion Beast",
-    "owner": "Mardras",
-    "winRate": 88.9,
-    "points": 295,
-    "description": "Broken Custom Tier SSS+ – Meta-warping fusion engine.",
-    "archetype": ["Custom"],
+    "id": "custom-sssp-1",
+    "name": "Vylon Custom",
+    "owner": "Veylz",
+    "winRate": 90.0,
+    "points": 299.0,
+    "description": "This deck has it all, and a myriad of combo-lines that makes it almost always impossible to beat.",
+    "archetype": ["Vylon"],
     "deckData": [
       {
-        "name": "Broken Custom Fusion Beast",
-        "main": [60060041, 60060092, 60060102],
-        "extra": [],
-        "side": []
+        "name": "Vylon Custom",
+        "main": [
+          74853194, 74853194, 74853194, 104386, 104386, 104386, 168917, 74064212, 84313685, 47228077,
+          38679204, 41431329, 43910952, 2784593, 15639479, 15639479, 73951, 1281505, 39023895, 39023895,
+          126758, 75886890, 36728, 284610930, 1845204, 41858121, 91752, 43898403, 65659181, 162534780,
+          1644289, 14659728, 55046718, 59365810, 74657662, 90592429, 7384162, 547398, 30268471, 575649870
+        ],
+        "extra": [
+          93150256, 64237, 10693486, 93157004, 47291, 48370501, 53920256, 92136734, 94035471, 73095841,
+          54639821, 23968437, 243076, 21438954, 30495468
+        ],
+        "side": [
+          35451254, 23871586, 10693486, 56768355, 75779210, 45215453, 73095841, 43906820, 42136587, 13094634,
+          22473217, 30495468, 92035412, 95515060, 81563
+        ]
       }
     ]
   },
   {
     "id": "broken-sss-1",
-    "name": "Custom SSS Fusion Engine",
-    "owner": "Mardras",
-    "winRate": 85.4,
-    "points": 285,
-    "description": "Broken Custom Tier SSS – Extremely strong custom fusion strategy.",
-    "archetype": ["Custom"],
+    "name": "Terrenalastreas",
+    "owner": "Veylz",
+    "winRate": 87.0,
+    "points": 289.0,
+    "description": "It is quite rare to not win with this Deck.",
+    "archetype": ["Terrenalastreas"],
     "deckData": [
       {
-        "name": "Custom SSS Fusion Engine",
-        "main": [60060041, 60060092, 60060102],
-        "extra": [],
-        "side": []
+        "name": "Terrenalastreas",
+        "main": [
+          9887760, 9887760, 9887760, 9887761, 9887761, 9887761, 9887762, 9887762, 9887762, 9887763,
+          9887763, 9887763, 9887764, 9887764, 9887764, 9887765, 9887765, 9887765, 64631466, 69123138,
+          88926295, 9887766, 9887766, 9887766, 9887768, 9887768, 9887768, 9887771, 9887771, 9887771,
+          9887767, 9887767, 9887767, 9887769, 9887769, 9887769, 9887770, 9887770, 9887770, 9887772
+        ],
+        "extra": [
+          63519819, 46174776, 80073414, 65187687, 70780151, 22850702, 45935145, 64626565, 70636044, 48835607,
+          49867899, 66403530, 93729065, 72402069, 46593546
+        ],
+        "side": [
+          94145021, 97268402, 14558127, 14558127, 42141493, 42141493, 27204311, 24224830, 65681983, 10045474,
+          40366667, 58053438, 97045737, 42091632, 6325660
+        ]
       }
     ]
   },
   {
     "id": "broken-sssm-1",
-    "name": "Broken Custom Synchro OTK",
-    "owner": "Mardras",
-    "winRate": 82.3,
-    "points": 275,
-    "description": "Broken Custom Tier SSS- – Meta-defining synchro combo.",
-    "archetype": ["Custom"],
+    "name": "The Wicked Custom",
+    "owner": "Veylz",
+    "winRate": 83.0,
+    "points": 276.0,
+    "description": "Playing vs this deck feels like playing vs a challenging boss.",
+    "archetype": [],
     "deckData": [
       {
-        "name": "Broken Custom Synchro OTK",
-        "main": [60060041, 60060092, 60060102],
-        "extra": [],
-        "side": []
+        "name": "The Wicked Custom",
+        "main": [
+          27204311, 62180201, 21208154, 57793869, 58143852, 58143852, 42141493, 42141493, 42141493, 96839775,
+          96839775, 96839775, 14558127, 14558127, 10208126, 10208126, 10208126, 45180212, 45180212, 45180212,
+          94145021, 97268402, 7373632, 49238328, 24224830, 65681983, 81335907, 81335907, 81335907, 7337976,
+          23637370, 23637370, 23637370, 93729896, 93729896, 10045474, 10045474, 39506471, 39506471, 39506471
+        ],
+        "extra": [
+          98127546, 21887175, 45112597, 86066372, 38342336, 2857636, 29301450, 72336818, 75452921, 1528054,
+          71607202, 9763474, 65741787, 98978921, 31226177
+        ],
+        "side": [
+          84192580, 84192580, 84192580, 97268402, 2295440, 7373632, 18144507, 25311006, 33907039, 35269904,
+          58577036, 72892473, 75500286, 81439174, 83764719
+        ]
       }
     ]
   },
   {
     "id": "custom-ssp-1",
-    "name": "Custom SS+ Ritual Xyz",
-    "owner": "Mardras",
-    "winRate": 79.8,
-    "points": 265,
-    "description": "Custom Tier SS+ – Very strong ritual xyz engine.",
-    "archetype": ["Custom"],
+    "name": "Mekk-Knight Custom",
+    "owner": "Veylz",
+    "winRate": 81.0,
+    "points": 269.0,
+    "description": "Going 1st with this deck is close to an instant win, and going 2nd will brute-force almost any field.",
+    "archetype": ["Mekk-Knight", "Orcust", "World Legacy"],
     "deckData": [
       {
-        "name": "Custom SS+ Ritual Xyz",
-        "main": [60060041, 60060092, 60060102],
-        "extra": [],
-        "side": []
+        "name": "Mekk-Knight Custom",
+        "main": [
+          84754430, 28692962, 28692962, 28692962, 92204263, 92204263, 56809158, 56809158, 29415459, 29415459,
+          66022706, 66022706, 93020401, 93020401, 20537097, 20537097, 69811710, 69811710, 13170582, 13170582,
+          13170582, 1845204, 2263869, 2263869, 2263869, 18144507, 83764719, 99674361, 67723438, 67723438,
+          68191756, 68191756, 68191756, 2930675, 2930675, 35546670, 35546670, 62530723, 98935722, 98935722
+        ],
+        "extra": [
+          63519819, 57178812, 1711896, 21887175, 86066372, 38502358, 38342336, 72006609, 72006609, 29301450,
+          65741787, 48057139, 48057139, 48057139, 94259633
+        ],
+        "side": [
+          27204311, 14558127, 14558127, 94145021, 57282724, 2857636, 24224830, 24299458, 65681983, 67723438,
+          10045474, 10045474, 15693423, 15693423, 15693423
+        ]
       }
     ]
   },
   {
     "id": "custom-ss-1",
-    "name": "Custom SS Synchro Engine",
-    "owner": "Mardras",
-    "winRate": 76.5,
-    "points": 255,
-    "description": "Custom Tier SS – Strong but fair synchro strategy.",
-    "archetype": ["Custom"],
+    "name": "Ragnaraika Custom",
+    "owner": "Veylz",
+    "winRate": 77.1,
+    "points": 256.0,
+    "description": "This deck is strong going 1st and 2nd, has high recursion and versatility too.",
+    "archetype": ["Ragnaraika"],
     "deckData": [
       {
-        "name": "Custom SS Synchro Engine",
-        "main": [60060041, 60060092, 60060102],
-        "extra": [],
-        "side": []
+        "name": "Ragnaraika Custom",
+        "main": [
+          27204311, 27134209, 29726552, 3084730, 97262307, 97262307, 51578214, 96938986, 96938986, 96938986,
+          42141493, 42141493, 52543404, 52543404, 26548709, 26548709, 26548709, 39041550, 17535764, 14558127,
+          14558127, 15035199, 15035199, 45337577, 45337577, 94145021, 97268402, 99153051, 99153051, 99153051,
+          70326279, 70326279, 24224830, 65681983, 4841383, 4841383, 4841383, 10045474, 89824842, 77573354
+        ],
+        "extra": [
+          24842898, 24842898, 90784562, 40434525, 40434525, 42307760, 42307760, 6908161, 6908161, 75352507,
+          70514456, 43129357, 43129357, 38314840, 38314840
+        ],
+        "side": [
+          36956512, 90784562, 75352507, 70514456, 38314840, 2295440, 18144507, 25311006, 35269904, 83764719,
+          24299458, 98829635, 15693423, 15693423, 15693423
+        ]
       }
     ]
   },
@@ -400,7 +478,7 @@
     "owner": "Veylz",
     "winRate": 48.1,
     "points": 160.0,
-    "description": "The Extra-Link Deck",
+    "description": "The Extra-Link Deck.",
     "archetype": ["Gouki", "Sky Striker"],
     "deckData": [
       {
@@ -428,7 +506,7 @@
     "owner": "Veylz",
     "winRate": 45.1,
     "points": 150.0,
-    "description": "insanely strong deck from 2017",
+    "description": "insanely strong deck from 2017.",
     "archetype": ["True King", "True Draco"],
     "deckData": [
       {
@@ -456,7 +534,7 @@
     "owner": "Veylz",
     "winRate": 42.1,
     "points": 140.0,
-    "description": "Tier 0 Xyz Deck from 2017",
+    "description": "Tier 0 Xyz Deck from 2017.",
     "archetype": ["Zoodiac"],
     "deckData": [
       {
@@ -484,7 +562,7 @@
     "owner": "Veylz",
     "winRate": 39.1,
     "points": 130.0,
-    "description": "Blue-Eyes returns in 2016",
+    "description": "Blue-Eyes returns in 2016 to steal the spotlight",
     "archetype": ["Blue-Eyes"],
     "deckData": [
       {
@@ -653,7 +731,7 @@
     "owner": "Veylz",
     "winRate": 21.1,
     "points": 70.0,
-    "description": "strong contender in Trishula Format.",
+    "description": "Strong contender in Trishula Format.",
     "archetype": [],
     "deckData": [
       {
@@ -795,7 +873,7 @@
     "owner": "Veylz",
     "winRate": 6.1,
     "points": 20.0,
-    "description": "A great classic deck from Yata Format. Really fun to use.",
+    "description": "A great classic from Yata Format. Really fun to use.",
     "archetype": [],
     "deckData": [
       {
