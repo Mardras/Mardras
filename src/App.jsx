@@ -413,23 +413,32 @@ function normalizeCharacter(character, index) {
 }
 
 function getDeckDisplayImage(deck, allCards) {
-  if (!deck?.main?.length) return null;
-  if (!Array.isArray(allCards)) return null; // prevents crash
-  const deckCards = deck.main
+  if (!allCards || !Array.isArray(allCards)) return null;
+  // Support both old format (deck.main) and new format (deck.deckData[0].main)
+  const mainDeck = deck?.deckData?.[0]?.main || deck?.main || [];
+  if (!mainDeck.length) return null;
+  const deckCards = mainDeck
     .map(id => allCards.find(c => String(c.id) === String(id)))
     .filter(Boolean);
   if (!deckCards.length) return null;
+  // 1. Try archetype match (works whether archetype is string or array)
   if (deck.archetype) {
-    const archetypeMatch = deckCards.find(card =>
-      (card.archetype || "").toLowerCase().includes(deck.archetype.toLowerCase())
-    );
+    const archetypes = Array.isArray(deck.archetype) 
+      ? deck.archetype.map(a => String(a).toLowerCase().trim())
+      : [String(deck.archetype).toLowerCase().trim()];
+    const archetypeMatch = deckCards.find(card => {
+      const cardArchetypes = getArchetypeList(card); // you already have this helper
+      return cardArchetypes.some(ca => 
+        archetypes.some(a => ca.toLowerCase().includes(a))
+      );
+    });
     if (archetypeMatch?.image) return archetypeMatch.image;
   }
+  // 2. Fallback: highest ATK monster (boss monster)
   const boss = deckCards
     .filter(c => c.cardType === "Monster")
-    .sort((a, b) => (b.atk || 0) - (a.atk || 0))[0];
-  if (boss?.image) return boss.image;
-  return deckCards[0]?.image || null;
+    .sort((a, b) => (Number(b.atk) || 0) - (Number(a.atk) || 0))[0];
+  return boss?.image || deckCards[0]?.image || null;
 }
 
 /* ==================== NEW PAGES (KEPT EXACTLY AS YOU HAD) ==================== */
