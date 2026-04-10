@@ -414,29 +414,21 @@ function normalizeCharacter(character, index) {
 
 function getDeckDisplayImage(deck, allCards) {
   if (!deck?.main?.length) return null;
-
+  if (!Array.isArray(allCards)) return null; // prevents crash
   const deckCards = deck.main
     .map(id => allCards.find(c => String(c.id) === String(id)))
     .filter(Boolean);
-
   if (!deckCards.length) return null;
-
-  // Priority: archetype match
   if (deck.archetype) {
     const archetypeMatch = deckCards.find(card =>
       (card.archetype || "").toLowerCase().includes(deck.archetype.toLowerCase())
     );
     if (archetypeMatch?.image) return archetypeMatch.image;
   }
-
-  // Fallback: highest ATK monster (usually boss)
   const boss = deckCards
     .filter(c => c.cardType === "Monster")
     .sort((a, b) => (b.atk || 0) - (a.atk || 0))[0];
-
   if (boss?.image) return boss.image;
-
-  // Final fallback
   return deckCards[0]?.image || null;
 }
 
@@ -475,9 +467,9 @@ function ThreatTierListPage({ decks, allCards, onSelectDeck }) {
           </div>
           <div className="mt-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4">
 
-            {group.decks.map((deck) => {
+            {(group.decks || []).map((deck) => {
   const tier = getThreatTier(deck);
-  const image = getDeckDisplayImage(deck, allCards);
+  const image = getDeckDisplayImage(deck, allCards || []);
 
   return (
     <div
