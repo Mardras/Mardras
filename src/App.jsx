@@ -237,10 +237,11 @@ const defaultSettings = {
 
 function TieredDecksPage({ deck, cards, onOpenCard }) {
   const sampleDeck = deck?.deckData?.[0] || deck?.deckData || { main: [], extra: [], side: [] };
+  const [hoveredCard, setHoveredCard] = useState(null);
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
-      {/* LEFT - Sample Deck */}
+      {/* LEFT - Sample Deck + Hover Preview */}
       <div className="xl:col-span-7 rounded-[24px] border border-slate-300 bg-white p-6 shadow-sm">
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -256,12 +257,38 @@ function TieredDecksPage({ deck, cards, onOpenCard }) {
           </button>
         </div>
 
-        <CharacterDeckSection title="Main Deck" ids={sampleDeck.main} allCards={cards} onOpen={onOpenCard} />
-        <CharacterDeckSection title="Extra Deck" ids={sampleDeck.extra} allCards={cards} onOpen={onOpenCard} />
-        <CharacterDeckSection title="Side Deck" ids={sampleDeck.side} allCards={cards} onOpen={onOpenCard} />
+        <CharacterDeckSection 
+          title="Main Deck" 
+          ids={sampleDeck.main} 
+          allCards={cards} 
+          onOpen={onOpenCard} 
+          onHover={setHoveredCard} 
+          onLeave={() => setHoveredCard(null)} 
+        />
+        <CharacterDeckSection 
+          title="Extra Deck" 
+          ids={sampleDeck.extra} 
+          allCards={cards} 
+          onOpen={onOpenCard} 
+          onHover={setHoveredCard} 
+          onLeave={() => setHoveredCard(null)} 
+        />
+        <CharacterDeckSection 
+          title="Side Deck" 
+          ids={sampleDeck.side} 
+          allCards={cards} 
+          onOpen={onOpenCard} 
+          onHover={setHoveredCard} 
+          onLeave={() => setHoveredCard(null)} 
+        />
+
+        {/* Hover Preview (same as database / character pages) */}
+        <div className="mt-8 sticky top-6 self-start">
+          <CharacterHoverPreview card={hoveredCard} />
+        </div>
       </div>
 
-      {/* RIGHT - Best Decks table */}
+      {/* RIGHT - Best Decks table (unchanged) */}
       <div className="xl:col-span-5 rounded-[24px] border border-slate-300 bg-white p-6 shadow-sm">
         <h2 className="text-3xl font-bold mb-6">Best {deck.name} Decks</h2>
         <div className="space-y-4">
