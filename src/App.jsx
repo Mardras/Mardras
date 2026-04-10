@@ -441,7 +441,8 @@ function getDeckDisplayImage(deck, allCards) {
 }
 
 /* ==================== NEW PAGES (KEPT EXACTLY AS YOU HAD) ==================== */
-function ThreatTierListPage({ decks, onSelectDeck }) {
+function ThreatTierListPage({ decks, allCards, onSelectDeck }) {
+
   const groupedDecks = useMemo(() => {
     const groups = {};
     decks.forEach((deck) => {
@@ -473,24 +474,22 @@ function ThreatTierListPage({ decks, onSelectDeck }) {
             {group.tier.category} — {group.tier.subTier}
           </div>
           <div className="mt-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4">
+
             {group.decks.map((deck) => {
-              const tier = getThreatTier(deck);
-              return (
+  const tier = getThreatTier(deck);
+  const image = getDeckDisplayImage(deck, allCards);
 
-                (() => {
-              const image = getDeckDisplayImage(deck, allCards);
-
-               return (
-               <div
-                   key={deck.id}
-                   onClick={() => onSelectDeck(deck)}
-                   className="relative group cursor-pointer overflow-hidden rounded-2xl border border-slate-300 shadow-md transition hover:-translate-y-1 hover:shadow-xl"
-                 >
-                {/* Background Image */}
-                {image && (
-                 <img
-                   src={image}
-                 alt={deck.name}
+  return (
+    <div
+      key={deck.id}
+      onClick={() => onSelectDeck(deck)}
+      className="relative group cursor-pointer overflow-hidden rounded-2xl border border-slate-300 shadow-md transition hover:-translate-y-1 hover:shadow-xl"
+    >
+      {/* Background Image */}
+      {image && (
+        <img
+          src={image}
+          alt={deck.name}
           className="absolute inset-0 w-full h-full object-cover transition duration-500 group-hover:scale-110"
         />
       )}
@@ -501,7 +500,7 @@ function ThreatTierListPage({ decks, onSelectDeck }) {
       {/* Content */}
       <div className="relative z-10 flex items-center justify-between p-4">
         
-        {/* Left side */}
+        {/* Left */}
         <div className="min-w-0">
           <div className="text-lg font-bold text-white line-clamp-1">
             {deck.name}
@@ -511,18 +510,15 @@ function ThreatTierListPage({ decks, onSelectDeck }) {
           </div>
         </div>
 
-        {/* Right badge */}
+        {/* Right */}
         <div className={`px-4 py-1 text-sm font-bold rounded-xl backdrop-blur-md ${tier.colorClass}`}>
           {deck.winRate}%
         </div>
 
       </div>
     </div>
-             );
-            })()
-
-              );
-            })}
+  );
+})}
           </div>
         </section>
       ))}
@@ -3240,7 +3236,7 @@ function goTieredDecks(deck) {
         {page === "character" && selectedCharacter && <CharacterDetailPage character={selectedCharacter} cards={allCards} onOpenCard={openAnyCard} onOpenCharacterList={goCharacters} />}
         {page === "archetype" && archetypeFilter && <ArchetypePage cards={cards} archetype={archetypeFilter} onOpen={openCard} onBrowseAll={goDatabase} />}
         {page === "downloads" && <DownloadsPage settings={settings} />}
-        {page === "threat-tier-list" && <ThreatTierListPage decks={threatDecks} onSelectDeck={goTieredDecks} />}
+        {page === "threat-tier-list" && <ThreatTierListPage decks={decks} allCards={cards} onSelectDeck={goTieredDecks} />}
         {page === "decklists" && <DecklistsPage decks={threatDecks} onSelectDeck={goTieredDecks} />}
         {page === "tiered-decks" && selectedTieredDeck && (
           <TieredDecksPage deck={selectedTieredDeck} cards={allCards} onOpenCard={openAnyCard} />
