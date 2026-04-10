@@ -136,9 +136,9 @@ function getThreatTier(deck) {
   const winRate = Number(deck?.winRate) || 0;
   const points = Number(deck?.points) || 0;
 
-  // Brand-new decks with 0/0 go to Untiered
+  // Brand-new decks with 0/0 go to Untiered (now last in the array)
   if (points === 0 && winRate === 0) {
-    return TIER_DEFINITIONS[0]; // Untiered
+    return TIER_DEFINITIONS.find(t => t.category === "Untiered");
   }
 
   const scoreToCheck = points > 0 ? points : winRate;
@@ -3228,7 +3228,7 @@ function goTieredDecks(deck) {
         {page === "character" && selectedCharacter && <CharacterDetailPage character={selectedCharacter} cards={allCards} onOpenCard={openAnyCard} onOpenCharacterList={goCharacters} />}
         {page === "archetype" && archetypeFilter && <ArchetypePage cards={cards} archetype={archetypeFilter} onOpen={openCard} onBrowseAll={goDatabase} />}
         {page === "downloads" && <DownloadsPage settings={settings} />}
-        {page === "threat-tier-list" && <ThreatTierListPage decks={decks} allCards={cards} onSelectDeck={goTieredDecks} />}
+        {page === "threat-tier-list" && (<ThreatTierListPage decks={threatDecks} allCards={allCards} onSelectDeck={goTieredDecks} />)}
         {page === "decklists" && <DecklistsPage decks={threatDecks} onSelectDeck={goTieredDecks} />}
         {page === "tiered-decks" && selectedTieredDeck && (
           <TieredDecksPage deck={selectedTieredDeck} cards={allCards} onOpenCard={openAnyCard} />
