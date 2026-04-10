@@ -527,8 +527,7 @@ function ThreatTierListPage({ decks, allCards, onSelectDeck }) {
   );
 }
 
-
-function DecklistsPage({ decks, onSelectDeck }) {
+function DecklistsPage({ decks, allCards, onSelectDeck }) {
   const [query, setQuery] = useState("");
   const [sortBy, setSortBy] = useState("winRate");
   const [tierFilter, setTierFilter] = useState("all");
@@ -537,7 +536,7 @@ function DecklistsPage({ decks, onSelectDeck }) {
     let list = decks.filter((deck) =>
       (deck.name.toLowerCase().includes(query.toLowerCase()) ||
        deck.owner.toLowerCase().includes(query.toLowerCase()) ||
-       deck.archetype.toLowerCase().includes(query.toLowerCase())) &&
+       (deck.archetype || "").toString().toLowerCase().includes(query.toLowerCase())) &&
       (tierFilter === "all" || getThreatTier(deck).category === tierFilter)
     );
 
@@ -552,7 +551,7 @@ function DecklistsPage({ decks, onSelectDeck }) {
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-3xl font-bold text-slate-900">Decklists</h1>
-            <p className="text-slate-600">Top decks </p>
+            <p className="text-slate-600">Top decks</p>
           </div>
           <div className="flex items-center gap-3">
             <label className="flex items-center gap-2 rounded-2xl border border-slate-300 bg-slate-50 px-4 py-2 text-sm">
@@ -578,22 +577,50 @@ function DecklistsPage({ decks, onSelectDeck }) {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {filteredAndSorted.map((deck) => (
-          <div
-            key={deck.id}
-            onClick={() => onSelectDeck(deck)}
-            className="cursor-pointer rounded-2xl border border-slate-200 bg-white p-5 transition hover:shadow-xl"
-          >
-            <div className="flex justify-between items-start">
-              <div>
-                <div className="text-xl font-semibold text-slate-900 line-clamp-2">{deck.name}</div>
-                <div className="text-sm text-slate-500">by {deck.owner}</div>
+      {/* NEW: Same beautiful cards as Threat Tier List */}
+      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        {filteredAndSorted.map((deck) => {
+          const tier = getThreatTier(deck);
+          const image = getDeckDisplayImage(deck, allCards || []);
+
+          return (
+            <div
+              key={deck.id}
+              onClick={() => onSelectDeck(deck)}
+              className="relative group cursor-pointer overflow-hidden rounded-2xl border border-slate-300 shadow-md transition hover:-translate-y-1 hover:shadow-xl"
+            >
+              {/* Background Image */}
+              {image && (
+                <img
+                  src={image}
+                  alt={deck.name}
+                  className="absolute inset-0 w-full h-full object-cover transition duration-500 group-hover:scale-110"
+                />
+              )}
+
+              {/* Dark Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-black/20" />
+
+              {/* Content */}
+              <div className="relative z-10 flex items-center justify-between p-4">
+                {/* Left */}
+                <div className="min-w-0">
+                  <div className="text-lg font-bold text-white line-clamp-1">
+                    {deck.name}
+                  </div>
+                  <div className="text-xs text-slate-300">
+                    by {deck.owner}
+                  </div>
+                </div>
+
+                {/* Right - colored win% badge */}
+                <div className={`px-4 py-1 text-sm font-bold rounded-xl backdrop-blur-md ${tier.colorClass}`}>
+                  {deck.winRate}%
+                </div>
               </div>
-              <div className="text-right text-3xl font-bold font-mono text-slate-900">{deck.winRate}%</div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -3238,7 +3265,7 @@ function goTieredDecks(deck) {
         {page === "archetype" && archetypeFilter && <ArchetypePage cards={cards} archetype={archetypeFilter} onOpen={openCard} onBrowseAll={goDatabase} />}
         {page === "downloads" && <DownloadsPage settings={settings} />}
         {page === "threat-tier-list" && (<ThreatTierListPage decks={threatDecks} allCards={allCards} onSelectDeck={goTieredDecks} />)}
-        {page === "decklists" && <DecklistsPage decks={threatDecks} onSelectDeck={goTieredDecks} />}
+        {page === "decklists" && <DecklistsPage decks={threatDecks} allCards={allCards} onSelectDeck={goTieredDecks} />}
         {page === "tiered-decks" && selectedTieredDeck && (
           <TieredDecksPage deck={selectedTieredDeck} cards={allCards} onOpenCard={openAnyCard} />
           )}
