@@ -242,10 +242,10 @@ const defaultSettings = {
 
 
 function TieredDecksPage({ deck, cards, onOpenCard, allVariantDecks = [] }) {
-  const [hoveredCard, setHoveredCard] = useState(null);
+  const [hoveredCard, setHoveredCard] = useState(null);   // ← This was missing
+
   const sampleDeckData = deck?.deckData?.[0] || deck?.deckData || { main: [], extra: [], side: [] };
 
-  // Sort variants by winRate descending (best first)
   const sortedVariants = [...(allVariantDecks || [])].sort((a, b) => 
     (Number(b.winRate) || 0) - (Number(a.winRate) || 0)
   );
@@ -274,7 +274,7 @@ function TieredDecksPage({ deck, cards, onOpenCard, allVariantDecks = [] }) {
           allCards={cards} 
           onOpen={onOpenCard}
           onHover={setHoveredCard}
-          onLeave={() => setHoveredCard(null)} 
+          onLeave={() => setHoveredCard(null)}
         />
         <CharacterDeckSection 
           title="Extra Deck" 
@@ -282,7 +282,7 @@ function TieredDecksPage({ deck, cards, onOpenCard, allVariantDecks = [] }) {
           allCards={cards} 
           onOpen={onOpenCard}
           onHover={setHoveredCard}
-          onLeave={() => setHoveredCard(null)} 
+          onLeave={() => setHoveredCard(null)}
         />
         <CharacterDeckSection 
           title="Side Deck" 
@@ -293,11 +293,11 @@ function TieredDecksPage({ deck, cards, onOpenCard, allVariantDecks = [] }) {
           onLeave={() => setHoveredCard(null)}
         />
 
-        {/* Hover Preview */}
+        {/* Hover Preview - this is the one you want */}
         <div className="mt-8 sticky top-6 self-start">
           <CharacterHoverPreview card={hoveredCard} />
         </div>
-      </div>   {/* ← This closes the LEFT column (xl:col-span-7) */}
+      </div>
 
       {/* RIGHT - All Variants */}
       <div className="xl:col-span-5 rounded-[24px] border border-slate-300 bg-white p-6 shadow-sm">
@@ -3166,7 +3166,7 @@ useEffect(() => {
 function goTieredDecks(deck, variants = []) {
   setSelectedTieredDeck({ ...deck, variants });
   navigate(`/tiered-decks/${deck.id}`);
-}
+   }
 
   function goDecklists() {
     navigate("/decklists");
@@ -3309,8 +3309,7 @@ function goTieredDecks(deck, variants = []) {
         {page === "threat-tier-list" && (<ThreatTierListPage decks={threatDecks} allCards={allCards} onSelectDeck={goTieredDecks} />)}
         {page === "decklists" && <DecklistsPage decks={threatDecks} allCards={allCards} onSelectDeck={goTieredDecks} />}
         {page === "tiered-decks" && selectedTieredDeck && (
-          <TieredDecksPage deck={selectedTieredDeck} cards={allCards} onOpenCard={openAnyCard} />
-          )}
+          <TieredDecksPage deck={selectedTieredDeck} cards={allCards} onOpenCard={openAnyCard} allVariantDecks={selectedTieredDeck.variants || []} />)}
         {page === "card" && selectedCard && (
           <div className="space-y-4">
             <div className="flex flex-wrap gap-2">
