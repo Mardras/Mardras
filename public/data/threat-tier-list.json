@@ -7,6 +7,7 @@
     "points": 340,
     "description": "Instant win condition ZTK. Illegal Deck.",
     "archetype": ["Exodia", "Forbidden One"],
+    "group": "Exodia",
     "deckData": [
       { 
         "name": "5 cards Exodia deck", 
@@ -26,6 +27,7 @@
     "points": 329.0,
     "description": "Banned L.S. build performing FTK combos, full locks, erases your cards, and with Veylofragma cannot lose the Duel. Has infinite ultra recursion being able to almost fully redo the entire deck's multi-combos each turn too. The Side Deck has tools to counter most decks",
     "archetype": ["L.S."],
+    "group": "L.S.",
     "deckData": [
       {
         "name": "L.S. Fully Unlimited",
@@ -56,6 +58,7 @@
     "points": 319.0,
     "description": "Banned Vylon build performing FTK combos, full locks, turn skips, and more.",
     "archetype": ["Vylon"],
+    "group": "Vylon",
     "deckData": [
       {
         "name": "Vylon Fully Unlimited",
@@ -85,6 +88,7 @@
     "points": 309.0,
     "description": "Looking for a truth challenge? Come a face the Legendary Spirits.",
     "archetype": ["L.S."],
+    "group": "L.S.",
     "deckData": [
       {
         "name": "L.S. 2026",
@@ -113,6 +117,7 @@
     "points": 299.0,
     "description": "This deck has it all, and a myriad of combo-lines that makes it almost always impossible to beat.",
     "archetype": ["Vylon"],
+    "group": "Vylon",
     "deckData": [
       {
         "name": "Vylon Custom",
@@ -141,6 +146,7 @@
     "points": 289.0,
     "description": "It is quite rare to not win with this Deck.",
     "archetype": ["Terrenalastreas"],
+    "group": "Terrenalastreas",
     "deckData": [
       {
         "name": "Terrenalastreas",
@@ -169,6 +175,7 @@
     "points": 276.0,
     "description": "Playing vs this deck feels like playing vs a challenging boss.",
     "archetype": [],
+    "group": "",
     "deckData": [
       {
         "name": "The Wicked Custom",
@@ -197,6 +204,7 @@
     "points": 269.0,
     "description": "Going 1st with this deck is close to an instant win, and going 2nd will brute-force almost any field.",
     "archetype": ["Mekk-Knight", "Orcust", "World Legacy"],
+    "group": "Mekk-Knight",
     "deckData": [
       {
         "name": "Mekk-Knight Custom",
@@ -225,6 +233,7 @@
     "points": 256.0,
     "description": "This deck is strong going 1st and 2nd, has high recursion and versatility too.",
     "archetype": ["Ragnaraika"],
+    "group": "Ragnaraika",
     "deckData": [
       {
         "name": "Ragnaraika Custom",
@@ -253,6 +262,7 @@
     "points": 246.0,
     "description": "Tier 0 Tearlaments.",
     "archetype": ["Tearlaments","Heart"],
+    "group": "Tearlaments",
     "deckData": [
      {
         "name": "Ishizu Tearlaments",
@@ -280,6 +290,7 @@
     "points": 230.0,
     "description": "Strongest deck in the current 2026 meta.",
     "archetype": ["Dracotail", "Branded"],
+    "group": "Dracotail",
     "deckData": [
       {
         "name": "2026-03 Dracotail Branded",
@@ -308,6 +319,7 @@
     "points": 220.0,
     "description": "WCS2025 winning deck",
     "archetype": ["Vanquish Soul","K9"],
+    "group": "Vanquish Soul",
     "deckData": [
       {
         "name": "2025-08 K9VS",
@@ -336,6 +348,7 @@
     "points": 210.0,
     "description": "really strong top tier meta deck",
     "archetype": ["Maliss"],
+    "group": "Maliss",
     "deckData": [
       {
         "name": "2025-02 Maliss",
@@ -358,6 +371,35 @@
     ]
   },
   {
+    "id": "tier0-sm-2",
+    "name": "2026-04 Maliss",
+    "owner": "Veylz",
+    "winRate": 63.3,
+    "points": 211.0,
+    "description": "2026 Maliss build",
+    "archetype": ["Maliss","@Ignister","Bystial"],
+    "group": "Maliss",
+    "deckData": [
+      {
+        "name": "2026-04 Maliss",
+        "main": [
+          27204311, 27204311, 27204311, 6637331, 33854624, 72656408, 72656408, 91800273, 3723262, 96676583,
+          96676583, 96676583, 30118811, 30118811, 30118811, 69272449, 69272449, 32061192, 20938824, 20938824,
+          14558127, 14558127, 14558127, 73642296, 73642296, 73642296, 1475311, 1475311, 1475311, 75500286,
+          93453053, 68337209, 68337209, 10045474, 10045474, 10045474, 40366667, 40366667, 40366667, 94722358
+        ],
+        "extra": [
+          93039339, 39138610, 5043010, 86066372, 21848500, 61245672, 68059897, 8264361, 29301450, 9763474,
+          52698008, 98978921, 32995276, 24842059, 60303245
+        ],
+        "side": [
+          78661338, 78661338, 78661338, 68144894, 68144894, 68144894, 46502744, 46502744, 46502744, 94145021,
+          94145021, 73628505, 81674782, 81674782, 81674782
+        ]
+      }
+    ]
+  },
+  {
     "id": "tier05-ap-1",
     "name": "2024-03 FK S-E -Snake-Eye Format",
     "owner": "Veylz",
@@ -365,6 +407,7 @@
     "points": 200.0,
     "description": "The layered plays this deck has revolutionized modern decks",
     "archetype": ["Fire King","Snake-Eye","Diabellstar"],
+    "group": "Fire King",
     "deckData": [
 {
         "name": "2024-03 FK S-E -Snake-Eye Format",
@@ -394,6 +437,7 @@
     "points": 190.0,
     "description": "modern deck",
     "archetype": ["Spright"],
+    "group": "Spright",
     "deckData": [
       {
         "name": "2022-10 Spright -Minneapolis Format",
@@ -424,6 +468,7 @@
     "points": 193.0,
     "description": "Lovely Trap deck isn't it?",
     "archetype": ["Labrynth"],
+    "group": "Labrynth",
     "deckData": [
       {
         "name": "2024-01 Labyrinth -Rescue-ACE Format",
@@ -453,6 +498,7 @@
     "points": 180.0,
     "description": "Prank-Kids Adventure DPE was a menace",
     "archetype": ["Prank-Kids", "Adventure"],
+    "group": "Prank-Kids",
     "deckData": [
       {
         "name": "2022-04 Prank-Kids -Phoenix Format",
@@ -481,6 +527,7 @@
     "points": 170.0,
     "description": "Recursion Trap Stun Deck",
     "archetype": ["Altergeist"],
+    "group": "Altergeist",
     "deckData": [
       {
         "name": "2019-10 Altergeist -TOSS Format",
@@ -509,6 +556,7 @@
     "points": 160.0,
     "description": "The Extra-Link Deck.",
     "archetype": ["Gouki", "Sky Striker"],
+    "group": "Gouki",
     "deckData": [
       {
         "name": "2018-08 Sky Striker Gouki -Secaucus Format",
@@ -537,6 +585,7 @@
     "points": 150.0,
     "description": "insanely strong deck from 2017.",
     "archetype": ["True King", "True Draco"],
+    "group": "True King",
     "deckData": [
       {
         "name": "2017-10 True King Dino -Link Zoo Format",
@@ -565,6 +614,7 @@
     "points": 140.0,
     "description": "Tier 0 Xyz Deck from 2017.",
     "archetype": ["Zoodiac"],
+    "group": "Zoodiac",
     "deckData": [
       {
         "name": "2017-04 Zoodiac -Grass Zoo Format",
@@ -593,6 +643,7 @@
     "points": 130.0,
     "description": "Blue-Eyes returns in 2016 to steal the spotlight",
     "archetype": ["Blue-Eyes"],
+    "group": "Blue-Eyes",
     "deckData": [
       {
         "name": "2016-08 Blue-Eyes -Invasion Format",
@@ -621,6 +672,7 @@
     "points": 120.0,
     "description": "This was the Tier 0 deck from 2016",
     "archetype": ["Performapal", "Performage"],
+    "group": "Performapal",
     "deckData": [
       {
         "name": "2016-02 PePe -PePe Format",
@@ -650,6 +702,7 @@
     "points": 110.0,
     "description": "2014 was a new era of Yugioh and this deck proves it.",
     "archetype": ["Shaddoll"],
+    "group": "Shaddoll",
     "deckData": [
       {
         "name": "2014-07 Shaddoll -Shaddoll Format",
@@ -678,6 +731,7 @@
     "points": 100.0,
     "description": "The only other deck that could stop it back then was Spellbook.",
     "archetype": ["Dragon Ruler"],
+    "group": "Dragon Ruler",
     "deckData": [
       {
         "name": "2013-05 Dragon Ruler -Baby Ruler Format",
@@ -706,6 +760,7 @@
     "points": 90.0,
     "description": "The one deck to ultra turbo Number 16: Shock Master from back then.",
     "archetype": ["Wind-Up"],
+    "group": "Wind-Up",
     "deckData": [
       {
         "name": "2012-09 Wind-Up -Wind-Up Format",
@@ -734,6 +789,7 @@
     "points": 80.0,
     "description": "Infamous deck from Tengu Format.",
     "archetype": ["Infernity"],
+    "group": "Infernity",
     "deckData": [
       {
         "name": "2011-09 Infernity -Tengu Format",
@@ -762,6 +818,7 @@
     "points": 70.0,
     "description": "Strong contender in Trishula Format.",
     "archetype": [],
+    "group": "",
     "deckData": [
       {
         "name": "2011-04 Plant Synchro -Trishula Format",
@@ -791,6 +848,7 @@
     "points": 60.0,
     "description": "Marked the change of an era design-wise.",
     "archetype": ["Blackwing"],
+    "group": "Blackwing",
     "deckData": [
       {
         "name": "2009-08 Blackwing -Cat Control Format",
@@ -820,6 +878,7 @@
     "points": 50.0,
     "description": "Strongest deck from TeleDAD Format.",
     "archetype": ["Destiny HERO"],
+    "group": "",
     "deckData": [
       {
         "name": "2008-09 TeleDAD -TeleDAD Format",
@@ -848,6 +907,7 @@
     "points": 40.0,
     "description": "An amazing and unique ritual deck.",
     "archetype": [],
+    "group": "",
     "deckData": [
       {
         "name": "2007-03 Demise OTK -Demise Format",
@@ -876,6 +936,7 @@
     "points": 30.0,
     "description": "Strongest deck from Chaos Format. Incredibly fun to play.",
     "archetype": ["Chaos"],
+    "group": "Chaos",
     "deckData": [
       {
         "name": "2004-04 Chaos Control -Chaos Format",
@@ -904,6 +965,7 @@
     "points": 20.0,
     "description": "A great classic from Yata Format. Really fun to use.",
     "archetype": [],
+    "group": "",
     "deckData": [
       {
         "name": "2003-08 Hand Control -Yata Format",
@@ -931,6 +993,7 @@
     "points": 10.0,
     "description": "Lovely deck, but not suitable for play vs modern meta decks.",
     "archetype": [],
+    "group": "",
     "deckData": [
      {
         "name": "2002-03 Legend of Blue-Eyes White Dragon",
@@ -958,6 +1021,7 @@
     "points": 1.0,
     "description": "Can pull unexpected OTKs",
     "archetype": ["Yubel"],
+    "group": "Yubel",
     "deckData": [
       {
         "name": "Dummy Boss",
@@ -983,6 +1047,7 @@
     "points": 0.1,
     "description": "Made to go against it to test and practice combos",
     "archetype": [],
+    "group": "",
     "deckData": [
      {
         "name": "Dummy Deck",
@@ -997,6 +1062,37 @@
           37542782, 37542782, 3149401, 3149401, 3149401
         ],
         "side": []
+      }
+    ]
+  },
+  {
+    "id": "untiered-untiered-1",
+    "name": "F.A.S-E.R.K.",
+    "owner": "Veylz",
+    "winRate": -1,
+    "points": -1,
+    "description": "Experimental build",
+    "archetype": ["Fiendsmith","Azamina","Snake-Eye","Regenesis","Kashtira"],
+    "group": "Snake-Eye",
+    "deckData": [
+      {
+        "name": "F.A.S-E.R.K.",
+        "main": [
+          27204311, 48452496, 27260347, 59323650, 95718355, 95718355, 22938501, 96540807, 68304193, 68304193,
+          68304193, 72270339, 72270339, 72270339, 32909498, 4928565, 78534861, 60764609, 60764609, 31149212,
+          31149212, 28803166, 42141493, 14558127, 14558127, 23434538, 23434538, 45663742, 9674034, 90241276,
+          97651498, 12058741, 94145021, 97268402, 97268402, 2295440, 31786838, 34447918, 34447918, 34447918,
+          85106525, 89023486, 89558743, 94845588, 98567237, 24224830, 24224830, 65681983, 67171933, 80845034,
+          66328392, 66328392, 66328392, 69540484, 69540484, 53639887, 71832012, 10045474, 33925864, 99989863
+        ],
+        "extra": [
+          82135803, 46640168, 73391962, 46396218, 48626373, 73542331, 79559912, 57134592, 4280258, 2772337,
+          2857636, 49867899, 71818935, 2463794, 41999284
+        ],
+        "side": [
+          23015896, 66431519, 2526224, 2526224, 18621798, 44455560, 90681088, 93039339, 45112597, 48815792,
+          87871125, 29301450, 91703676, 65305978, 57554544
+        ]
       }
     ]
   }

@@ -129,27 +129,32 @@ const TIER_DEFINITIONS = [
   { category: "Tier 7", subTier: "G", pointsMin: 10, pointsMax: 19, winMin: 3.1, winMax: 6, colorClass: "bg-gray-500 text-white border-gray-600 shadow-gray-400/30" },
   { category: "Tier 7", subTier: "G-", pointsMin: 1, pointsMax: 9, winMin: 1, winMax: 3, colorClass: "bg-gray-500 text-white border-gray-600 shadow-gray-400/30" },
   { category: "Tier 8", subTier: "Test Deck", pointsMin: 0, pointsMax: 0.9, winMin: 0, winMax: 0.9, colorClass: "bg-zinc-400 text-slate-900 border-zinc-500 shadow-zinc-400/30" },
-  { category: "Untiered", subTier: "Pending", pointsMin: -1, pointsMax: -1, winMin: -1, winMax: -1, colorClass: "bg-slate-500 text-white border-slate-600 shadow-slate-400/30" },
+  { category: "Untiered", subTier: "Untiered", pointsMin: -1, pointsMax: -1, winMin: -1, winMax: -1, colorClass: "bg-slate-500 text-white border-slate-600 shadow-slate-400/30" },
 ];
+
 
 function getThreatTier(deck) {
   const winRate = Number(deck?.winRate) || 0;
   const points = Number(deck?.points) || 0;
 
-  // Brand-new decks with 0/0 go to Untiered (now last in the array)
-  if (points === 0 && winRate === 0) {
+  // Special case: Brand-new / unknown decks → Untiered
+  if (points < 0 && winRate < 0) {
     return TIER_DEFINITIONS.find(t => t.category === "Untiered");
   }
 
-  const scoreToCheck = points > 0 ? points : winRate;
+  // Test Deck (Tier 8): 0 to 0.9 points OR very low win rate
+  if ((points >= 0 && points <= 0.9) || (winRate >= 0 && winRate <= 0.9)) {
+    return TIER_DEFINITIONS.find(t => t.subTier === "Test Deck");
+  }
 
+  const scoreToCheck = points > 0 ? points : winRate;
   return (
     TIER_DEFINITIONS.find((tier) => {
       if (points > 0) {
         return scoreToCheck >= tier.pointsMin && scoreToCheck <= tier.pointsMax;
       }
       return scoreToCheck >= tier.winMin && (tier.winMax === Infinity || scoreToCheck <= tier.winMax);
-    }) || TIER_DEFINITIONS[TIER_DEFINITIONS.length - 1]
+    }) || TIER_DEFINITIONS[TIER_DEFINITIONS.length - 1]  // fallback to Untiered
   );
 }
 
@@ -235,8 +240,9 @@ const defaultSettings = {
   downloads: CODE_DOWNLOADS,
 };
 
+
 function TieredDecksPage({ deck, cards, onOpenCard, allVariantDecks = [] }) {
-  // deck = the main/representative deck for this archetype
+  const [hoveredCard, setHoveredCard] = useState(null);
   const sampleDeckData = deck?.deckData?.[0] || deck?.deckData || { main: [], extra: [], side: [] };
 
   // Sort variants by winRate descending (best first)
@@ -246,7 +252,7 @@ function TieredDecksPage({ deck, cards, onOpenCard, allVariantDecks = [] }) {
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
-      {/* LEFT - Sample Deck + Hover Preview */}
+      {/* LEFT - Sample Deck */}
       <div className="xl:col-span-7 rounded-[24px] border border-slate-300 bg-white p-6 shadow-sm">
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -266,60 +272,63 @@ function TieredDecksPage({ deck, cards, onOpenCard, allVariantDecks = [] }) {
           title="Main Deck" 
           ids={sampleDeckData.main} 
           allCards={cards} 
-          onOpen={onOpenCard} 
-          onHover={setHoveredCard} 
+          onOpen={onOpenCard}
+          onHover={setHoveredCard}
           onLeave={() => setHoveredCard(null)} 
         />
         <CharacterDeckSection 
           title="Extra Deck" 
           ids={sampleDeckData.extra} 
           allCards={cards} 
-          onOpen={onOpenCard} 
-          onHover={setHoveredCard} 
+          onOpen={onOpenCard}
+          onHover={setHoveredCard}
           onLeave={() => setHoveredCard(null)} 
         />
         <CharacterDeckSection 
           title="Side Deck" 
           ids={sampleDeckData.side} 
           allCards={cards} 
-          onOpen={onOpenCard} 
-          onHover={setHoveredCard} 
-          onLeave={() => setHoveredCard(null)} 
+          onOpen={onOpenCard}
+          onHover={setHoveredCard}
+          onLeave={() => setHoveredCard(null)}
         />
 
         {/* Hover Preview */}
         <div className="mt-8 sticky top-6 self-start">
           <CharacterHoverPreview card={hoveredCard} />
         </div>
-      </div>
+      </div>   {/* ← This closes the LEFT column (xl:col-span-7) */}
 
-      {/* RIGHT - All Variants for this archetype (clean list) */}
+      {/* RIGHT - All Variants */}
       <div className="xl:col-span-5 rounded-[24px] border border-slate-300 bg-white p-6 shadow-sm">
         <h2 className="text-3xl font-bold mb-6">Best {deck.name} Decks</h2>
         
         <div className="space-y-4">
           {sortedVariants.length > 0 ? (
-            sortedVariants.map((variant, i) => (
-              <div
-                key={variant.id || i}
-                onClick={() => onSelectDeck(variant)}   // opens this variant as new "sample"
-                className="flex items-center justify-between rounded-2xl border p-4 hover:bg-slate-50 cursor-pointer transition"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="text-2xl font-bold text-slate-900">Variant {i + 1}</div>
-                  <div>
-                    <div className="font-medium">{variant.name}</div>
-                    <div className="text-sm text-slate-500">by {variant.owner}</div>
+            sortedVariants.map((variant, i) => {
+              const tier = getThreatTier(variant);
+              return (
+                <div
+                  key={variant.id || i}
+                  onClick={() => onSelectDeck(variant)}
+                  className="flex items-center justify-between rounded-2xl border p-4 hover:bg-slate-50 cursor-pointer transition"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="text-2xl font-bold text-slate-900">Variant {i + 1}</div>
+                    <div>
+                      <div className="font-medium">{variant.name}</div>
+                      <div className="text-sm text-slate-500">by {variant.owner}</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className={`text-xl font-mono font-bold ${tier.colorClass.replace('bg-', 'text-').split(' ')[0]}`}>
+                      {variant.winRate}%
+                    </div>
+                    <div className="text-xs text-slate-400">win rate</div>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className={`text-xl font-mono font-bold ${getThreatTier(variant).colorClass.replace('bg-', 'text-').split(' ')[0]}`}>
-                    {variant.winRate}%
-                  </div>
-                  <div className="text-xs text-slate-400">win rate</div>
-                </div>
-              </div>
-            ))
+              );
+            })
           ) : (
             <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-slate-500">
               No other variants available for this archetype yet.
@@ -484,18 +493,30 @@ function getDeckDisplayImage(deck, allCards) {
 
 /* ==================== NEW PAGES (KEPT EXACTLY AS YOU HAD) ==================== */
 function ThreatTierListPage({ decks, allCards, onSelectDeck }) {
-
   const groupedDecks = useMemo(() => {
     const groups = {};
+
     decks.forEach((deck) => {
+      const groupKey = deck.group && deck.group.trim() !== "" ? deck.group : deck.name;
       const tier = getThreatTier(deck);
-      const groupKey = `${tier.category} — ${tier.subTier}`;
+
       if (!groups[groupKey]) {
-        groups[groupKey] = { tier, decks: [] };
+        groups[groupKey] = { 
+          groupKey, 
+          tier, 
+          decks: [], 
+          bestWinRate: 0 
+        };
       }
+
       groups[groupKey].decks.push(deck);
+      if ((deck.winRate || 0) > groups[groupKey].bestWinRate) {
+        groups[groupKey].bestWinRate = deck.winRate || 0;
+      }
     });
-    return Object.values(groups).sort((a, b) => b.tier.winMin - a.tier.winMin);
+
+    return Object.values(groups)
+      .sort((a, b) => b.bestWinRate - a.bestWinRate);
   }, [decks]);
 
   return (
@@ -510,80 +531,65 @@ function ThreatTierListPage({ decks, allCards, onSelectDeck }) {
         </div>
       </div>
 
-      {groupedDecks.map((group) => (
-        <section key={group.tier.subTier} className="rounded-[24px] border border-slate-300 bg-white p-6 shadow-sm">
-          <div className={`inline-flex items-center gap-2 rounded-2xl border px-6 py-3 text-xl font-bold ${group.tier.colorClass}`}>
-            {group.tier.category} — {group.tier.subTier}
-          </div>
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4">
+      {groupedDecks.map((group) => {
+        const representative = group.decks[0]; // first deck as representative
+        const image = getDeckDisplayImage(representative, allCards || []);
 
-            {(group.decks || []).map((deck) => {
-  const tier = getThreatTier(deck);
-  const image = getDeckDisplayImage(deck, allCards || []);
+        return (
+          <section key={group.groupKey} className="rounded-[24px] border border-slate-300 bg-white p-6 shadow-sm">
+            <div className={`inline-flex items-center gap-2 rounded-2xl border px-6 py-3 text-xl font-bold ${group.tier.colorClass}`}>
+              {group.tier.category} — {group.tier.subTier}
+            </div>
 
-  return (
-    <div
-      key={deck.id}
-      onClick={() => onSelectDeck(deck)}
-      className="relative group cursor-pointer overflow-hidden rounded-2xl border border-slate-300 shadow-md transition hover:-translate-y-1 hover:shadow-xl"
-    >
-      {/* Background Image */}
-      {image && (
-        <img
-          src={image}
-          alt={deck.name}
-          className="absolute inset-0 w-full h-full object-cover transition duration-500 group-hover:scale-110"
-        />
-      )}
-
-      {/* Dark Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-black/20" />
-
-      {/* Content */}
-      <div className="relative z-10 flex items-center justify-between p-4">
-        
-        {/* Left */}
-        <div className="min-w-0">
-          <div className="text-lg font-bold text-white line-clamp-1">
-            {deck.name}
-          </div>
-          <div className="text-xs text-slate-300">
-            by {deck.owner}
-          </div>
-        </div>
-
-        {/* Right */}
-        <div className={`px-4 py-1 text-sm font-bold rounded-xl backdrop-blur-md ${tier.colorClass}`}>
-          {deck.winRate}%
-        </div>
-
-      </div>
-    </div>
-  );
-})}
-          </div>
-        </section>
-      ))}
+            <div 
+              onClick={() => onSelectDeck(representative, group.decks)}
+              className="mt-6 cursor-pointer relative group overflow-hidden rounded-2xl border border-slate-300 shadow-md transition hover:-translate-y-1 hover:shadow-xl"
+            >
+              {image && (
+                <img src={image} alt={representative.name} className="absolute inset-0 w-full h-full object-cover transition duration-500 group-hover:scale-110" />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-black/20" />
+              <div className="relative z-10 p-6">
+                <div className="text-2xl font-bold text-white">{group.groupKey}</div>
+                <div className="text-sm text-slate-300 mt-1">by {representative.owner} • {group.decks.length} variant{group.decks.length > 1 ? 's' : ''}</div>
+              </div>
+            </div>
+          </section>
+        );
+      })}
     </div>
   );
 }
+
 
 function DecklistsPage({ decks, allCards, onSelectDeck }) {
   const [query, setQuery] = useState("");
   const [sortBy, setSortBy] = useState("winRate");
   const [tierFilter, setTierFilter] = useState("all");
 
-  const filteredAndSorted = useMemo(() => {
+  const groupedAndFiltered = useMemo(() => {
     let list = decks.filter((deck) =>
       (deck.name.toLowerCase().includes(query.toLowerCase()) ||
        deck.owner.toLowerCase().includes(query.toLowerCase()) ||
-       (deck.archetype || "").toString().toLowerCase().includes(query.toLowerCase())) &&
+       (deck.group || "").toLowerCase().includes(query.toLowerCase())) &&
       (tierFilter === "all" || getThreatTier(deck).subTier === tierFilter)
     );
 
-    if (sortBy === "winRate") list.sort((a, b) => b.winRate - a.winRate);
-    else if (sortBy === "name") list.sort((a, b) => a.name.localeCompare(b.name));
-    return list;
+    // Group by group or name
+    const groups = {};
+    list.forEach(deck => {
+      const groupKey = deck.group && deck.group.trim() !== "" ? deck.group : deck.name;
+      if (!groups[groupKey]) groups[groupKey] = [];
+      groups[groupKey].push(deck);
+    });
+
+    // Sort groups by best winRate
+    return Object.values(groups)
+      .map(groupDecks => {
+        const best = groupDecks.reduce((a, b) => (a.winRate > b.winRate ? a : b));
+        return { groupKey: groupDecks[0].group || best.name, decks: groupDecks, best };
+      })
+      .sort((a, b) => b.best.winRate - a.best.winRate);
   }, [decks, query, sortBy, tierFilter]);
 
   return (
@@ -605,7 +611,6 @@ function DecklistsPage({ decks, allCards, onSelectDeck }) {
               />
             </label>
 
-            {/* ← THIS IS THE FIXED DROPDOWN */}
             <select
               value={tierFilter}
               onChange={(e) => setTierFilter(e.target.value)}
@@ -622,45 +627,37 @@ function DecklistsPage({ decks, allCards, onSelectDeck }) {
         </div>
       </div>
 
-      {/* NEW: Same beautiful cards as Threat Tier List */}
       <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-        {filteredAndSorted.map((deck) => {
-          const tier = getThreatTier(deck);
-          const image = getDeckDisplayImage(deck, allCards || []);
+        {groupedAndFiltered.map((group) => {
+          const rep = group.best;
+          const tier = getThreatTier(rep);
+          const image = getDeckDisplayImage(rep, allCards || []);
 
           return (
             <div
-              key={deck.id}
-              onClick={() => onSelectDeck(deck)}
+              key={group.groupKey}
+              onClick={() => onSelectDeck(rep, group.decks)}
               className="relative group cursor-pointer overflow-hidden rounded-2xl border border-slate-300 shadow-md transition hover:-translate-y-1 hover:shadow-xl"
             >
-              {/* Background Image */}
               {image && (
                 <img
                   src={image}
-                  alt={deck.name}
+                  alt={rep.name}
                   className="absolute inset-0 w-full h-full object-cover transition duration-500 group-hover:scale-110"
                 />
               )}
-
-              {/* Dark Overlay */}
               <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-black/20" />
-
-              {/* Content */}
               <div className="relative z-10 flex items-center justify-between p-4">
-                {/* Left */}
                 <div className="min-w-0">
                   <div className="text-lg font-bold text-white line-clamp-1">
-                    {deck.name}
+                    {group.groupKey}
                   </div>
                   <div className="text-xs text-slate-300">
-                    by {deck.owner}
+                    by {rep.owner} • {group.decks.length} variant{group.decks.length > 1 ? 's' : ''}
                   </div>
                 </div>
-
-                {/* Right - colored win% badge */}
                 <div className={`px-4 py-1 text-sm font-bold rounded-xl backdrop-blur-md ${tier.colorClass}`}>
-                  {deck.winRate}%
+                  {rep.winRate}%
                 </div>
               </div>
             </div>
@@ -3166,10 +3163,10 @@ useEffect(() => {
     navigate("/threat-tier-list");
   }
 
-function goTieredDecks(deck) {
-    setSelectedTieredDeck(deck);
-    navigate(`/tiered-decks/${deck.id}`);
-  }
+function goTieredDecks(deck, variants = []) {
+  setSelectedTieredDeck({ ...deck, variants });
+  navigate(`/tiered-decks/${deck.id}`);
+}
 
   function goDecklists() {
     navigate("/decklists");
