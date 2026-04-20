@@ -242,13 +242,34 @@ const defaultSettings = {
 
 
 function TieredDecksPage({ deck, cards, onOpenCard, allVariantDecks = [] }) {
-  const [hoveredCard, setHoveredCard] = useState(null);   // ← This was missing
+  const [hoveredCard, setHoveredCard] = useState(null);
+  const [hoverPointer, setHoverPointer] = useState({ x: 24, y: 24 });
+  const [currentSample, setCurrentSample] = useState(deck);
 
-  const sampleDeckData = deck?.deckData?.[0] || deck?.deckData || { main: [], extra: [], side: [] };
+  const sampleDeckData = currentSample?.deckData?.[0] || currentSample?.deckData || { main: [], extra: [], side: [] };
 
   const sortedVariants = [...(allVariantDecks || [])].sort((a, b) => 
     (Number(b.winRate) || 0) - (Number(a.winRate) || 0)
   );
+
+  const handleVariantClick = (variant) => {
+    setCurrentSample(variant);
+  };
+
+  const handleHoverCard = (card, event) => {
+    setHoveredCard(card);
+    if (event) {
+      setHoverPointer({ x: event.clientX, y: event.clientY });
+    }
+  };
+
+  const handleHoverMove = (event) => {
+    setHoverPointer({ x: event.clientX, y: event.clientY });
+  };
+
+  const handleHoverLeave = () => {
+    setHoveredCard(null);
+  };
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
@@ -257,10 +278,10 @@ function TieredDecksPage({ deck, cards, onOpenCard, allVariantDecks = [] }) {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-3xl font-bold tracking-tight">Sample Deck</h2>
-            <p className="text-slate-600">{deck.name} — 40 cards</p>
+            <p className="text-slate-600">{currentSample.name} — 40 cards</p>
           </div>
           <button
-            onClick={() => downloadYdk(sampleDeckData, deck.owner || deck.name)}
+            onClick={() => downloadYdk(sampleDeckData, currentSample.owner || currentSample.name)}
             className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-800"
           >
             <Download className="h-4 w-4" />
@@ -273,58 +294,59 @@ function TieredDecksPage({ deck, cards, onOpenCard, allVariantDecks = [] }) {
           ids={sampleDeckData.main} 
           allCards={cards} 
           onOpen={onOpenCard}
-          onHover={setHoveredCard}
-          onLeave={() => setHoveredCard(null)}
+          onHover={handleHoverCard}
+          onMove={handleHoverMove}
+          onLeave={handleHoverLeave}
         />
         <CharacterDeckSection 
           title="Extra Deck" 
           ids={sampleDeckData.extra} 
           allCards={cards} 
           onOpen={onOpenCard}
-          onHover={setHoveredCard}
-          onLeave={() => setHoveredCard(null)}
+          onHover={handleHoverCard}
+          onMove={handleHoverMove}
+          onLeave={handleHoverLeave}
         />
         <CharacterDeckSection 
           title="Side Deck" 
           ids={sampleDeckData.side} 
           allCards={cards} 
           onOpen={onOpenCard}
-          onHover={setHoveredCard}
-          onLeave={() => setHoveredCard(null)}
+          onHover={handleHoverCard}
+          onMove={handleHoverMove}
+          onLeave={handleHoverLeave}
         />
 
-        {/* Hover Preview - this is the one you want */}
-        <div className="mt-8 sticky top-6 self-start">
-          <CharacterHoverPreview card={hoveredCard} />
-        </div>
+        {/* Full Database-style Hover Preview */}
+        <DatabaseHoverPreview card={hoveredCard} pointer={hoverPointer} />
       </div>
 
-      {/* RIGHT - All Variants */}
+      {/* RIGHT - Variants List */}
       <div className="xl:col-span-5 rounded-[24px] border border-slate-300 bg-white p-6 shadow-sm">
         <h2 className="text-3xl font-bold mb-6">Best {deck.name} Decks</h2>
         
-        <div className="space-y-4">
+        <div className="space-y-3">
           {sortedVariants.length > 0 ? (
             sortedVariants.map((variant, i) => {
               const tier = getThreatTier(variant);
               return (
                 <div
                   key={variant.id || i}
-                  onClick={() => onSelectDeck(variant)}
-                  className="flex items-center justify-between rounded-2xl border p-4 hover:bg-slate-50 cursor-pointer transition"
+                  onClick={() => handleVariantClick(variant)}
+                  className="flex items-center justify-between rounded-2xl border p-4 hover:bg-slate-50 cursor-pointer transition text-sm"
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="text-2xl font-bold text-slate-900">Variant {i + 1}</div>
+                  <div className="flex items-center gap-3">
+                    <div className="text-xl font-bold text-slate-900">#{i + 1}</div>
                     <div>
                       <div className="font-medium">{variant.name}</div>
-                      <div className="text-sm text-slate-500">by {variant.owner}</div>
+                      <div className="text-xs text-slate-500">by {variant.owner}</div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className={`text-xl font-mono font-bold ${tier.colorClass.replace('bg-', 'text-').split(' ')[0]}`}>
+                    <div className={`text-lg font-mono font-bold ${tier.colorClass.replace('bg-', 'text-').split(' ')[0]}`}>
                       {variant.winRate}%
                     </div>
-                    <div className="text-xs text-slate-400">win rate</div>
+                    <div className="text-[10px] text-slate-400">win rate</div>
                   </div>
                 </div>
               );
@@ -2568,13 +2590,14 @@ function CardDetail({ card, cards, onBack, onOpen }) {
   );
 }
 
-function CharacterDeckCard({ card, onOpen, onHover, onLeave }) {
+function CharacterDeckCard({ card, onOpen, onHover, onLeave, onMove }) {
   return (
     <button
       onClick={() => onOpen(card)}
-      onMouseEnter={() => onHover(card)}
-      onFocus={() => onHover(card)}
+      onMouseEnter={(e) => onHover?.(card, e)}
+      onMouseMove={onMove}
       onMouseLeave={onLeave}
+      onFocus={(e) => onHover?.(card, e)}
       onBlur={onLeave}
       className="group relative overflow-hidden rounded-lg border border-slate-400/70 bg-slate-950/5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
       title={card.name}
@@ -3166,7 +3189,7 @@ useEffect(() => {
 function goTieredDecks(deck, variants = []) {
   setSelectedTieredDeck({ ...deck, variants });
   navigate(`/tiered-decks/${deck.id}`);
-   }
+  }
 
   function goDecklists() {
     navigate("/decklists");
@@ -3308,8 +3331,7 @@ function goTieredDecks(deck, variants = []) {
         {page === "downloads" && <DownloadsPage settings={settings} />}
         {page === "threat-tier-list" && (<ThreatTierListPage decks={threatDecks} allCards={allCards} onSelectDeck={goTieredDecks} />)}
         {page === "decklists" && <DecklistsPage decks={threatDecks} allCards={allCards} onSelectDeck={goTieredDecks} />}
-        {page === "tiered-decks" && selectedTieredDeck && (
-          <TieredDecksPage deck={selectedTieredDeck} cards={allCards} onOpenCard={openAnyCard} allVariantDecks={selectedTieredDeck.variants || []} />)}
+        {page === "tiered-decks" && selectedTieredDeck && (<TieredDecksPage deck={selectedTieredDeck} cards={allCards} onOpenCard={openAnyCard} allVariantDecks={selectedTieredDeck.variants || []}/>)}
         {page === "card" && selectedCard && (
           <div className="space-y-4">
             <div className="flex flex-wrap gap-2">
