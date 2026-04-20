@@ -235,9 +235,14 @@ const defaultSettings = {
   downloads: CODE_DOWNLOADS,
 };
 
-function TieredDecksPage({ deck, cards, onOpenCard }) {
-  const sampleDeck = deck?.deckData?.[0] || deck?.deckData || { main: [], extra: [], side: [] };
-  const [hoveredCard, setHoveredCard] = useState(null);
+function TieredDecksPage({ deck, cards, onOpenCard, allVariantDecks = [] }) {
+  // deck = the main/representative deck for this archetype
+  const sampleDeckData = deck?.deckData?.[0] || deck?.deckData || { main: [], extra: [], side: [] };
+
+  // Sort variants by winRate descending (best first)
+  const sortedVariants = [...(allVariantDecks || [])].sort((a, b) => 
+    (Number(b.winRate) || 0) - (Number(a.winRate) || 0)
+  );
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
@@ -249,7 +254,7 @@ function TieredDecksPage({ deck, cards, onOpenCard }) {
             <p className="text-slate-600">{deck.name} — 40 cards</p>
           </div>
           <button
-            onClick={() => downloadYdk(sampleDeck, deck.owner)}
+            onClick={() => downloadYdk(sampleDeckData, deck.owner || deck.name)}
             className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-800"
           >
             <Download className="h-4 w-4" />
@@ -259,7 +264,7 @@ function TieredDecksPage({ deck, cards, onOpenCard }) {
 
         <CharacterDeckSection 
           title="Main Deck" 
-          ids={sampleDeck.main} 
+          ids={sampleDeckData.main} 
           allCards={cards} 
           onOpen={onOpenCard} 
           onHover={setHoveredCard} 
@@ -267,7 +272,7 @@ function TieredDecksPage({ deck, cards, onOpenCard }) {
         />
         <CharacterDeckSection 
           title="Extra Deck" 
-          ids={sampleDeck.extra} 
+          ids={sampleDeckData.extra} 
           allCards={cards} 
           onOpen={onOpenCard} 
           onHover={setHoveredCard} 
@@ -275,42 +280,51 @@ function TieredDecksPage({ deck, cards, onOpenCard }) {
         />
         <CharacterDeckSection 
           title="Side Deck" 
-          ids={sampleDeck.side} 
+          ids={sampleDeckData.side} 
           allCards={cards} 
           onOpen={onOpenCard} 
           onHover={setHoveredCard} 
           onLeave={() => setHoveredCard(null)} 
         />
 
-        {/* Hover Preview (same as database / character pages) */}
+        {/* Hover Preview */}
         <div className="mt-8 sticky top-6 self-start">
           <CharacterHoverPreview card={hoveredCard} />
         </div>
       </div>
 
-      {/* RIGHT - Best Decks table (unchanged) */}
+      {/* RIGHT - All Variants for this archetype (clean list) */}
       <div className="xl:col-span-5 rounded-[24px] border border-slate-300 bg-white p-6 shadow-sm">
         <h2 className="text-3xl font-bold mb-6">Best {deck.name} Decks</h2>
+        
         <div className="space-y-4">
-          {[
-            { place: "Top 4", date: "Apr 5, 2026", points: "327.0" },
-            { place: "Top 8", date: "Apr 4, 2026", points: "325.0" },
-            { place: "Top 16", date: "Mar 30, 2026", points: "322.0" },
-          ].map((entry, i) => (
-            <div key={i} className="flex items-center justify-between rounded-2xl border p-4 hover:bg-slate-50">
-              <div className="flex items-center gap-4">
-                <div className="text-2xl font-bold text-slate-900">{entry.place}</div>
-                <div>
-                  <div className="font-medium">{deck.name} Variant {i + 1}</div>
-                  <div className="text-sm text-slate-500">{entry.date}</div>
+          {sortedVariants.length > 0 ? (
+            sortedVariants.map((variant, i) => (
+              <div
+                key={variant.id || i}
+                onClick={() => onSelectDeck(variant)}   // opens this variant as new "sample"
+                className="flex items-center justify-between rounded-2xl border p-4 hover:bg-slate-50 cursor-pointer transition"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="text-2xl font-bold text-slate-900">Variant {i + 1}</div>
+                  <div>
+                    <div className="font-medium">{variant.name}</div>
+                    <div className="text-sm text-slate-500">by {variant.owner}</div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className={`text-xl font-mono font-bold ${getThreatTier(variant).colorClass.replace('bg-', 'text-').split(' ')[0]}`}>
+                    {variant.winRate}%
+                  </div>
+                  <div className="text-xs text-slate-400">win rate</div>
                 </div>
               </div>
-              <div className="text-right">
-                <div className="text-xl font-mono font-bold">{entry.points}</div>
-                <div className="text-xs text-slate-400">points</div>
-              </div>
+            ))
+          ) : (
+            <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-slate-500">
+              No other variants available for this archetype yet.
             </div>
-          ))}
+          )}
         </div>
       </div>
     </div>
@@ -564,7 +578,7 @@ function DecklistsPage({ decks, allCards, onSelectDeck }) {
       (deck.name.toLowerCase().includes(query.toLowerCase()) ||
        deck.owner.toLowerCase().includes(query.toLowerCase()) ||
        (deck.archetype || "").toString().toLowerCase().includes(query.toLowerCase())) &&
-      (tierFilter === "all" || getThreatTier(deck).category === tierFilter)
+      (tierFilter === "all" || getThreatTier(deck).subTier === tierFilter)
     );
 
     if (sortBy === "winRate") list.sort((a, b) => b.winRate - a.winRate);
@@ -590,6 +604,8 @@ function DecklistsPage({ decks, allCards, onSelectDeck }) {
                 className="bg-transparent outline-none w-64"
               />
             </label>
+
+            {/* ← THIS IS THE FIXED DROPDOWN */}
             <select
               value={tierFilter}
               onChange={(e) => setTierFilter(e.target.value)}
@@ -597,7 +613,9 @@ function DecklistsPage({ decks, allCards, onSelectDeck }) {
             >
               <option value="all">All Tiers</option>
               {TIER_DEFINITIONS.map((t) => (
-                <option key={t.category} value={t.category}>{t.category}</option>
+                <option key={t.subTier} value={t.subTier}>
+                  {t.subTier}
+                </option>
               ))}
             </select>
           </div>
